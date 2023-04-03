@@ -1,72 +1,133 @@
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
+from pathlib import Path
 import sys
 
-
+# À rouler dans le output directory!!!
 argv = sys.argv
 
-e1_nifti = argv[1]
-fa_nifti = argv[2]
-mtr_nifti = argv[3]
-ihmtr_nifti = argv[4]
-wm_mask_nifti = argv[5]
+e1_nifti = Path(argv[1])
+fa_nifti = Path(argv[2])
+mtr_nifti = Path(argv[3])
+ihmtr_nifti = Path(argv[4])
+wm_mask_nifti = Path(argv[5])
+nufo_nifti = Path(argv[6])
 
 # Load the data
-mtr_img = nib.load(mtr_nifti)
-ihmtr_img = nib.load(ihmtr_nifti)
-fa_img = nib.load(fa_nifti)
-wm_mask_img = nib.load(wm_mask_nifti)
-e1_img = nib.load(e1_nifti)
+mtr_img = nib.load(str(mtr_nifti))
+ihmtr_img = nib.load(str(ihmtr_nifti))
+fa_img = nib.load(str(fa_nifti))
+wm_mask_img = nib.load(str(wm_mask_nifti))
+e1_img = nib.load(str(e1_nifti))
+nufo_img = nib.load(str(nufo_nifti))
 
 mtr_data = mtr_img.get_fdata()
 ihmtr_data = ihmtr_img.get_fdata()
 fa_data = fa_img.get_fdata()
 wm_mask_data = wm_mask_img.get_fdata()
 e1_data = e1_img.get_fdata()
+nufo_data = nufo_img.get_fdata()
 
-# Define the bins
-# bins = np.arange(0, 180, 5)
-bins = np.arange(0, 180, 1)
+sub_ses_dir = Path(fa_nifti.parent.name)
+if not sub_ses_dir.is_dir():
+    sub_ses_dir.mkdir()
 
-# Calculate the angle between e1 and B0 field
-b0_field = np.array([0, 0, 1])
-cos_theta = np.dot(e1_data[..., :3], b0_field)
-theta = np.arccos(cos_theta) * 180 / np.pi
+bins_width = [1, 3]
+fa_thrs = [0.5, 0.6, 0.7]
 
-# Apply the WM mask and FA threshold
-wm_mask_bool = (wm_mask_data > 0) & (fa_data > 0.7)
+for j in bins_width: # width of the angle bins
 
-# Calculate the mean MTR and ihMTR for each bin
-mtr_means = np.zeros(len(bins) - 1)
-ihmtr_means = np.zeros(len(bins) - 1)
+    # Define the bins
+    # bins = np.arange(0, 180, 5)
+    bins = np.arange(0, 180 + j, j)
 
-for i in range(len(bins) - 1):
-    angle_mask = (theta >= bins[i]) & (theta < bins[i+1])
-    mask = wm_mask_bool & angle_mask
-    # print(bins[i], np.sum(mask))
-    if np.sum(mask) < 5:
-        mtr_means[i] = None
-        ihmtr_means[i] = None
-    else:
-        mtr_means[i] = np.mean(mtr_data[mask])
-        ihmtr_means[i] = np.mean(ihmtr_data[mask])
+    # Calculate the angle between e1 and B0 field
+    b0_field = np.array([0, 0, 1])
+    cos_theta = np.dot(e1_data[..., :3], b0_field)
+    theta = np.arccos(cos_theta) * 180 / np.pi
 
-# Save the results to a text file
-results = np.column_stack((bins[:-1], bins[1:], mtr_means, ihmtr_means))
-np.savetxt('angle_means.txt', results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTR_mean\tihMTR_mean')
+    for l in [True, False]: # use NuFo or not
+        mtr_means = np.zeros((len(fa_thrs), len(bins) - 1))
+        ihmtr_means = np.zeros((len(fa_thrs), len(bins) - 1))
+        nb_voxels = np.zeros((len(fa_thrs), len(bins) - 1))
 
-# Plot the results
-plt.figure(figsize=(10, 5))
-plt.subplot(1, 2, 1)
-plt.plot(bins[:-1], mtr_means, "o")
-plt.xlabel('Angle between e1 and B0 field (degrees)')
-plt.ylabel('MTR mean')
-plt.title('MTR vs Angle')
-plt.subplot(1, 2, 2)
-plt.plot(bins[:-1], ihmtr_means, "o")
-plt.xlabel('Angle between e1 and B0 field (degrees)')
-plt.ylabel('ihMTR mean')
-plt.title('ihMTR vs Angle')
-plt.tight_layout()
-plt.show()
+        for k, fa_thr in enumerate(fa_thrs): # FA threshold
+
+            # Apply the WM mask and FA threshold
+            if l:
+                wm_mask_bool = (wm_mask_data > 0) & (fa_data > fa_thr) & (nufo_data == 1)
+            else:
+                wm_mask_bool = (wm_mask_data > 0) & (fa_data > fa_thr)
+
+            for i in range(len(bins) - 1):
+                angle_mask = (theta >= bins[i]) & (theta < bins[i+1])
+                mask = wm_mask_bool & angle_mask
+                nb_voxels[k, i] = np.sum(mask)
+                if np.sum(mask) < 5:
+                    mtr_means[k, i] = None
+                    ihmtr_means[k, i] = None
+                else:
+                    mtr_means[k, i] = np.mean(mtr_data[mask])
+                    ihmtr_means[k, i] = np.mean(ihmtr_data[mask])
+
+            # Save the results to a text file
+            results = np.column_stack((bins[:-1], bins[1:], mtr_means[k], ihmtr_means[k], nb_voxels[k]))
+            txt_name = "results_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + ".txt"
+            txt_path = sub_ses_dir / txt_name
+            np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTR_mean\tihMTR_mean\tNb_voxels')
+
+            for i in [90, 180]: # range of the angle bins to visualize
+                # Plot the results
+                if i == 90:
+                    angles = int((len(bins) - 1) / 2) + 1
+                    means = int((len(bins) - 1) / 2) + 1
+                elif i == 180:
+                    angles = -1
+                    means = mtr_means.shape[-1]
+                plt.figure(figsize=(10, 5))
+                plt.subplot(1, 2, 1)
+                plt.scatter(bins[:angles], mtr_means[k, :means], 2)
+                plt.xlabel('Angle between e1 and B0 field (degrees)')
+                plt.ylabel('MTR mean')
+                plt.title('MTR vs Angle')
+                plt.subplot(1, 2, 2)
+                plt.scatter(bins[:angles], ihmtr_means[k, :means], 2)
+                plt.xlabel('Angle between e1 and B0 field (degrees)')
+                plt.ylabel('ihMTR mean')
+                plt.title('ihMTR vs Angle')
+                plt.tight_layout()
+                # plt.show()
+                fig_name = "plot_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + "_" + str(i) + "_degrees_range" + ".png"
+                fig_path = sub_ses_dir / fig_name
+                plt.savefig(fig_path)
+                plt.close()
+
+        for i in [90, 180]: # range of the angle bins to visualize
+            # Plot the results
+            if i == 90:
+                angles = int((len(bins) - 1) / 2) + 1
+                means = int((len(bins) - 1) / 2) + 1
+            elif i == 180:
+                angles = -1
+                means = mtr_means.shape[-1]
+            plt.figure(figsize=(10, 5))
+            plt.subplot(1, 2, 1)
+            for idx in range(mtr_means.shape[0]):
+                plt.scatter(bins[:angles], mtr_means[idx, :means], 2, label="FA thr = " + str(fa_thrs[idx]))
+            plt.xlabel('Angle between e1 and B0 field (degrees)')
+            plt.ylabel('MTR mean')
+            plt.title('MTR vs Angle')
+            plt.subplot(1, 2, 2)
+            for idx in range(ihmtr_means.shape[0]):
+                plt.scatter(bins[:angles], ihmtr_means[idx, :means], 2, label="FA thr = " + str(fa_thrs[idx]))
+            plt.xlabel('Angle between e1 and B0 field (degrees)')
+            plt.ylabel('ihMTR mean')
+            plt.title('ihMTR vs Angle')
+            plt.legend()
+            plt.tight_layout()
+            # plt.show()
+            fig_name = "plot_all_FA_thr_" + str(j) + "_degrees_bins_NuFo_" + str(l) + "_" + str(i) + "_degrees_range" + ".png"
+            fig_path = sub_ses_dir / fig_name
+            plt.savefig(fig_path)
+            plt.close()
