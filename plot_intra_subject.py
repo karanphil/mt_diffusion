@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import sys
 
+# This code actually plots all the results given as input in one graph. 
+# It can be used for intrasubject or other things such as FA thr comparison.
+# It should be run in the output folder.
+
 argv = sys.argv # First input should be the output file and the rest should be the txt files.
 
 output = argv[1]
@@ -24,7 +28,7 @@ bins[-1] = results[0, -1, 1]
 mtr_means = results[:, :, 2]
 ihmtr_means = results[:, :, 3]
 
-for i in [90, 180]: # range of the angle bins to visualize
+for i in [180]: # range of the angle bins to visualize
     # Plot the results
     if i == 90:
         angles = int((len(bins) - 1) / 2) + 1
@@ -48,6 +52,6 @@ for i in [90, 180]: # range of the angle bins to visualize
     # plt.legend()
     plt.tight_layout()
     # plt.show()
-    plt.savefig(output)
+    plt.savefig(output) # does not take i into account!
     plt.close()
 
