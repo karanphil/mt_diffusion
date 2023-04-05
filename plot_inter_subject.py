@@ -1,5 +1,6 @@
 import numpy as np
 import nibabel as nib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from pathlib import Path
 import sys
@@ -13,29 +14,29 @@ results_name = "/results_1_degrees_bins_0.5_FA_thr_NuFo_False.txt"
 argv = sys.argv # First input should be the output file and the rest should be the subjects.
 
 def plot_init():
-    plt.rcParams["font.family"] = "serif"
-    plt.rcParams['font.serif'] = 'Helvetica'
-    plt.style.use('seaborn-notebook')
+    # plt.rcParams["font.family"] = "serif"
+    # plt.rcParams['font.serif'] = 'Helvetica'
+    # plt.style.use('seaborn-notebook')
     plt.rcParams['axes.grid'] = False
     plt.rcParams['grid.color'] = "darkgrey"
     plt.rcParams['grid.linewidth'] = 1
     plt.rcParams['grid.linestyle'] = "-"
     plt.rcParams['grid.alpha'] = "0.5"
     plt.rcParams['figure.figsize'] = (10.0, 5.0)
-    plt.rcParams['font.size'] = 25
+    plt.rcParams['font.size'] = 12
     plt.rcParams['axes.labelsize'] = plt.rcParams['font.size']
-    plt.rcParams['axes.titlesize'] = 1.5*plt.rcParams['font.size']
+    plt.rcParams['axes.titlesize'] = 1.2*plt.rcParams['font.size']
     plt.rcParams['legend.fontsize'] = plt.rcParams['font.size']
     plt.rcParams['xtick.labelsize'] = plt.rcParams['font.size']
     plt.rcParams['ytick.labelsize'] = plt.rcParams['font.size']
-    plt.rcParams['axes.linewidth'] =2
-    plt.rcParams['lines.linewidth']=2
-    plt.rcParams['lines.markersize']=10
-    plt.rcParams['text.latex.unicode']=True
-    plt.rcParams['text.latex.preamble'] = [r'\usepackage{amssymb}', r"\usepackage{amstext}"]
+    plt.rcParams['axes.linewidth'] =1
+    plt.rcParams['lines.linewidth']=1
+    plt.rcParams['lines.markersize']=4
+    # plt.rcParams['text.latex.unicode']=True
+    # plt.rcParams['text.latex.preamble'] = [r'\usepackage{amssymb}', r"\usepackage{amstext}"]
     # plt.rcParams['mathtext.default']='regular'
 
-output = argv[1]
+output_name = argv[1]
 
 subjects = []
 for arg in argv[2:]:
@@ -46,10 +47,10 @@ results = np.zeros(((len(subjects),) + temp_dims))
 for i, subject in enumerate(subjects):
     print(subject)
     sessions = list(Path('.').glob(subject + "*"))
-    for session in sessions:
+    for session in sessions[:5]:
         print(session)
         results[i] += np.loadtxt(str(session) + results_name, skiprows=1)
-    results[i] /= len(sessions)
+    results[i] /= len(sessions[:5])
 
 bins = np.zeros((results[:, :, 0].shape[1] + 1))
 bins[:180] = results[0, :, 0]
@@ -57,6 +58,7 @@ bins[-1] = results[0, -1, 1]
 
 mtr_means = results[:, :, 2]
 ihmtr_means = results[:, :, 3]
+nb_voxels = results[:, :, 4]
 
 for i in [90, 180]: # range of the angle bins to visualize
     # Plot the results
@@ -66,23 +68,43 @@ for i in [90, 180]: # range of the angle bins to visualize
     elif i == 180:
         angles = -1
         means = mtr_means.shape[-1]
+    max_count = np.max(nb_voxels[:, :means])
+    norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
     plot_init()
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
+    fig, (ax1, ax2, cax) = plt.subplots(1, 3, gridspec_kw={"width_ratios":[1,1, 0.05]})
     for idx in range(mtr_means.shape[0]):
-        plt.scatter(bins[:angles], mtr_means[idx, :means], 2)
-    plt.xlabel('Angle between e1 and B0 field (degrees)')
-    plt.ylabel('MTR mean')
-    plt.title('MTR vs Angle')
-    plt.subplot(1, 2, 2)
+        ax1.scatter(bins[:angles], mtr_means[idx, :means], c=nb_voxels[idx, :means], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1)
+    ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
+    ax1.set_ylabel('MTR mean')
+    ax1.set_title('MTR vs Angle')
     for idx in range(ihmtr_means.shape[0]):
-        plt.scatter(bins[:angles], ihmtr_means[idx, :means], 2)
-    plt.xlabel('Angle between e1 and B0 field (degrees)')
-    plt.ylabel('ihMTR mean')
-    plt.title('ihMTR vs Angle')
-    # plt.legend()
-    plt.tight_layout()
+        colorbar = ax2.scatter(bins[:angles], ihmtr_means[idx, :means], c=nb_voxels[idx, :means], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1)
+    ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
+    ax2.set_ylabel('ihMTR mean')
+    ax2.set_title('ihMTR vs Angle')
+    fig.colorbar(colorbar, cax=cax, label="Voxel count")
+    fig.tight_layout()
     # plt.show()
-    plt.savefig(output)
+    output = output_name + "_" + str(i) + "_degrees_range" + ".png"
+    plt.savefig(output, dpi=300)
     plt.close()
+    # plot_init()
+    # plt.figure(figsize=(10, 5))
+    # plt.subplot(1, 2, 1)
+    # for idx in range(mtr_means.shape[0]):
+    #     plt.scatter(bins[:angles], mtr_means[idx, :means])
+    # plt.xlabel('Angle between e1 and B0 field (degrees)')
+    # plt.ylabel('MTR mean')
+    # plt.title('MTR vs Angle')
+    # plt.subplot(1, 2, 2)
+    # for idx in range(ihmtr_means.shape[0]):
+    #     plt.scatter(bins[:angles], ihmtr_means[idx, :means])
+    # plt.xlabel('Angle between e1 and B0 field (degrees)')
+    # plt.ylabel('ihMTR mean')
+    # plt.title('ihMTR vs Angle')
+    # # plt.legend()
+    # plt.tight_layout()
+    # # plt.show()
+    # plt.savefig(output)
+    # plt.close()
 

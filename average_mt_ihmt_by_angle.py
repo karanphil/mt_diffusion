@@ -26,7 +26,7 @@ def plot_init():
     plt.rcParams['ytick.labelsize'] = plt.rcParams['font.size']
     plt.rcParams['axes.linewidth'] =1
     plt.rcParams['lines.linewidth']=1
-    plt.rcParams['lines.markersize']=3
+    plt.rcParams['lines.markersize']=4
     # plt.rcParams['text.latex.unicode']=True
     # plt.rcParams['text.latex.preamble'] = [r'\usepackage{amssymb}', r"\usepackage{amstext}"]
     # plt.rcParams['mathtext.default']='regular'
@@ -57,10 +57,10 @@ sub_ses_dir = Path(fa_nifti.parent.name)
 if not sub_ses_dir.is_dir():
     sub_ses_dir.mkdir()
 
-# bins_width = [1, 3]
-# fa_thrs = [0.5, 0.6, 0.7]
-bins_width = [1]
-fa_thrs = [0.5]
+bins_width = [1, 3]
+fa_thrs = [0.7, 0.6, 0.5]
+# bins_width = [1]
+# fa_thrs = [0.5]
 
 for j in bins_width: # width of the angle bins
 
@@ -101,7 +101,7 @@ for j in bins_width: # width of the angle bins
             results = np.column_stack((bins[:-1], bins[1:], mtr_means[k], ihmtr_means[k], nb_voxels[k]))
             txt_name = "results_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + ".txt"
             txt_path = sub_ses_dir / txt_name
-            # np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTR_mean\tihMTR_mean\tNb_voxels')
+            np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTR_mean\tihMTR_mean\tNb_voxels')
 
             for i in [90, 180]: # range of the angle bins to visualize
                 # Plot the results
@@ -113,72 +113,50 @@ for j in bins_width: # width of the angle bins
                     means = mtr_means.shape[-1]
                 plot_init()
                 fig, (ax1, ax2, cax) = plt.subplots(1, 3, gridspec_kw={"width_ratios":[1,1, 0.05]})
-                fig.subplots_adjust(wspace=0.3)
-                ax1.scatter(bins[:angles], mtr_means[k, :means], c=nb_voxels[k, :means], cmap='Greens', edgecolors='black', linewidths=0.5)
+                ax1.scatter(bins[:angles], mtr_means[k, :means], c=nb_voxels[k, :means], cmap='Greys', edgecolors='black', linewidths=1)
                 ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
                 ax1.set_ylabel('MTR mean')
                 ax1.set_title('MTR vs Angle')
-                # ax3 = ax1.twinx()
-                # ax3.scatter(bins[:angles], nb_voxels[k, :means])
-                # ax3.set_ylabel('Voxel count')
-                # plt.subplot(1, 2, 2)
-                colorbar = ax2.scatter(bins[:angles], ihmtr_means[k, :means], c=nb_voxels[k, :means], cmap='Greens', edgecolors='black', linewidths=0.5)
+                colorbar = ax2.scatter(bins[:angles], ihmtr_means[k, :means], c=nb_voxels[k, :means], cmap='Greys', edgecolors='black', linewidths=1)
                 ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
                 ax2.set_ylabel('ihMTR mean')
                 ax2.set_title('ihMTR vs Angle')
-                # ax4 = ax2.twinx()
-                # ax4.scatter(bins[:angles], nb_voxels[k, :means])
-                # ax4.set_ylabel('Voxel count')
                 fig.colorbar(colorbar, cax=cax, label="Voxel count")
                 fig.tight_layout()
-                plt.show()
+                # plt.show()
                 fig_name = "plot_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + "_" + str(i) + "_degrees_range" + ".png"
                 fig_path = sub_ses_dir / fig_name
-                #plt.savefig(fig_path, dpi=300)
+                plt.savefig(fig_path, dpi=300)
                 plt.close()
-                # plt.figure(figsize=(10, 5))
-                # plt.subplot(1, 2, 1)
-                # plt.scatter(bins[:angles], mtr_means[k, :means], 2)
-                # plt.xlabel('Angle between e1 and B0 field (degrees)')
-                # plt.ylabel('MTR mean')
-                # plt.title('MTR vs Angle')
-                # plt.subplot(1, 2, 2)
-                # plt.scatter(bins[:angles], ihmtr_means[k, :means], 2)
-                # plt.xlabel('Angle between e1 and B0 field (degrees)')
-                # plt.ylabel('ihMTR mean')
-                # plt.title('ihMTR vs Angle')
-                # plt.tight_layout()
-                # # plt.show()
-                # fig_name = "plot_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + "_" + str(i) + "_degrees_range" + ".png"
-                # fig_path = sub_ses_dir / fig_name
-                # plt.savefig(fig_path)
-                # plt.close()
 
-        # for i in [90, 180]: # range of the angle bins to visualize
-        #     # Plot the results
-        #     if i == 90:
-        #         angles = int((len(bins) - 1) / 2) + 1
-        #         means = int((len(bins) - 1) / 2) + 1
-        #     elif i == 180:
-        #         angles = -1
-        #         means = mtr_means.shape[-1]
-        #     plt.figure(figsize=(10, 5))
-        #     plt.subplot(1, 2, 1)
-        #     for idx in range(mtr_means.shape[0]):
-        #         plt.scatter(bins[:angles], mtr_means[idx, :means], 2, label="FA thr = " + str(fa_thrs[idx]))
-        #     plt.xlabel('Angle between e1 and B0 field (degrees)')
-        #     plt.ylabel('MTR mean')
-        #     plt.title('MTR vs Angle')
-        #     plt.subplot(1, 2, 2)
-        #     for idx in range(ihmtr_means.shape[0]):
-        #         plt.scatter(bins[:angles], ihmtr_means[idx, :means], 2, label="FA thr = " + str(fa_thrs[idx]))
-        #     plt.xlabel('Angle between e1 and B0 field (degrees)')
-        #     plt.ylabel('ihMTR mean')
-        #     plt.title('ihMTR vs Angle')
-        #     plt.legend()
-        #     plt.tight_layout()
-        #     # plt.show()
-        #     fig_name = "plot_all_FA_thr_" + str(j) + "_degrees_bins_NuFo_" + str(l) + "_" + str(i) + "_degrees_range" + ".png"
-        #     fig_path = sub_ses_dir / fig_name
-        #     plt.savefig(fig_path)
-        #     plt.close()
+        for i in [90, 180]: # range of the angle bins to visualize
+            # Plot the results
+            if i == 90:
+                angles = int((len(bins) - 1) / 2) + 1
+                means = int((len(bins) - 1) / 2) + 1
+            elif i == 180:
+                angles = -1
+                means = mtr_means.shape[-1]
+            max_count = np.max(nb_voxels[:, :means])
+            norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
+            colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:brown", "tab:olive", "tab:cyan"]
+            plot_init()
+            fig, (ax1, ax2, cax) = plt.subplots(1, 3, gridspec_kw={"width_ratios":[1,1, 0.05]})
+            for idx in range(mtr_means.shape[0]):
+                ax1.scatter(bins[:angles], mtr_means[idx, :means], label="FA thr = " + str(fa_thrs[idx]), c=nb_voxels[idx, :means], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1)
+            ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
+            ax1.set_ylabel('MTR mean')
+            ax1.set_title('MTR vs Angle')
+            for idx in range(ihmtr_means.shape[0]):
+                colorbar = ax2.scatter(bins[:angles], ihmtr_means[idx, :means], label="FA thr = " + str(fa_thrs[idx]), c=nb_voxels[idx, :means], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1)
+            ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
+            ax2.set_ylabel('ihMTR mean')
+            ax2.set_title('ihMTR vs Angle')
+            ax2.legend()
+            fig.colorbar(colorbar, cax=cax, label="Voxel count")
+            fig.tight_layout()
+            # plt.show()
+            fig_name = "plot_all_FA_thr_" + str(j) + "_degrees_bins_NuFo_" + str(l) + "_" + str(i) + "_degrees_range" + ".png"
+            fig_path = sub_ses_dir / fig_name
+            plt.savefig(fig_path, dpi=300)
+            plt.close()
