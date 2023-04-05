@@ -82,9 +82,9 @@ for j in bins_width: # width of the angle bins
 
             # Apply the WM mask and FA threshold
             if l:
-                wm_mask_bool = (wm_mask_data > 0) & (fa_data > fa_thr) & (nufo_data == 1)
+                wm_mask_bool = (wm_mask_data > 0.9) & (fa_data > fa_thr) & (nufo_data == 1)
             else:
-                wm_mask_bool = (wm_mask_data > 0) & (fa_data > fa_thr)
+                wm_mask_bool = (wm_mask_data > 0.9) & (fa_data > fa_thr)
 
             for i in range(len(bins) - 1):
                 angle_mask_0_90 = (theta >= bins[i]) & (theta < bins[i+1]) 
