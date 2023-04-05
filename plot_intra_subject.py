@@ -11,6 +11,12 @@ import sys
 
 argv = sys.argv # First input should be the output filename and the rest should be the txt files.
 
+# Select MTR and ihMTR or MTsat and ihMTsat
+ratios = False
+sats = True
+# ratios = True
+# sats = False
+
 def plot_init():
     # plt.rcParams["font.family"] = "serif"
     # plt.rcParams['font.serif'] = 'Helvetica'
@@ -61,13 +67,21 @@ fig, (ax1, ax2, cax) = plt.subplots(1, 3, gridspec_kw={"width_ratios":[1,1, 0.05
 for idx in range(mtr_means.shape[0]):
     ax1.scatter(bins[:-1], mtr_means[idx, :], c=nb_voxels[idx, :], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1, label="Session " + str(idx + 1))
 ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
-ax1.set_ylabel('MTR mean')
-ax1.set_title('MTR vs Angle')
+if ratios:
+    ax1.set_ylabel('MTR mean')
+    ax1.set_title('MTR vs Angle')
+elif sats:
+    ax1.set_ylabel('MTsat mean')
+    ax1.set_title('MTsat vs Angle')
 for idx in range(ihmtr_means.shape[0]):
     colorbar = ax2.scatter(bins[:-1], ihmtr_means[idx, :], c=nb_voxels[idx, :], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1, label="Session " + str(idx + 1))
 ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
-ax2.set_ylabel('ihMTR mean')
-ax2.set_title('ihMTR vs Angle')
+if ratios:
+    ax2.set_ylabel('ihMTR mean')
+    ax2.set_title('ihMTR vs Angle')
+elif sats:
+    ax2.set_ylabel('ihMTsat mean')
+    ax2.set_title('ihMTsat vs Angle')
 ax2.legend()
 fig.colorbar(colorbar, cax=cax, label="Voxel count")
 fig.tight_layout()

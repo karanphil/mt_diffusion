@@ -8,6 +8,12 @@ import sys
 # À rouler dans le output directory!!!
 argv = sys.argv
 
+# Select MTR and ihMTR or MTsat and ihMTsat
+ratios = False
+sats = True
+# ratios = True
+# sats = False
+
 def plot_init():
     # plt.rcParams["font.family"] = "serif"
     # plt.rcParams['font.serif'] = 'Helvetica'
@@ -103,7 +109,10 @@ for j in bins_width: # width of the angle bins
             results = np.column_stack((bins[:-1], bins[1:], mtr_means[k], ihmtr_means[k], nb_voxels[k]))
             txt_name = "results_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + ".txt"
             txt_path = sub_ses_dir / txt_name
-            np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTR_mean\tihMTR_mean\tNb_voxels')
+            if ratios:
+                np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTR_mean\tihMTR_mean\tNb_voxels')
+            elif sats:
+                np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTsat_mean\tihMTsat_mean\tNb_voxels')
 
             # Plot the results
             max_count = np.max(nb_voxels[k, :])
@@ -112,12 +121,20 @@ for j in bins_width: # width of the angle bins
             fig, (ax1, ax2, cax) = plt.subplots(1, 3, gridspec_kw={"width_ratios":[1,1, 0.05]})
             ax1.scatter(bins[:-1], mtr_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='black', linewidths=1)
             ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
-            ax1.set_ylabel('MTR mean')
-            ax1.set_title('MTR vs Angle')
+            if ratios:
+                ax1.set_ylabel('MTR mean')
+                ax1.set_title('MTR vs Angle')
+            elif sats:
+                ax1.set_ylabel('MTsat mean')
+                ax1.set_title('MTsat vs Angle')
             colorbar = ax2.scatter(bins[:-1], ihmtr_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='black', linewidths=1)
             ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
-            ax2.set_ylabel('ihMTR mean')
-            ax2.set_title('ihMTR vs Angle')
+            if ratios:
+                ax2.set_ylabel('ihMTR mean')
+                ax2.set_title('ihMTR vs Angle')
+            elif sats:
+                ax2.set_ylabel('ihMTsat mean')
+                ax2.set_title('ihMTsat vs Angle')
             fig.colorbar(colorbar, cax=cax, label="Voxel count")
             fig.tight_layout()
             # plt.show()
@@ -134,13 +151,21 @@ for j in bins_width: # width of the angle bins
         for idx in range(mtr_means.shape[0]):
             ax1.scatter(bins[:-1], mtr_means[idx, :], label="FA thr = " + str(fa_thrs[idx]), c=nb_voxels[idx, :], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1)
         ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
-        ax1.set_ylabel('MTR mean')
-        ax1.set_title('MTR vs Angle')
+        if ratios:
+            ax1.set_ylabel('MTR mean')
+            ax1.set_title('MTR vs Angle')
+        elif sats:
+            ax1.set_ylabel('MTsat mean')
+            ax1.set_title('MTsat vs Angle')
         for idx in range(ihmtr_means.shape[0]):
             colorbar = ax2.scatter(bins[:-1], ihmtr_means[idx, :], label="FA thr = " + str(fa_thrs[idx]), c=nb_voxels[idx, :], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1)
         ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
-        ax2.set_ylabel('ihMTR mean')
-        ax2.set_title('ihMTR vs Angle')
+        if ratios:
+            ax2.set_ylabel('ihMTR mean')
+            ax2.set_title('ihMTR vs Angle')
+        elif sats:
+            ax2.set_ylabel('ihMTsat mean')
+            ax2.set_title('ihMTsat vs Angle')
         ax2.legend()
         fig.colorbar(colorbar, cax=cax, label="Voxel count")
         fig.tight_layout()
