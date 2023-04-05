@@ -10,6 +10,29 @@ import sys
 
 argv = sys.argv # First input should be the output file and the rest should be the txt files.
 
+def plot_init():
+    plt.rcParams["font.family"] = "serif"
+    plt.rcParams['font.serif'] = 'Helvetica'
+    plt.style.use('seaborn-notebook')
+    plt.rcParams['axes.grid'] = False
+    plt.rcParams['grid.color'] = "darkgrey"
+    plt.rcParams['grid.linewidth'] = 1
+    plt.rcParams['grid.linestyle'] = "-"
+    plt.rcParams['grid.alpha'] = "0.5"
+    plt.rcParams['figure.figsize'] = (10.0, 5.0)
+    plt.rcParams['font.size'] = 25
+    plt.rcParams['axes.labelsize'] = plt.rcParams['font.size']
+    plt.rcParams['axes.titlesize'] = 1.5*plt.rcParams['font.size']
+    plt.rcParams['legend.fontsize'] = plt.rcParams['font.size']
+    plt.rcParams['xtick.labelsize'] = plt.rcParams['font.size']
+    plt.rcParams['ytick.labelsize'] = plt.rcParams['font.size']
+    plt.rcParams['axes.linewidth'] =2
+    plt.rcParams['lines.linewidth']=2
+    plt.rcParams['lines.markersize']=10
+    plt.rcParams['text.latex.unicode']=True
+    plt.rcParams['text.latex.preamble'] = [r'\usepackage{amssymb}', r"\usepackage{amstext}"]
+    # plt.rcParams['mathtext.default']='regular'
+
 output = argv[1]
 
 txt_files = []
@@ -36,6 +59,7 @@ for i in [180]: # range of the angle bins to visualize
     elif i == 180:
         angles = -1
         means = mtr_means.shape[-1]
+    plot_init()
     plt.figure(figsize=(10, 5))
     plt.subplot(1, 2, 1)
     for idx in range(mtr_means.shape[0]):
