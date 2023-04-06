@@ -1,6 +1,6 @@
 #! /bin/bash
-# cd /home/pkaran/Samsung/data/MT_Diffusion/myelo_inferno/output_ratios;
-cd /home/pkaran/Samsung/data/MT_Diffusion/myelo_inferno/output_sats;
+cd /home/pkaran/Samsung/data/MT_Diffusion/myelo_inferno/output_ratios;
+# cd /home/pkaran/Samsung/data/MT_Diffusion/myelo_inferno/output_sats;
 all_dirs=$(ls -d sub*);
 specs="1_degrees_bins_0.5_FA_thr_NuFo_False";
 subjects=("");

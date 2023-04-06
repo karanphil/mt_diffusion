@@ -52,7 +52,7 @@ for i, file in enumerate(txt_files):
     results[i] = np.loadtxt(file, skiprows=1)
 
 bins = np.zeros((results[:, :, 0].shape[1] + 1))
-bins[:90] = results[0, :, 0]
+bins[:results[:, :, 0].shape[1]] = results[0, :, 0]
 bins[-1] = results[0, -1, 1]
 
 mtr_means = results[:, :, 2]
