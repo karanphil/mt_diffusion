@@ -42,7 +42,6 @@ mtr_nifti = Path(argv[2])
 ihmtr_nifti = Path(argv[3])
 wm_mask_nifti = Path(argv[4])
 nufo_nifti = Path(argv[5])
-peak_values_nifti = Path(argv[6])
 
 # Load the data
 mtr_img = nib.load(str(mtr_nifti))
@@ -50,14 +49,12 @@ ihmtr_img = nib.load(str(ihmtr_nifti))
 wm_mask_img = nib.load(str(wm_mask_nifti))
 peaks_img = nib.load(str(peaks_nifti))
 nufo_img = nib.load(str(nufo_nifti))
-peak_values_img = nib.load(str(peak_values_nifti))
 
 mtr_data = mtr_img.get_fdata()
 ihmtr_data = ihmtr_img.get_fdata()
 wm_mask_data = wm_mask_img.get_fdata()
 peaks_data = peaks_img.get_fdata()
 nufo_data = nufo_img.get_fdata()
-peak_values_data = peak_values_img.get_fdata()
 
 sub_ses_dir = Path(peaks_nifti.parent.name)
 if not sub_ses_dir.is_dir():
@@ -137,11 +134,13 @@ for w in bins_width: # width of the angle bins
     # elif sats:
     #     np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTsat_mean\tihMTsat_mean\tNb_voxels')
 
+    mid_bins = (bins[:-1] + bins[1:]) / 2.
+
     max_count = np.max(nb_voxels_diag)
     norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
     plot_init()
     fig, (ax1, ax2, cax) = plt.subplots(1, 3, gridspec_kw={"width_ratios":[1, 1, 0.05]})
-    ax1.scatter(bins[:-1], mtr_means_diag, c=nb_voxels_diag, cmap='Greys', norm=norm, edgecolors='black', linewidths=1)
+    ax1.scatter(mid_bins, mtr_means_diag, c=nb_voxels_diag, cmap='Greys', norm=norm, edgecolors='black', linewidths=1)
     colorbar = ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
     if ratios:
         ax1.set_ylabel('MTR mean')
@@ -149,7 +148,7 @@ for w in bins_width: # width of the angle bins
     elif sats:
         ax1.set_ylabel('MTsat mean')
         ax1.set_title('MTsat vs Angle')
-    colorbar = ax2.scatter(bins[:-1], ihmtr_means_diag, c=nb_voxels_diag, cmap='Greys', norm=norm, edgecolors='black', linewidths=1)
+    colorbar = ax2.scatter(mid_bins, ihmtr_means_diag, c=nb_voxels_diag, cmap='Greys', norm=norm, edgecolors='black', linewidths=1)
     ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
     if ratios:
         ax2.set_ylabel('ihMTR mean')
@@ -167,9 +166,14 @@ for w in bins_width: # width of the angle bins
 
     # Plot the results
     print("Step 3:")
-    hf = plt.figure()
-    ha = hf.add_subplot(111, projection='3d')
-    X, Y = np.meshgrid(bins[:-1], bins[:-1])
-    ha.plot_surface(X, Y, mtr_means)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    X, Y = np.meshgrid(mid_bins, mid_bins)
+    ax.plot_surface(X, Y, mtr_means)
+    ax.set_xlabel('Angle of fiber 1')
+    ax.set_ylabel('Angle of fiber 2')
+    ax.set_zlabel('MTR mean')
+    ax.set_title('MTR vs Angle')
+    fig.tight_layout()
     plt.show()
     plt.close()

@@ -9,10 +9,10 @@ import sys
 argv = sys.argv
 
 # Select MTR and ihMTR or MTsat and ihMTsat
-ratios = False
-sats = True
-# ratios = True
-# sats = False
+# ratios = False
+# sats = True
+ratios = True
+sats = False
 
 def plot_init():
     # plt.rcParams["font.family"] = "serif"
@@ -63,7 +63,7 @@ sub_ses_dir = Path(fa_nifti.parent.name)
 if not sub_ses_dir.is_dir():
     sub_ses_dir.mkdir()
 
-bins_width = [1, 3]
+bins_width = [1, 3, 5, 10]
 fa_thrs = [0.7, 0.6, 0.5]
 # bins_width = [1]
 # fa_thrs = [0.5]
@@ -73,13 +73,14 @@ for j in bins_width: # width of the angle bins
     # Define the bins
     # bins = np.arange(0, 180, 5)
     bins = np.arange(0, 90 + j, j)
+    mid_bins = (bins[:-1] + bins[1:]) / 2.
 
     # Calculate the angle between e1 and B0 field
     b0_field = np.array([0, 0, 1])
     cos_theta = np.dot(e1_data[..., :3], b0_field)
     theta = np.arccos(cos_theta) * 180 / np.pi
 
-    for l in [True, False]: # use NuFo or not
+    for l in [False]: # use NuFo or not
         mtr_means = np.zeros((len(fa_thrs), len(bins) - 1))
         ihmtr_means = np.zeros((len(fa_thrs), len(bins) - 1))
         nb_voxels = np.zeros((len(fa_thrs), len(bins) - 1))
@@ -119,7 +120,7 @@ for j in bins_width: # width of the angle bins
             norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
             plot_init()
             fig, (ax1, ax2, cax) = plt.subplots(1, 3, gridspec_kw={"width_ratios":[1,1, 0.05]})
-            ax1.scatter(bins[:-1], mtr_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='black', linewidths=1)
+            ax1.scatter(mid_bins, mtr_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='black', linewidths=1)
             ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
             if ratios:
                 ax1.set_ylabel('MTR mean')
@@ -127,7 +128,7 @@ for j in bins_width: # width of the angle bins
             elif sats:
                 ax1.set_ylabel('MTsat mean')
                 ax1.set_title('MTsat vs Angle')
-            colorbar = ax2.scatter(bins[:-1], ihmtr_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='black', linewidths=1)
+            colorbar = ax2.scatter(mid_bins, ihmtr_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='black', linewidths=1)
             ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
             if ratios:
                 ax2.set_ylabel('ihMTR mean')
@@ -149,7 +150,7 @@ for j in bins_width: # width of the angle bins
         plot_init()
         fig, (ax1, ax2, cax) = plt.subplots(1, 3, gridspec_kw={"width_ratios":[1,1, 0.05]})
         for idx in range(mtr_means.shape[0]):
-            ax1.scatter(bins[:-1], mtr_means[idx, :], label="FA thr = " + str(fa_thrs[idx]), c=nb_voxels[idx, :], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1)
+            ax1.scatter(mid_bins, mtr_means[idx, :], label="FA thr = " + str(fa_thrs[idx]), c=nb_voxels[idx, :], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1)
         ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
         if ratios:
             ax1.set_ylabel('MTR mean')
@@ -158,7 +159,7 @@ for j in bins_width: # width of the angle bins
             ax1.set_ylabel('MTsat mean')
             ax1.set_title('MTsat vs Angle')
         for idx in range(ihmtr_means.shape[0]):
-            colorbar = ax2.scatter(bins[:-1], ihmtr_means[idx, :], label="FA thr = " + str(fa_thrs[idx]), c=nb_voxels[idx, :], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1)
+            colorbar = ax2.scatter(mid_bins, ihmtr_means[idx, :], label="FA thr = " + str(fa_thrs[idx]), c=nb_voxels[idx, :], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1)
         ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
         if ratios:
             ax2.set_ylabel('ihMTR mean')
