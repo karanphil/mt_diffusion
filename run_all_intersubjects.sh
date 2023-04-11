@@ -1,6 +1,6 @@
 #! /bin/bash
-cd /home/pkaran/Samsung/data/MT_Diffusion/myelo_inferno/output_ratios;
-# cd /home/pkaran/Samsung/data/MT_Diffusion/myelo_inferno/output_sats;
+# cd ~/Samsung/data/MT_Diffusion/myelo_inferno/output_ratios;
+cd ~/Samsung/data/MT_Diffusion/myelo_inferno/output_sats;
 all_dirs=$(ls -d sub*);
 specs="1_degrees_bins_0.5_FA_thr_NuFo_False";
 subjects=("");
@@ -17,4 +17,4 @@ for dir in $all_dirs;
         last_sub=$subject
     fi;
 done;
-python ~/source/mt_diffusion/plot_inter_subject.py intersubject/all_subjects_${specs}.png ${subjects};
+python ~/Research/source/mt_diffusion/plot_inter_subject.py intersubject/all_subjects_${specs}.png ${subjects};

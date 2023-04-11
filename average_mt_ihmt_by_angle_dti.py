@@ -9,10 +9,10 @@ import sys
 argv = sys.argv
 
 # Select MTR and ihMTR or MTsat and ihMTsat
-# ratios = False
-# sats = True
-ratios = True
-sats = False
+ratios = False
+sats = True
+# ratios = True
+# sats = False
 
 def plot_init():
     # plt.rcParams["font.family"] = "serif"

@@ -76,6 +76,7 @@ for w in bins_width: # width of the angle bins
     # Define the bins
     # bins = np.arange(0, 180, 5)
     bins = np.arange(0, 90 + w, w)
+    mid_bins = (bins[:-1] + bins[1:]) / 2.
 
     # Calculate the angle between e1 and B0 field
     b0_field = np.array([0, 0, 1])
@@ -134,8 +135,7 @@ for w in bins_width: # width of the angle bins
     # elif sats:
     #     np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTsat_mean\tihMTsat_mean\tNb_voxels')
 
-    mid_bins = (bins[:-1] + bins[1:]) / 2.
-
+    # Plot diagonal
     max_count = np.max(nb_voxels_diag)
     norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
     plot_init()
@@ -157,6 +157,35 @@ for w in bins_width: # width of the angle bins
         ax2.set_ylabel('ihMTsat mean')
         ax2.set_title('ihMTsat vs Angle')
     fig.colorbar(colorbar, cax=cax, label="Voxel count")
+    fig.tight_layout()
+    plt.show()
+    fig_name = "plot_" + str(j) + "_degrees_bins.png"
+    fig_path = sub_ses_dir / fig_name
+    # plt.savefig(fig_path, dpi=300)
+    plt.close()
+
+    # Plot fiber 2 for fiber 1 fixed.
+    plot_init()
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    for idx in range(mid_bins.shape[0]):
+        ax1.plot(mid_bins, mtr_means[idx, :], "o-", color="C" + str(idx), label=str(mid_bins[idx]) + " degrees")
+        ax2.plot(mid_bins, ihmtr_means[idx, :], "o-", color="C" + str(idx), label=str(mid_bins[idx]) + " degrees")
+
+    ax1.set_xlabel('Angle of fiber 2')
+    if ratios:
+        ax1.set_ylabel('MTR mean')
+        ax1.set_title('MTR vs Angle')
+    elif sats:
+        ax1.set_ylabel('MTsat mean')
+        ax1.set_title('MTsat vs Angle')
+    ax2.set_xlabel('Angle of fiber 2')
+    if ratios:
+        ax2.set_ylabel('ihMTR mean')
+        ax2.set_title('ihMTR vs Angle')
+    elif sats:
+        ax2.set_ylabel('ihMTsat mean')
+        ax2.set_title('ihMTsat vs Angle')
+    ax2.legend()
     fig.tight_layout()
     plt.show()
     fig_name = "plot_" + str(j) + "_degrees_bins.png"
