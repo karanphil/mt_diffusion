@@ -8,12 +8,6 @@ import sys
 # À rouler dans le output directory!!!
 argv = sys.argv
 
-# Select MTR and ihMTR or MTsat and ihMTsat
-ratios = False
-sats = True
-# ratios = True
-# sats = False
-
 def plot_init():
     # plt.rcParams["font.family"] = "serif"
     # plt.rcParams['font.serif'] = 'Helvetica'
@@ -43,6 +37,15 @@ mtr_nifti = Path(argv[3])
 ihmtr_nifti = Path(argv[4])
 wm_mask_nifti = Path(argv[5])
 nufo_nifti = Path(argv[6])
+output_choice = argv[7]
+                     
+# Select MTR and ihMTR or MTsat and ihMTsat
+if output_choice == "ratios":
+    ratios = True
+    sats = False
+elif output_choice == "sats":
+    ratios = False
+    sats = True
 
 # Load the data
 mtr_img = nib.load(str(mtr_nifti))

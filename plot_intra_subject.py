@@ -11,12 +11,6 @@ import sys
 
 argv = sys.argv # First input should be the output filename and the rest should be the txt files.
 
-# Select MTR and ihMTR or MTsat and ihMTsat
-ratios = False
-sats = True
-# ratios = True
-# sats = False
-
 def plot_init():
     # plt.rcParams["font.family"] = "serif"
     # plt.rcParams['font.serif'] = 'Helvetica'
@@ -41,9 +35,18 @@ def plot_init():
     # plt.rcParams['mathtext.default']='regular'
 
 output_name = argv[1]
+output_choice = argv[2]
+
+# Select MTR and ihMTR or MTsat and ihMTsat
+if output_choice == "ratios":
+    ratios = True
+    sats = False
+elif output_choice == "sats":
+    ratios = False
+    sats = True
 
 txt_files = []
-for arg in argv[2:7]:
+for arg in argv[3:8]:
     txt_files.append(arg)
 
 temp_dims = np.loadtxt(txt_files[0], skiprows=1).shape
@@ -54,6 +57,7 @@ for i, file in enumerate(txt_files):
 bins = np.zeros((results[:, :, 0].shape[1] + 1))
 bins[:results[:, :, 0].shape[1]] = results[0, :, 0]
 bins[-1] = results[0, -1, 1]
+mid_bins = (bins[:-1] + bins[1:]) / 2.
 
 mtr_means = results[:, :, 2]
 ihmtr_means = results[:, :, 3]
@@ -65,7 +69,7 @@ norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
 plot_init()
 fig, (ax1, ax2, cax) = plt.subplots(1, 3, gridspec_kw={"width_ratios":[1,1, 0.05]})
 for idx in range(mtr_means.shape[0]):
-    ax1.scatter(bins[:-1], mtr_means[idx, :], c=nb_voxels[idx, :], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1, label="Session " + str(idx + 1))
+    ax1.scatter(mid_bins, mtr_means[idx, :], c=nb_voxels[idx, :], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1, label="Session " + str(idx + 1))
 ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
 if ratios:
     ax1.set_ylabel('MTR mean')
@@ -74,7 +78,7 @@ elif sats:
     ax1.set_ylabel('MTsat mean')
     ax1.set_title('MTsat vs Angle')
 for idx in range(ihmtr_means.shape[0]):
-    colorbar = ax2.scatter(bins[:-1], ihmtr_means[idx, :], c=nb_voxels[idx, :], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1, label="Session " + str(idx + 1))
+    colorbar = ax2.scatter(mid_bins, ihmtr_means[idx, :], c=nb_voxels[idx, :], cmap='Greys', norm=norm, edgecolors="C" + str(idx), linewidths=1, label="Session " + str(idx + 1))
 ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
 if ratios:
     ax2.set_ylabel('ihMTR mean')
@@ -86,6 +90,5 @@ ax2.legend()
 fig.colorbar(colorbar, cax=cax, label="Voxel count")
 fig.tight_layout()
 # plt.show()
-output = output_name + "_" + str(i) + "_degrees_range" + ".png"
-plt.savefig(output, dpi=300)
+plt.savefig(output_name, dpi=300)
 plt.close()
