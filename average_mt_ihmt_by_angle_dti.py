@@ -38,6 +38,7 @@ ihmtr_nifti = Path(argv[4])
 wm_mask_nifti = Path(argv[5])
 nufo_nifti = Path(argv[6])
 output_choice = argv[7]
+# rd_nifti = Path(argv[8])
                      
 # Select MTR and ihMTR or MTsat and ihMTsat
 if output_choice == "ratios":
@@ -54,6 +55,7 @@ fa_img = nib.load(str(fa_nifti))
 wm_mask_img = nib.load(str(wm_mask_nifti))
 e1_img = nib.load(str(e1_nifti))
 nufo_img = nib.load(str(nufo_nifti))
+# rd_img = nib.load(str(rd_nifti))
 
 mtr_data = mtr_img.get_fdata()
 ihmtr_data = ihmtr_img.get_fdata()
@@ -61,15 +63,16 @@ fa_data = fa_img.get_fdata()
 wm_mask_data = wm_mask_img.get_fdata()
 e1_data = e1_img.get_fdata()
 nufo_data = nufo_img.get_fdata()
+# rd_data = rd_img.get_fdata()
 
 sub_ses_dir = Path(fa_nifti.parent.name)
 if not sub_ses_dir.is_dir():
     sub_ses_dir.mkdir()
 
 bins_width = [1, 3, 5, 10]
-fa_thrs = [0.7, 0.6, 0.5]
+# fa_thrs = [0.7, 0.6, 0.5]
 # bins_width = [1]
-# fa_thrs = [0.5]
+fa_thrs = [0.5]
 
 for j in bins_width: # width of the angle bins
 
@@ -92,7 +95,7 @@ for j in bins_width: # width of the angle bins
 
             # Apply the WM mask and FA threshold
             if l:
-                wm_mask_bool = (wm_mask_data > 0.9) & (fa_data > fa_thr) & (nufo_data == 1)
+                wm_mask_bool = (wm_mask_data > 0.9) & (fa_data > fa_thr) & (nufo_data == 1) # & (rd_data > 5e-4) test rd thr # & (fa_data < 0.7) test upper fa thr
             else:
                 wm_mask_bool = (wm_mask_data > 0.9) & (fa_data > fa_thr)
 
@@ -113,10 +116,10 @@ for j in bins_width: # width of the angle bins
             results = np.column_stack((bins[:-1], bins[1:], mtr_means[k], ihmtr_means[k], nb_voxels[k]))
             txt_name = "results_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + ".txt"
             txt_path = sub_ses_dir / txt_name
-            if ratios:
-                np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTR_mean\tihMTR_mean\tNb_voxels')
-            elif sats:
-                np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTsat_mean\tihMTsat_mean\tNb_voxels')
+            # if ratios:
+            #     np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTR_mean\tihMTR_mean\tNb_voxels')
+            # elif sats:
+            #     np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTsat_mean\tihMTsat_mean\tNb_voxels')
 
             # Plot the results
             max_count = np.max(nb_voxels[k, :])
@@ -141,10 +144,10 @@ for j in bins_width: # width of the angle bins
                 ax2.set_title('ihMTsat vs Angle')
             fig.colorbar(colorbar, cax=cax, label="Voxel count")
             fig.tight_layout()
-            # plt.show()
+            plt.show()
             fig_name = "plot_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + ".png"
             fig_path = sub_ses_dir / fig_name
-            plt.savefig(fig_path, dpi=300)
+            # plt.savefig(fig_path, dpi=300)
             plt.close()
 
         # Plot the results
@@ -176,5 +179,5 @@ for j in bins_width: # width of the angle bins
         # plt.show()
         fig_name = "plot_all_FA_thr_" + str(j) + "_degrees_bins_NuFo_" + str(l) + ".png"
         fig_path = sub_ses_dir / fig_name
-        plt.savefig(fig_path, dpi=300)
+        # plt.savefig(fig_path, dpi=300)
         plt.close()
