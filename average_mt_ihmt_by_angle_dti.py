@@ -83,7 +83,7 @@ for j in bins_width: # width of the angle bins
     cos_theta = np.dot(e1_data[..., :3], b0_field)
     theta = np.arccos(cos_theta) * 180 / np.pi
 
-    for l in [False]: # use NuFo or not
+    for l in [True]: # use NuFo or not
         mtr_means = np.zeros((len(fa_thrs), len(bins) - 1))
         ihmtr_means = np.zeros((len(fa_thrs), len(bins) - 1))
         nb_voxels = np.zeros((len(fa_thrs), len(bins) - 1))
