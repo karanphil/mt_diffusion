@@ -126,14 +126,23 @@ for w in bins_width: # width of the angle bins
     nb_voxels_diag = np.diagonal(nb_voxels)
 
     # Save the results to a text file
-    results = np.column_stack((bins[:-1], bins[1:], mtr_means, ihmtr_means, nb_voxels))
-    txt_name = "results_" + str(w) + "_degrees_bins.txt"
-    txt_path = sub_ses_dir / txt_name
-    # !!!!!!!! À sauver en disant 3D ou 2 fibers ou ailleurs!!!!!!!
-    # if ratios:
-    #     np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTR_mean\tihMTR_mean\tNb_voxels')
-    # elif sats:
-    #     np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTsat_mean\tihMTsat_mean\tNb_voxels')
+    results_mt = np.column_stack((bins[:-1], bins[1:], mtr_means))
+    results_ihmt = np.column_stack((bins[:-1], bins[1:], ihmtr_means))
+    results_vc = np.column_stack((bins[:-1], bins[1:], nb_voxels))
+    txt_name_mt = "2fibers_mt_results_" + str(w) + "_degrees_bins.txt"
+    txt_name_ihmt = "2fibers_ihmt_results_" + str(w) + "_degrees_bins.txt"
+    txt_name_vc = "2fibers_vc_results_" + str(w) + "_degrees_bins.txt"
+    txt_path_mt = sub_ses_dir / txt_name_mt
+    txt_path_ihmt = sub_ses_dir / txt_name_ihmt
+    txt_path_vc = sub_ses_dir / txt_name_vc
+    if ratios:
+        np.savetxt(str(txt_path_mt), results_mt, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTR_mean')
+        np.savetxt(str(txt_path_ihmt), results_ihmt, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tihMTR_mean')
+        np.savetxt(str(txt_path_vc), results_vc, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tNb_voxels')
+    elif sats:
+        np.savetxt(str(txt_path_mt), results_mt, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTsat_mean')
+        np.savetxt(str(txt_path_ihmt), results_ihmt, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tihMTsat_mean')
+        np.savetxt(str(txt_path_vc), results_vc, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tNb_voxels')
 
     # Plot diagonal
     max_count = np.max(nb_voxels_diag)
@@ -158,10 +167,10 @@ for w in bins_width: # width of the angle bins
         ax2.set_title('ihMTsat vs Angle')
     fig.colorbar(colorbar, cax=cax, label="Voxel count")
     fig.tight_layout()
-    plt.show()
-    fig_name = "plot_" + str(j) + "_degrees_bins.png"
+    # plt.show()
+    fig_name = "2fibers_diagonal_plot_" + str(w) + "_degrees_bins.png"
     fig_path = sub_ses_dir / fig_name
-    # plt.savefig(fig_path, dpi=300)
+    plt.savefig(fig_path, dpi=300)
     plt.close()
 
     # Plot fiber 2 for fiber 1 fixed.
@@ -187,22 +196,46 @@ for w in bins_width: # width of the angle bins
         ax2.set_title('ihMTsat vs Angle')
     ax2.legend()
     fig.tight_layout()
-    plt.show()
-    fig_name = "plot_" + str(j) + "_degrees_bins.png"
+    # plt.show()
+    fig_name = "2fibers_2D_plot_" + str(w) + "_degrees_bins.png"
     fig_path = sub_ses_dir / fig_name
-    # plt.savefig(fig_path, dpi=300)
+    plt.savefig(fig_path, dpi=300)
     plt.close()
 
     # Plot the results
-    print("Step 3:")
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     X, Y = np.meshgrid(mid_bins, mid_bins)
-    ax.plot_surface(X, Y, mtr_means)
+    ax.plot_surface(X, Y, mtr_means, cmap="jet")
     ax.set_xlabel('Angle of fiber 1')
     ax.set_ylabel('Angle of fiber 2')
     ax.set_zlabel('MTR mean')
     ax.set_title('MTR vs Angle')
     fig.tight_layout()
-    plt.show()
+    # plt.show()
+    views = np.array([[30, -135], [30, -45], [10, -90], [10, 0]])
+    for v, view in enumerate(views[:]):
+        fig_name = "2fibers_3D_MTR_plot_" + str(w) + "_degrees_bins_view_" + str(v) + ".png"
+        fig_path = sub_ses_dir / fig_name
+        ax.view_init(view[0], view[1])
+        plt.savefig(fig_path, dpi=300)
+    plt.close()
+
+    # Plot the results
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    X, Y = np.meshgrid(mid_bins, mid_bins)
+    ax.plot_surface(X, Y, ihmtr_means, cmap="jet")
+    ax.set_xlabel('Angle of fiber 1')
+    ax.set_ylabel('Angle of fiber 2')
+    ax.set_zlabel('ihMTR mean')
+    ax.set_title('ihMTR vs Angle')
+    fig.tight_layout()
+    # plt.show()
+    views = np.array([[30, 45], [30, -45], [10, -90], [10, 0]])
+    for v, view in enumerate(views[:]):
+        fig_name = "2fibers_3D_ihMTR_plot_" + str(w) + "_degrees_bins_view_" + str(v) + ".png"
+        fig_path = sub_ses_dir / fig_name
+        ax.view_init(view[0], view[1])
+        plt.savefig(fig_path, dpi=300)
     plt.close()
