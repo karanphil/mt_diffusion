@@ -74,6 +74,11 @@ fa_thrs = [0.7, 0.6, 0.5]
 # bins_width = [1]
 # fa_thrs = [0.5]
 
+# Find the direction of the B0 field
+rot = fa_img.affine[0:3, 0:3]
+z_axis = np.array([0, 0, 1])
+b0_field = np.dot(rot.T, z_axis)
+
 for j in bins_width: # width of the angle bins
 
     # Define the bins
@@ -82,7 +87,6 @@ for j in bins_width: # width of the angle bins
     mid_bins = (bins[:-1] + bins[1:]) / 2.
 
     # Calculate the angle between e1 and B0 field
-    b0_field = np.array([0, 0, 1])
     cos_theta = np.dot(e1_data[..., :3], b0_field)
     theta = np.arccos(cos_theta) * 180 / np.pi
 
