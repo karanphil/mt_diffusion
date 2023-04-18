@@ -68,8 +68,13 @@ for i in range(nb_peaks):
         peaks_data[..., i * 3 + j] /= peaks_norm[..., i]
 
 # bins_width = [1, 3]
-bins_width = [10]
+bins_width = [5]
 norm_thr = 0.7
+
+# Find the direction of the B0 field
+rot = peaks_img.affine[0:3, 0:3]
+z_axis = np.array([0, 0, 1])
+b0_field = np.dot(rot.T, z_axis)
 
 for w in bins_width: # width of the angle bins
 
@@ -79,7 +84,6 @@ for w in bins_width: # width of the angle bins
     mid_bins = (bins[:-1] + bins[1:]) / 2.
 
     # Calculate the angle between e1 and B0 field
-    b0_field = np.array([0, 0, 1])
     cos_theta_f1 = np.dot(peaks_data[..., 0:3], b0_field)
     theta_f1 = np.arccos(cos_theta_f1) * 180 / np.pi
     cos_theta_f2 = np.dot(peaks_data[..., 3:6], b0_field)

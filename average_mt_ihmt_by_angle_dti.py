@@ -120,10 +120,10 @@ for j in bins_width: # width of the angle bins
             results = np.column_stack((bins[:-1], bins[1:], mtr_means[k], ihmtr_means[k], nb_voxels[k]))
             txt_name = "results_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + ".txt"
             txt_path = sub_ses_dir / txt_name
-            if ratios:
-                np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTR_mean\tihMTR_mean\tNb_voxels')
-            elif sats:
-                np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTsat_mean\tihMTsat_mean\tNb_voxels')
+            # if ratios:
+            #     np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTR_mean\tihMTR_mean\tNb_voxels')
+            # elif sats:
+            #     np.savetxt(str(txt_path), results, fmt='%10.5f', delimiter='\t', header='Angle_min\tAngle_max\tMTsat_mean\tihMTsat_mean\tNb_voxels')
 
             # Plot the results
             max_count = np.max(nb_voxels[k, :])
@@ -151,7 +151,7 @@ for j in bins_width: # width of the angle bins
             # plt.show()
             fig_name = "plot_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + ".png"
             fig_path = sub_ses_dir / fig_name
-            plt.savefig(fig_path, dpi=300)
+            # plt.savefig(fig_path, dpi=300)
             plt.close()
 
         # Plot the results
@@ -183,5 +183,5 @@ for j in bins_width: # width of the angle bins
         # plt.show()
         fig_name = "plot_all_FA_thr_" + str(j) + "_degrees_bins_NuFo_" + str(l) + ".png"
         fig_path = sub_ses_dir / fig_name
-        plt.savefig(fig_path, dpi=300)
+        # plt.savefig(fig_path, dpi=300)
         plt.close()
