@@ -150,13 +150,14 @@ def main():
     if args.in_mtr and args.in_ihmtr:
         output_name = "single_fiber_mtr_ihmtr_plot" + files_basename + ".png"
         output_path = Path(args.out_folder / output_name)
-        plot_means(bins, mtr_means, ihmtr_means, nb_voxels,
-                   str(output_path), input_dtype="ratios")
+        plot_means(bins, mtr_means, ihmtr_means, nb_voxels, str(output_path),
+                   mtr_poly, ihmtr_poly, input_dtype="ratios")
     if args.in_mtsat and args.in_ihmtsat:
         output_name = "single_fiber_mtsat_ihmtsat_plot" + files_basename + ".png"
         output_path = Path(args.out_folder / output_name)
         plot_means(bins, mtsat_means, ihmtsat_means, nb_voxels,
-                   str(output_path), input_dtype="sats")
+                   str(output_path), mtsat_poly, ihmtsat_poly,
+                   input_dtype="sats")
 
     print("Saving single fiber masks.")
     save_masks_by_angle_bins(e1, fa, wm_mask, affine,

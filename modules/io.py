@@ -42,8 +42,8 @@ def plot_init():
     # plt.rcParams['mathtext.default']='regular'
 
 
-def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
-               input_dtype="ratios"):
+def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name, mt_poly,
+               ihmt_poly, input_dtype="ratios"):
     max_count = np.max(nb_voxels)
     norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
     mid_bins = (bins[:-1] + bins[1:]) / 2.
@@ -52,6 +52,7 @@ def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
                                         gridspec_kw={"width_ratios":[1,1, 0.05]})
     ax1.scatter(mid_bins, mt_means, c=nb_voxels, cmap='Greys', norm=norm,
                 edgecolors='black', linewidths=1)
+    ax1.plot(mid_bins, mt_poly(mid_bins), "--g")
     ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
     if input_dtype=="ratios":
         ax1.set_ylabel('MTR mean')
@@ -61,6 +62,7 @@ def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
         ax1.set_title('MTsat vs Angle')
     colorbar = ax2.scatter(mid_bins, ihmt_means, c=nb_voxels, cmap='Greys',
                            norm=norm, edgecolors='black', linewidths=1)
+    ax2.plot(mid_bins, ihmt_poly(mid_bins), "--g")
     ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
     if input_dtype=="ratios":
         ax2.set_ylabel('ihMTR mean')
