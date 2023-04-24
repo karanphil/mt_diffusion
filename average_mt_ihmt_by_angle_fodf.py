@@ -68,7 +68,7 @@ for i in range(nb_peaks):
         peaks_data[..., i * 3 + j] /= peaks_norm[..., i]
 
 # bins_width = [1, 3]
-bins_width = [5]
+bins_width = [10]
 norm_thr = 0.7
 
 # Find the direction of the B0 field
