@@ -50,3 +50,10 @@ def compute_single_fiber_averages(peaks, fa, wm_mask, affine, mtr=None,
                 ihmtsat_means[i] = np.mean(ihmtsat[mask])
 
     return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels
+
+
+def fit_single_fiber_results(bins, means, poly_order=8):
+    mid_bins = (bins[:-1] + bins[1:]) / 2.
+    fit = np.polyfit(mid_bins, means, poly_order)
+    polynome = np.poly1d(fit)
+    return polynome

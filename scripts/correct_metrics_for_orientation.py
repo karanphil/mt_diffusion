@@ -3,7 +3,8 @@ import nibabel as nib
 import numpy as np
 from pathlib import Path
 
-from modules.utils import compute_single_fiber_averages
+from modules.utils import (compute_single_fiber_averages,
+                           fit_single_fiber_results)
 from modules.io import save_txt, plot_means, save_masks_by_angle_bins
 
 from scilpy.io.utils import (add_overwrite_arg, add_processes_arg,
@@ -42,6 +43,8 @@ def _build_arg_parser():
                    help='Value of FA threshold [%(default)s].')
     p.add_argument('--bin_width', default=10,
                    help='Value of the bin width.')
+    p.add_argument('--poly_order', default=8,
+                   help='Order of the polynome to fit [%(default)s].')
     add_overwrite_arg(p)
     add_processes_arg(p)
     return p
@@ -130,6 +133,18 @@ def main():
         output_path = Path(args.out_folder / output_name)
         save_txt(bins, mtsat_means, ihmtsat_means, nb_voxels,
                  str(output_path), input_dtype="sats")
+        
+    print("Fitting the results.")
+    if args.in_mtr and args.in_ihmtr:
+        mtr_poly = fit_single_fiber_results(bins, mtr_means,
+                                            poly_order=args.poly_order)
+        ihmtr_poly = fit_single_fiber_results(bins, ihmtr_means,
+                                              poly_order=args.poly_order)
+    if args.in_mtsat and args.in_ihmtsat:
+        mtsat_poly = fit_single_fiber_results(bins, mtsat_means,
+                                            poly_order=args.poly_order)
+        ihmtsat_poly = fit_single_fiber_results(bins, ihmtsat_means,
+                                              poly_order=args.poly_order)
 
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:
