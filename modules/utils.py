@@ -111,28 +111,30 @@ def compute_crossing_fibers_averages(peaks, wm_mask, affine, nufo, mtr=None,
     
     for i in range(len(bins) - 1):
         for j in range(i):
-            # Not sure if that part is correct...
-            if mtr_means[i, j] is not None and mtr_means[j, i] is not None:
-                mtr_means[i, j] = (mtr_means[i, j] + mtr_means[j, i]) / 2
-                mtr_means[j, i] = mtr_means[i, j]
-            if ihmtr_means[i, j] is not None and ihmtr_means[j, i] is not None:
-                ihmtr_means[i, j] = (ihmtr_means[i, j] + ihmtr_means[j, i]) / 2
-                ihmtr_means[j, i] = ihmtr_means[i, j]
-            if mtsat_means[i, j] is not None and mtsat_means[j, i] is not None:
-                mtsat_means[i, j] = (mtsat_means[i, j] + mtsat_means[j, i]) / 2
-                mtsat_means[j, i] = mtsat_means[i, j]
-            if ihmtsat_means[i, j] is not None and ihmtsat_means[j, i] is not None:
-                ihmtsat_means[i, j] = (ihmtsat_means[i, j] + ihmtsat_means[j, i]) / 2
-                ihmtsat_means[j, i] = ihmtsat_means[i, j]
+            mtr_means[i, j] = (mtr_means[i, j] + mtr_means[j, i]) / 2
+            mtr_means[j, i] = mtr_means[i, j]
+            ihmtr_means[i, j] = (ihmtr_means[i, j] + ihmtr_means[j, i]) / 2
+            ihmtr_means[j, i] = ihmtr_means[i, j]
+            mtsat_means[i, j] = (mtsat_means[i, j] + mtsat_means[j, i]) / 2
+            mtsat_means[j, i] = mtsat_means[i, j]
+            ihmtsat_means[i, j] = (ihmtsat_means[i, j] + ihmtsat_means[j, i]) / 2
+            ihmtsat_means[j, i] = ihmtsat_means[i, j]
             nb_voxels[i, j] = nb_voxels[i, j] + nb_voxels[j, i]
             nb_voxels[j, i] = nb_voxels[i, j]
 
     return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels
 
 
+def extend_measure(bins, measure):
+    new_bins = np.concatenate((np.flip(-bins[1:6]), bins, np.flip(bins[-6:-1])))
+    new_measure = np.concatenate((np.flip(measure[1:6]), measure, np.flip(measure[-6:-1])))
+    return new_bins, new_measure
+
+
 def fit_single_fiber_results(bins, means, poly_order=8):
-    mid_bins = (bins[:-1] + bins[1:]) / 2.
-    fit = np.polyfit(mid_bins, means, poly_order)
+    new_bins, new_means = extend_measure(bins, means)
+    mid_bins = (new_bins[:-1] + new_bins[1:]) / 2.
+    fit = np.polyfit(mid_bins, new_means, poly_order)
     polynome = np.poly1d(fit)
     return polynome
 
