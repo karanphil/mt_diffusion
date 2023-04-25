@@ -42,9 +42,9 @@ def _build_arg_parser():
 
     p.add_argument('--fa_thr', default=0.5,
                    help='Value of FA threshold [%(default)s].')
-    p.add_argument('--bin_width', default=10,
+    p.add_argument('--bin_width', default=1,
                    help='Value of the bin width.')
-    p.add_argument('--poly_order', default=8,
+    p.add_argument('--poly_order', default=10,
                    help='Order of the polynome to fit [%(default)s].')
     add_overwrite_arg(p)
     # add_processes_arg(p)
@@ -155,7 +155,7 @@ def main():
     print("Saving single fiber masks.")
     save_masks_by_angle_bins(e1, fa, wm_mask, affine,
                              out_folder, nufo=nufo,
-                             bin_width=args.bin_width, fa_thr=args.fa_thr)
+                             bin_width=10, fa_thr=args.fa_thr)
     
     print("Correcting measures.")
     if args.in_mtr:

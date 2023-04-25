@@ -3,7 +3,7 @@ import numpy as np
 
 def compute_single_fiber_averages(peaks, fa, wm_mask, affine, mtr=None,
                                   ihmtr=None, mtsat=None, ihmtsat=None,
-                                  nufo=None, bin_width=10, fa_thr=0.5):
+                                  nufo=None, bin_width=1, fa_thr=0.5):
     # Find the direction of the B0 field
     rot = affine[0:3, 0:3]
     z_axis = np.array([0, 0, 1])
