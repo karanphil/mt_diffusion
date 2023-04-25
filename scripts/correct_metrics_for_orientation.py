@@ -8,8 +8,7 @@ from modules.utils import (compute_single_fiber_averages,
                            correct_measure)
 from modules.io import save_txt, plot_means, save_masks_by_angle_bins
 
-from scilpy.io.utils import (add_overwrite_arg, add_processes_arg,
-                             assert_inputs_exist, assert_outputs_exist)
+from scilpy.io.utils import (add_overwrite_arg)
 
 
 def _build_arg_parser():
@@ -44,10 +43,9 @@ def _build_arg_parser():
                    help='Value of FA threshold [%(default)s].')
     p.add_argument('--bin_width', default=1,
                    help='Value of the bin width.')
-    p.add_argument('--poly_order', default=10,
+    p.add_argument('--poly_order', default=8,
                    help='Order of the polynome to fit [%(default)s].')
     add_overwrite_arg(p)
-    # add_processes_arg(p)
     return p
 
 

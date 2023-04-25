@@ -4,6 +4,7 @@ import numpy as np
 def compute_single_fiber_averages(peaks, fa, wm_mask, affine, mtr=None,
                                   ihmtr=None, mtsat=None, ihmtsat=None,
                                   nufo=None, bin_width=1, fa_thr=0.5):
+    peaks, _ = normalize_peaks(np.copy(peaks))
     # Find the direction of the B0 field
     rot = affine[0:3, 0:3]
     z_axis = np.array([0, 0, 1])
@@ -55,12 +56,7 @@ def compute_single_fiber_averages(peaks, fa, wm_mask, affine, mtr=None,
 def compute_crossing_fibers_averages(peaks, wm_mask, affine, nufo, mtr=None,
                                      ihmtr=None, mtsat=None, ihmtsat=None,
                                      bin_width=10, norm_thr=0.7):
-    nb_peaks = int(peaks.shape[-1] / 3)
-    peaks_norm = np.zeros((peaks.shape[:-1] + (nb_peaks,)))
-    for i in range(nb_peaks):
-        peaks_norm[..., i] = np.linalg.norm(peaks[..., i * 3 : (i + 1) * 3], axis=-1)
-        for j in range(3):
-            peaks[..., i * 3 + j] /= peaks_norm[..., i]
+    peaks, peaks_norm = normalize_peaks(np.copy(peaks))
 
     # Find the direction of the B0 field
     rot = affine[0:3, 0:3]
@@ -142,6 +138,7 @@ def fit_single_fiber_results(bins, means, poly_order=8):
 
 
 def normalize_peaks(peaks):
+    # Attention, il faut passer peaks en copie!!!
     nb_peaks = int(peaks.shape[-1] / 3)
     peaks_norm = np.zeros((peaks.shape[:-1] + (nb_peaks,)))
     for i in range(nb_peaks):
@@ -159,7 +156,7 @@ def compute_corrections(polynome, angle, fraction):
 
 
 def correct_measure(peaks, measure, affine, wm_mask, polynome, peak_frac_thr=0):
-    peaks, peaks_norm = normalize_peaks(peaks)
+    peaks, peaks_norm = normalize_peaks(np.copy(peaks))
     peaks_sum = np.sum(peaks_norm, axis=-1)
     peaks_sum = np.repeat(peaks_sum.reshape(peaks_sum.shape + (1,)),
                           peaks_norm.shape[-1], axis=-1)
