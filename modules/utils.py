@@ -158,7 +158,7 @@ def compute_corrections(polynome, angle, fraction):
     return correction
 
 
-def correct_measure(peaks, measure, affine, wm_mask, polynome):
+def correct_measure(peaks, measure, affine, wm_mask, polynome, peak_frac_thr=0):
     peaks, peaks_norm = normalize_peaks(peaks)
     peaks_sum = np.sum(peaks_norm, axis=-1)
     peaks_sum = np.repeat(peaks_sum.reshape(peaks_sum.shape + (1,)),
@@ -179,7 +179,7 @@ def correct_measure(peaks, measure, affine, wm_mask, polynome):
     wm_mask_bool = (wm_mask > 0.9)
     # Calculate the angle between e1 and B0 field for each peak
     for i in range(peaks_angles.shape[-1]):
-        mask = wm_mask_bool & (peaks_fraction[..., i] > 0)
+        mask = wm_mask_bool & (peaks_fraction[..., i] > peak_frac_thr)
         cos_theta = np.dot(peaks[mask, i*3:(i+1)*3], b0_field)
         theta = np.arccos(cos_theta) * 180 / np.pi
         peaks_angles[mask, i] = np.abs(theta//90 * 90 - theta%90) % 180

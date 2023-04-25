@@ -159,10 +159,29 @@ def main():
     
     print("Correcting measures.")
     if args.in_mtr:
-        corrected_mtr = correct_measure(peaks, mtr, affine, wm_mask, mtr_poly)
-        corrected_mtr_name = "mtr_corrected.nii.gz"
-        corrected_mtr_path = out_folder / corrected_mtr_name
-        nib.save(nib.Nifti1Image(corrected_mtr, affine), corrected_mtr_path)
+        corrected_mtr = correct_measure(peaks, mtr, affine, wm_mask, mtr_poly,
+                                        peak_frac_thr=0.1)
+        corrected_name = "mtr_corrected.nii.gz"
+        corrected_path = out_folder / corrected_name
+        nib.save(nib.Nifti1Image(corrected_mtr, affine), corrected_path)
+    if args.in_ihmtr:
+        corrected_ihmtr = correct_measure(peaks, ihmtr, affine, wm_mask,
+                                          ihmtr_poly, peak_frac_thr=0.1)
+        corrected_name = "ihmtr_corrected.nii.gz"
+        corrected_path = out_folder / corrected_name
+        nib.save(nib.Nifti1Image(corrected_ihmtr, affine), corrected_path)
+    if args.in_mtsat:
+        corrected_mtsat = correct_measure(peaks, mtsat, affine, wm_mask,
+                                          mtsat_poly, peak_frac_thr=0.1)
+        corrected_name = "mtsat_corrected.nii.gz"
+        corrected_path = out_folder / corrected_name
+        nib.save(nib.Nifti1Image(corrected_mtsat, affine), corrected_path)
+    if args.in_ihmtr:
+        corrected_ihmtsat = correct_measure(peaks, ihmtsat, affine, wm_mask,
+                                          ihmtsat_poly, peak_frac_thr=0.1)
+        corrected_name = "ihmtsat_corrected.nii.gz"
+        corrected_path = out_folder / corrected_name
+        nib.save(nib.Nifti1Image(corrected_ihmtsat, affine), corrected_path)
 
 
 if __name__ == "__main__":
