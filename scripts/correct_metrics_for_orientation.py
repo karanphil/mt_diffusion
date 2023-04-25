@@ -4,7 +4,8 @@ import numpy as np
 from pathlib import Path
 
 from modules.utils import (compute_single_fiber_averages,
-                           fit_single_fiber_results)
+                           fit_single_fiber_results,
+                           correct_measure)
 from modules.io import save_txt, plot_means, save_masks_by_angle_bins
 
 from scilpy.io.utils import (add_overwrite_arg, add_processes_arg,
@@ -21,7 +22,7 @@ def _build_arg_parser():
     p.add_argument('in_wm_mask',
                    help='Path of the WM mask.')
     p.add_argument('out_folder',
-                   help='Path of the output folder for txt, png and masks.')
+                   help='Path of the output folder for txt, png, masks and measures.')
     
     p.add_argument('--in_e1',
                    help='Path to the principal eigenvector of DTI.')
@@ -77,10 +78,13 @@ def main():
     peaks_img = nib.load(args.in_peaks)
     fa_img = nib.load(args.in_fa)
     wm_mask_img = nib.load(args.in_wm_mask)
+
     peaks = peaks_img.get_fdata()
     fa = fa_img.get_fdata()
     wm_mask = wm_mask_img.get_fdata()
+
     affine = peaks_img.affine
+
     if args.e1:
         e1_img = nib.load(args.in_e1)
         e1 = e1_img.get_fdata()
@@ -163,6 +167,13 @@ def main():
     save_masks_by_angle_bins(e1, fa, wm_mask, affine,
                              args.out_folder, nufo=nufo,
                              bin_width=args.bin_width, fa_thr=args.fa_thr)
+    
+    print("Correcting measures.")
+    if args.mtr:
+        corrected_mtr = correct_measure(peaks, mtr, affine, wm_mask, mtr_poly)
+        corrected_mtr_name = "mtr_corrected.nii.gz"
+        corrected_mtr_path = Path(args.out_folder / corrected_mtr_name)
+        nib.save(nib.Nifti1Image(corrected_mtr, affine), corrected_mtr_path)
 
 
 if __name__ == "__main__":
