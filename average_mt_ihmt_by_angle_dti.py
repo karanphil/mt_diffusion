@@ -69,10 +69,10 @@ sub_ses_dir = Path(fa_nifti.parent.name)
 if not sub_ses_dir.is_dir():
     sub_ses_dir.mkdir()
 
-bins_width = [1, 3, 5, 10]
-fa_thrs = [0.7, 0.6, 0.5]
-# bins_width = [1]
-# fa_thrs = [0.5]
+# bins_width = [1, 3, 5, 10]
+# fa_thrs = [0.7, 0.6, 0.5]
+bins_width = [1]
+fa_thrs = [0.5]
 
 # Find the direction of the B0 field
 rot = fa_img.affine[0:3, 0:3]
@@ -90,7 +90,7 @@ for j in bins_width: # width of the angle bins
     cos_theta = np.dot(e1_data[..., :3], b0_field)
     theta = np.arccos(cos_theta) * 180 / np.pi
 
-    for l in [False, True]: # use NuFo or not
+    for l in [True]: # use NuFo or not
         mtr_means = np.zeros((len(fa_thrs), len(bins) - 1))
         ihmtr_means = np.zeros((len(fa_thrs), len(bins) - 1))
         nb_voxels = np.zeros((len(fa_thrs), len(bins) - 1))
@@ -183,5 +183,5 @@ for j in bins_width: # width of the angle bins
         # plt.show()
         fig_name = "plot_all_FA_thr_" + str(j) + "_degrees_bins_NuFo_" + str(l) + ".png"
         fig_path = sub_ses_dir / fig_name
-        plt.savefig(fig_path, dpi=300)
+        # plt.savefig(fig_path, dpi=300)
         plt.close()
