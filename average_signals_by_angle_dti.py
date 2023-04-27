@@ -39,7 +39,7 @@ sp_nifti = Path(argv[5])
 sn_nifti = Path(argv[6])
 sdualpn_nifti = Path(argv[7])
 sdualnp_nifti = Path(argv[8])
-                     
+ref_nifti = Path(argv[9])                     
 
 # Load the data
 sp_img = nib.load(str(sp_nifti))
@@ -50,6 +50,7 @@ fa_img = nib.load(str(fa_nifti))
 wm_mask_img = nib.load(str(wm_mask_nifti))
 e1_img = nib.load(str(e1_nifti))
 nufo_img = nib.load(str(nufo_nifti))
+ref_img = nib.load(str(ref_nifti))
 
 sp_data = sp_img.get_fdata()
 sn_data = sn_img.get_fdata()
@@ -59,6 +60,7 @@ fa_data = fa_img.get_fdata()
 wm_mask_data = wm_mask_img.get_fdata()
 e1_data = e1_img.get_fdata()
 nufo_data = nufo_img.get_fdata()
+ref_data = ref_img.get_fdata()
 
 sub_ses_dir = Path(fa_nifti.parent.name)
 if not sub_ses_dir.is_dir():
@@ -92,6 +94,7 @@ for j in bins_width: # width of the angle bins
         sdualpn_means = np.zeros((len(fa_thrs), len(bins) - 1))
         sdualnp_means = np.zeros((len(fa_thrs), len(bins) - 1))
         sdualpnnp_means = np.zeros((len(fa_thrs), len(bins) - 1))
+        ref_means = np.zeros((len(fa_thrs), len(bins) - 1))
         nb_voxels = np.zeros((len(fa_thrs), len(bins) - 1))
 
         for k, fa_thr in enumerate(fa_thrs): # FA threshold
@@ -115,6 +118,7 @@ for j in bins_width: # width of the angle bins
                     sdualpn_means[k, i] = None
                     sdualnp_means[k, i] = None
                     sdualpnnp_means[k, i] = None
+                    ref_means[k, i] = None
                 else:
                     sp_means[k, i] = np.mean(sp_data[mask])
                     sn_means[k, i] = np.mean(sn_data[mask])
@@ -122,6 +126,7 @@ for j in bins_width: # width of the angle bins
                     sdualpn_means[k, i] = np.mean(sdualpn_data[mask])
                     sdualnp_means[k, i] = np.mean(sdualnp_data[mask])
                     sdualpnnp_means[k, i] = np.mean((sdualpn_data[mask] + sdualnp_data[mask]) / 2)
+                    ref_means[k, i] = np.mean(ref_data[mask])
 
             # # Save the results to a text file
             # results = np.column_stack((bins[:-1], bins[1:], mtr_means[k], ihmtr_means[k], nb_voxels[k]))
@@ -140,21 +145,48 @@ for j in bins_width: # width of the angle bins
             # ax1.scatter(mid_bins, sp_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='green', linewidths=1)
             # ax1.scatter(mid_bins, sn_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='blue', linewidths=1)
             ax1.scatter(mid_bins, spn_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='blue', linewidths=1)
-            ax1.scatter(mid_bins, sdualpnnp_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='green', linewidths=1)
+            ax1.scatter(mid_bins, ref_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='green', linewidths=1)
             ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
             ax1.set_ylabel('S+- mean')
             ax1.set_title('S+- vs Angle')
             # ax2.scatter(mid_bins, sdualpn_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='green', linewidths=1)
             # ax2.scatter(mid_bins, sdualnp_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='blue', linewidths=1)
             # colorbar = ax2.scatter(mid_bins, sdualpnnp_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='red', linewidths=1)
-            colorbar = ax2.scatter(mid_bins, spn_means[k,:] - sdualpnnp_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='red', linewidths=1)
+            colorbar = ax2.scatter(mid_bins, (ref_means[k, :] - spn_means[k, :]) / ref_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='red', linewidths=1)
             ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
             ax2.set_ylabel('Sdual +-/-+ mean')
             ax2.set_title('Sdual +-/-+ vs Angle')
             fig.colorbar(colorbar, cax=cax, label="Voxel count")
             fig.tight_layout()
             # plt.show()
-            fig_name = "plot_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + "_Spn_vs_Sdualpn.png"
+            fig_name = "plot_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + "_Spn.png"
+            fig_path = sub_ses_dir / fig_name
+            plt.savefig(fig_path, dpi=300)
+            plt.close()
+
+            # Plot the results
+            max_count = np.max(nb_voxels[k, :])
+            norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
+            plot_init()
+            fig, (ax1, ax2, cax) = plt.subplots(1, 3, gridspec_kw={"width_ratios":[1,1, 0.05]})
+            # ax1.scatter(mid_bins, sp_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='green', linewidths=1)
+            # ax1.scatter(mid_bins, sn_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='blue', linewidths=1)
+            ax1.scatter(mid_bins, sdualpnnp_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='blue', linewidths=1)
+            ax1.scatter(mid_bins, ref_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='green', linewidths=1)
+            ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
+            ax1.set_ylabel('S+- mean')
+            ax1.set_title('S+- vs Angle')
+            # ax2.scatter(mid_bins, sdualpn_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='green', linewidths=1)
+            # ax2.scatter(mid_bins, sdualnp_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='blue', linewidths=1)
+            # colorbar = ax2.scatter(mid_bins, sdualpnnp_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='red', linewidths=1)
+            colorbar = ax2.scatter(mid_bins, (spn_means[k, :] - sdualpnnp_means[k, :]) / ref_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='red', linewidths=1)
+            ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
+            ax2.set_ylabel('Sdual +-/-+ mean')
+            ax2.set_title('Sdual +-/-+ vs Angle')
+            fig.colorbar(colorbar, cax=cax, label="Voxel count")
+            fig.tight_layout()
+            # plt.show()
+            fig_name = "plot_" + str(j) + "_degrees_bins_" + str(fa_thr) + "_FA_thr_NuFo_" + str(l) + "_Sdualpn.png"
             fig_path = sub_ses_dir / fig_name
             plt.savefig(fig_path, dpi=300)
             plt.close()
