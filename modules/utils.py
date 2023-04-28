@@ -126,7 +126,7 @@ def compute_crossing_fibers_averages(peaks, wm_mask, affine, nufo, mtr=None,
 
 
 def extend_measure(bins, measure):
-    new_bins = np.concatenate((np.flip(-bins[1:6]), bins, np.flip(bins[-6:-1])))
+    new_bins = np.concatenate((np.flip(-bins[1:6]), bins, 180 - np.flip(bins[-6:-1])))
     new_measure = np.concatenate((np.flip(measure[1:6]), measure, np.flip(measure[-6:-1])))
     return new_bins, new_measure
 
@@ -134,7 +134,8 @@ def extend_measure(bins, measure):
 def fit_single_fiber_results(bins, means, poly_order=8):
     new_bins, new_means = extend_measure(bins, means)
     mid_bins = (new_bins[:-1] + new_bins[1:]) / 2.
-    fit = np.polyfit(mid_bins, new_means, poly_order)
+    not_nan = np.isfinite(new_means)
+    fit = np.polyfit(mid_bins[not_nan], new_means[not_nan], poly_order)
     polynome = np.poly1d(fit)
     return polynome
 
@@ -157,12 +158,16 @@ def compute_corrections(polynome, angle, fraction):
     return correction
 
 
-def correct_measure(peaks, measure, affine, wm_mask, polynome, peak_frac_thr=0):
-    peaks, peaks_norm = normalize_peaks(np.copy(peaks))
-    peaks_sum = np.sum(peaks_norm, axis=-1)
-    peaks_sum = np.repeat(peaks_sum.reshape(peaks_sum.shape + (1,)),
-                          peaks_norm.shape[-1], axis=-1)
-    peaks_fraction = peaks_norm / peaks_sum
+def correct_measure(peaks, peak_values, measure, affine, wm_mask, polynome,
+                    peak_frac_thr=0):
+    wm_mask_bool = (wm_mask > 0.9)
+    # peaks, peaks_norm = normalize_peaks(np.copy(peaks))
+    # peaks_sum = np.sum(peaks_norm, axis=-1)
+    # peaks_sum = np.repeat(peaks_sum.reshape(peaks_sum.shape + (1,)),
+    #                       peaks_norm.shape[-1], axis=-1)
+    # peaks_fraction = peaks_norm / peaks_sum
+    max_peak_value = np.max(peak_values[wm_mask_bool])
+    peaks_fraction = peak_values / max_peak_value
     
     # Find the direction of the B0 field
     rot = affine[0:3, 0:3]
@@ -175,7 +180,6 @@ def correct_measure(peaks, measure, affine, wm_mask, polynome, peak_frac_thr=0):
     peaks_angles = np.empty((peaks_fraction.shape))
     peaks_angles[:] = np.nan
     corrections = np.zeros((peaks_fraction.shape))
-    wm_mask_bool = (wm_mask > 0.9)
     # Calculate the angle between e1 and B0 field for each peak
     for i in range(peaks_angles.shape[-1]):
         mask = wm_mask_bool & (peaks_fraction[..., i] > peak_frac_thr)

@@ -17,6 +17,8 @@ def _build_arg_parser():
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     p.add_argument('in_peaks',
                    help='Path of the fODF peaks.')
+    p.add_argument('in_peak_values',
+                   help='Path of the fODF peak values.')
     p.add_argument('in_fa',
                    help='Path of the FA.')
     p.add_argument('in_wm_mask',
@@ -66,10 +68,12 @@ def main():
 
     # Load the data
     peaks_img = nib.load(args.in_peaks)
+    peak_values_img = nib.load(args.in_peak_values)
     fa_img = nib.load(args.in_fa)
     wm_mask_img = nib.load(args.in_wm_mask)
 
     peaks = peaks_img.get_fdata()
+    peak_values = peak_values_img.get_fdata()
     fa = fa_img.get_fdata()
     wm_mask = wm_mask_img.get_fdata()
 
@@ -159,56 +163,60 @@ def main():
                              out_folder, nufo=nufo,
                              bin_width=10, fa_thr=args.fa_thr)
     
-    print("Computing crossing fibers average.")
-    bins_2f, mtr_2f_means, ihmtr_2f_means, mtsat_2f_means, ihmtsat_2f_means, \
-        nb_voxels_2f = compute_crossing_fibers_averages(peaks, wm_mask, affine,
-                                                        nufo, mtr=mtr,
-                                                        ihmtr=ihmtr,
-                                                        mtsat=mtsat,
-                                                        ihmtsat=ihmtsat,
-                                                        bin_width=10,
-                                                        norm_thr=args.norm_thr)
+    # print("Computing crossing fibers average.")
+    # bins_2f, mtr_2f_means, ihmtr_2f_means, mtsat_2f_means, ihmtsat_2f_means, \
+    #     nb_voxels_2f = compute_crossing_fibers_averages(peaks, wm_mask, affine,
+    #                                                     nufo, mtr=mtr,
+    #                                                     ihmtr=ihmtr,
+    #                                                     mtsat=mtsat,
+    #                                                     ihmtsat=ihmtsat,
+    #                                                     bin_width=10,
+    #                                                     norm_thr=args.norm_thr)
     
-    mtr_2f_means_diag = np.diagonal(mtr_2f_means)
-    ihmtr_2f_means_diag = np.diagonal(ihmtr_2f_means)
-    mtsat_2f_means_diag = np.diagonal(mtsat_2f_means)
-    ihmtsat_2f_means_diag = np.diagonal(ihmtsat_2f_means)
-    nb_voxels_2f_diag = np.diagonal(nb_voxels_2f)
+    # mtr_2f_means_diag = np.diagonal(mtr_2f_means)
+    # ihmtr_2f_means_diag = np.diagonal(ihmtr_2f_means)
+    # mtsat_2f_means_diag = np.diagonal(mtsat_2f_means)
+    # ihmtsat_2f_means_diag = np.diagonal(ihmtsat_2f_means)
+    # nb_voxels_2f_diag = np.diagonal(nb_voxels_2f)
     
-    print("Saving results as plots.")
-    if args.in_mtr and args.in_ihmtr:
-        output_name = "double_fibers_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
-        output_path = out_folder / output_name
-        plot_means(bins_2f, mtr_2f_means_diag, ihmtr_2f_means_diag,
-                   nb_voxels_2f_diag, str(output_path), input_dtype="ratios")
-    if args.in_mtsat and args.in_ihmtsat:
-        output_name = "double_fibers_mtsat_ihmtsat_diagonal_plot" + files_basename + ".png"
-        output_path = out_folder / output_name
-        plot_means(bins_2f, mtsat_2f_means_diag, ihmtsat_2f_means_diag,
-                   nb_voxels_2f_diag, str(output_path), input_dtype="sats")
+    # print("Saving results as plots.")
+    # if args.in_mtr and args.in_ihmtr:
+    #     output_name = "double_fibers_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
+    #     output_path = out_folder / output_name
+    #     plot_means(bins_2f, mtr_2f_means_diag, ihmtr_2f_means_diag,
+    #                nb_voxels_2f_diag, str(output_path), input_dtype="ratios")
+    # if args.in_mtsat and args.in_ihmtsat:
+    #     output_name = "double_fibers_mtsat_ihmtsat_diagonal_plot" + files_basename + ".png"
+    #     output_path = out_folder / output_name
+    #     plot_means(bins_2f, mtsat_2f_means_diag, ihmtsat_2f_means_diag,
+    #                nb_voxels_2f_diag, str(output_path), input_dtype="sats")
     
     print("Correcting measures.")
     if args.in_mtr:
-        corrected_mtr = correct_measure(peaks, mtr, affine, wm_mask, mtr_poly,
-                                        peak_frac_thr=0.1)
+        corrected_mtr = correct_measure(peaks, peak_values, mtr, affine,
+                                        wm_mask, mtr_poly,
+                                        peak_frac_thr=0.0)
         corrected_name = "mtr_corrected.nii.gz"
         corrected_path = out_folder / corrected_name
         nib.save(nib.Nifti1Image(corrected_mtr, affine), corrected_path)
     if args.in_ihmtr:
-        corrected_ihmtr = correct_measure(peaks, ihmtr, affine, wm_mask,
-                                          ihmtr_poly, peak_frac_thr=0.1)
+        corrected_ihmtr = correct_measure(peaks, peak_values, ihmtr, affine,
+                                          wm_mask, ihmtr_poly,
+                                          peak_frac_thr=0.0)
         corrected_name = "ihmtr_corrected.nii.gz"
         corrected_path = out_folder / corrected_name
         nib.save(nib.Nifti1Image(corrected_ihmtr, affine), corrected_path)
     if args.in_mtsat:
-        corrected_mtsat = correct_measure(peaks, mtsat, affine, wm_mask,
-                                          mtsat_poly, peak_frac_thr=0.1)
+        corrected_mtsat = correct_measure(peaks, peak_values, mtsat, affine,
+                                          wm_mask, mtsat_poly,
+                                          peak_frac_thr=0.0)
         corrected_name = "mtsat_corrected.nii.gz"
         corrected_path = out_folder / corrected_name
         nib.save(nib.Nifti1Image(corrected_mtsat, affine), corrected_path)
     if args.in_ihmtr:
-        corrected_ihmtsat = correct_measure(peaks, ihmtsat, affine, wm_mask,
-                                          ihmtsat_poly, peak_frac_thr=0.1)
+        corrected_ihmtsat = correct_measure(peaks, peak_values, ihmtsat,
+                                            affine, wm_mask, ihmtsat_poly,
+                                            peak_frac_thr=0.0)
         corrected_name = "ihmtsat_corrected.nii.gz"
         corrected_path = out_folder / corrected_name
         nib.save(nib.Nifti1Image(corrected_ihmtsat, affine), corrected_path)
@@ -240,37 +248,37 @@ def main():
                    ihmt_cr_means=ihmtsat_cr_means, mt_poly=mtsat_poly,
                    ihmt_poly=ihmtsat_poly, input_dtype="sats")
         
-    print("Computing crossing fibers average on corrected data.")
-    bins_2f, mtr_cr_2f_means, ihmtr_cr_2f_means, mtsat_cr_2f_means, ihmtsat_cr_2f_means, \
-        nb_voxels_2f = compute_crossing_fibers_averages(peaks, wm_mask, affine,
-                                                        nufo, mtr=corrected_mtr,
-                                                        ihmtr=corrected_ihmtr,
-                                                        mtsat=corrected_mtsat,
-                                                        ihmtsat=corrected_ihmtsat,
-                                                        bin_width=10,
-                                                        norm_thr=args.norm_thr)
+    # print("Computing crossing fibers average on corrected data.")
+    # bins_2f, mtr_cr_2f_means, ihmtr_cr_2f_means, mtsat_cr_2f_means, ihmtsat_cr_2f_means, \
+    #     nb_voxels_2f = compute_crossing_fibers_averages(peaks, wm_mask, affine,
+    #                                                     nufo, mtr=corrected_mtr,
+    #                                                     ihmtr=corrected_ihmtr,
+    #                                                     mtsat=corrected_mtsat,
+    #                                                     ihmtsat=corrected_ihmtsat,
+    #                                                     bin_width=10,
+    #                                                     norm_thr=args.norm_thr)
     
-    mtr_cr_2f_means_diag = np.diagonal(mtr_cr_2f_means)
-    ihmtr_cr_2f_means_diag = np.diagonal(ihmtr_cr_2f_means)
-    mtsat_cr_2f_means_diag = np.diagonal(mtsat_cr_2f_means)
-    ihmtsat_cr_2f_means_diag = np.diagonal(ihmtsat_cr_2f_means)
-    nb_voxels_2f_diag = np.diagonal(nb_voxels_2f)
+    # mtr_cr_2f_means_diag = np.diagonal(mtr_cr_2f_means)
+    # ihmtr_cr_2f_means_diag = np.diagonal(ihmtr_cr_2f_means)
+    # mtsat_cr_2f_means_diag = np.diagonal(mtsat_cr_2f_means)
+    # ihmtsat_cr_2f_means_diag = np.diagonal(ihmtsat_cr_2f_means)
+    # nb_voxels_2f_diag = np.diagonal(nb_voxels_2f)
     
-    print("Saving results as plots.")
-    if args.in_mtr and args.in_ihmtr:
-        output_name = "double_fibers_corrected_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
-        output_path = out_folder / output_name
-        plot_means(bins_2f, mtr_2f_means_diag, ihmtr_2f_means_diag,
-                   nb_voxels_2f_diag, str(output_path), 
-                   mt_cr_means=mtr_cr_2f_means_diag,
-                   ihmt_cr_means=ihmtr_cr_2f_means_diag, input_dtype="ratios")
-    if args.in_mtsat and args.in_ihmtsat:
-        output_name = "double_fibers_corrected_mtsat_ihmtsat_diagonal_plot" + files_basename + ".png"
-        output_path = out_folder / output_name
-        plot_means(bins_2f, mtsat_2f_means_diag, ihmtsat_2f_means_diag,
-                   nb_voxels_2f_diag, str(output_path),
-                   mt_cr_means=mtsat_cr_2f_means_diag,
-                   ihmt_cr_means=ihmtsat_cr_2f_means_diag, input_dtype="sats")
+    # print("Saving results as plots.")
+    # if args.in_mtr and args.in_ihmtr:
+    #     output_name = "double_fibers_corrected_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
+    #     output_path = out_folder / output_name
+    #     plot_means(bins_2f, mtr_2f_means_diag, ihmtr_2f_means_diag,
+    #                nb_voxels_2f_diag, str(output_path), 
+    #                mt_cr_means=mtr_cr_2f_means_diag,
+    #                ihmt_cr_means=ihmtr_cr_2f_means_diag, input_dtype="ratios")
+    # if args.in_mtsat and args.in_ihmtsat:
+    #     output_name = "double_fibers_corrected_mtsat_ihmtsat_diagonal_plot" + files_basename + ".png"
+    #     output_path = out_folder / output_name
+    #     plot_means(bins_2f, mtsat_2f_means_diag, ihmtsat_2f_means_diag,
+    #                nb_voxels_2f_diag, str(output_path),
+    #                mt_cr_means=mtsat_cr_2f_means_diag,
+    #                ihmt_cr_means=ihmtsat_cr_2f_means_diag, input_dtype="sats")
 
 if __name__ == "__main__":
     main()
