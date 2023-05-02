@@ -6,8 +6,9 @@ from pathlib import Path
 from modules.utils import (compute_single_fiber_averages,
                            compute_crossing_fibers_averages,
                            fit_single_fiber_results,
-                           correct_measure)
-from modules.io import save_txt, plot_means, save_masks_by_angle_bins, plot_measure_mean
+                           correct_measure, compute_poor_ihmtr)
+from modules.io import (save_txt, plot_means, save_masks_by_angle_bins,
+                        plot_measure_mean)
 
 from scilpy.io.utils import (add_overwrite_arg)
 
@@ -234,7 +235,7 @@ def main():
         corrected_name = "mtsat_corrected.nii.gz"
         corrected_path = out_folder / corrected_name
         nib.save(nib.Nifti1Image(corrected_mtsat, affine), corrected_path)
-    if args.in_ihmtr:
+    if args.in_ihmtsat:
         corrected_ihmtsat = correct_measure(peaks, peak_values, ihmtsat,
                                             affine, wm_mask, nufo,
                                             ihmtsat_poly,
@@ -321,11 +322,57 @@ def main():
         difference_name = "mtsat_difference.nii.gz"
         difference_path = out_folder / difference_name
         nib.save(nib.Nifti1Image(difference_mtsat, affine), difference_path)
-    if args.in_ihmtr:
+    if args.in_ihmtsat:
         difference_ihmtsat = corrected_ihmtsat - ihmtsat
         difference_name = "ihmtsat_difference.nii.gz"
         difference_path = out_folder / difference_name
         nib.save(nib.Nifti1Image(difference_ihmtsat, affine), difference_path)
+
+    print("Computing poor's man ihMTR.")
+    if args.in_mtr:
+        ihmtr_poor = compute_poor_ihmtr(corrected_mtr, wm_mask, mtr_poly)
+        ihmtr_poor_name = "poor_ihmtr.nii.gz"
+        ihmtr_poor_path = out_folder / ihmtr_poor_name
+        nib.save(nib.Nifti1Image(ihmtr_poor, affine), ihmtr_poor_path)
+
+    print("Saving masked versions.")
+    wm_mask_bool = (wm_mask > 0.9)
+    if args.in_mtr:
+        masked_corrected_mtr = np.where(wm_mask_bool, corrected_mtr, 0)
+        corrected_name = "mtr_corrected_masked.nii.gz"
+        corrected_path = out_folder / corrected_name
+        nib.save(nib.Nifti1Image(masked_corrected_mtr, affine), corrected_path)
+        masked_mtr = np.where(wm_mask_bool, mtr, 0)
+        corrected_name = "mtr_masked.nii.gz"
+        corrected_path = out_folder / corrected_name
+        nib.save(nib.Nifti1Image(masked_mtr, affine), corrected_path)
+    if args.in_ihmtr:
+        masked_corrected_ihmtr = np.where(wm_mask_bool, corrected_ihmtr, 0)
+        corrected_name = "ihmtr_corrected_masked.nii.gz"
+        corrected_path = out_folder / corrected_name
+        nib.save(nib.Nifti1Image(masked_corrected_ihmtr, affine), corrected_path)
+        masked_ihmtr = np.where(wm_mask_bool, ihmtr, 0)
+        corrected_name = "ihmtr_masked.nii.gz"
+        corrected_path = out_folder / corrected_name
+        nib.save(nib.Nifti1Image(masked_ihmtr, affine), corrected_path)
+    if args.in_mtsat:
+        masked_corrected_mtsat = np.where(wm_mask_bool, corrected_mtsat, 0)
+        corrected_name = "mtsat_corrected_masked.nii.gz"
+        corrected_path = out_folder / corrected_name
+        nib.save(nib.Nifti1Image(masked_corrected_mtsat, affine), corrected_path)
+        masked_mtsat = np.where(wm_mask_bool, mtsat, 0)
+        corrected_name = "mtsat_masked.nii.gz"
+        corrected_path = out_folder / corrected_name
+        nib.save(nib.Nifti1Image(masked_mtsat, affine), corrected_path)
+    if args.in_ihmtsat:
+        masked_corrected_ihmtsat = np.where(wm_mask_bool, corrected_ihmtsat, 0)
+        corrected_name = "ihmtsat_corrected_masked.nii.gz"
+        corrected_path = out_folder / corrected_name
+        nib.save(nib.Nifti1Image(masked_corrected_ihmtsat, affine), corrected_path)
+        masked_ihmtsat = np.where(wm_mask_bool, ihmtsat, 0)
+        corrected_name = "ihmtsat_masked.nii.gz"
+        corrected_path = out_folder / corrected_name
+        nib.save(nib.Nifti1Image(masked_ihmtsat, affine), corrected_path)
 
 if __name__ == "__main__":
     main()

@@ -226,3 +226,14 @@ def correct_measure(peaks, peak_values, measure, affine, wm_mask, nufo,
     total_corrections = np.sum(corrections, axis=-1)
 
     return measure + total_corrections
+
+
+def compute_poor_ihmtr(corrected_mtr, wm_mask, polynome):
+    wm_mask_bool = (wm_mask > 0.9)
+    bins = np.arange(0, 90 + 1, 1)
+    min_poly = np.min(polynome(bins))
+    mtr_dipolar = corrected_mtr - min_poly
+    min_mtr = np.min(mtr_dipolar[wm_mask_bool])
+    mtr_dipolar += abs(min_mtr)
+    mtr_dipolar[np.invert(wm_mask_bool)] = 0
+    return mtr_dipolar
