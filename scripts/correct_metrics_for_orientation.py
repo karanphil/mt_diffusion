@@ -23,6 +23,8 @@ def _build_arg_parser():
                    help='Path of the FA.')
     p.add_argument('in_wm_mask',
                    help='Path of the WM mask.')
+    p.add_argument('in_nufo',
+                   help='Path to the NuFO.')
     p.add_argument('out_folder',
                    help='Path of the output folder for txt, png, masks and measures.')
     
@@ -30,8 +32,6 @@ def _build_arg_parser():
                    help='Path to the principal eigenvector of DTI.')
     p.add_argument('--in_v1',
                    help='Path to the principal eigenvalue of DTI.')
-    p.add_argument('--in_nufo',
-                   help='Path to the NuFO.')
     p.add_argument('--in_mtr',
                    help='Path to the MTR.')
     p.add_argument('--in_ihmtr',
@@ -75,11 +75,14 @@ def main():
     peak_values_img = nib.load(args.in_peak_values)
     fa_img = nib.load(args.in_fa)
     wm_mask_img = nib.load(args.in_wm_mask)
+    nufo_img = nib.load(args.in_nufo)
+
 
     peaks = peaks_img.get_fdata()
     peak_values = peak_values_img.get_fdata()
     fa = fa_img.get_fdata()
     wm_mask = wm_mask_img.get_fdata()
+    nufo = nufo_img.get_fdata()
 
     affine = peaks_img.affine
 
@@ -93,11 +96,6 @@ def main():
         v1 = v1_img.get_fdata()
     else:
         v1 = peak_values
-    if args.in_nufo:
-        nufo_img = nib.load(args.in_nufo)
-        nufo = nufo_img.get_fdata()
-    else:
-        nufo = None
     if args.in_mtr:
         mtr_img = nib.load(args.in_mtr)
         mtr = mtr_img.get_fdata()
@@ -306,6 +304,28 @@ def main():
                    nb_voxels_2f_diag, str(output_path),
                    mt_cr_means=mtsat_cr_2f_means_diag,
                    ihmt_cr_means=ihmtsat_cr_2f_means_diag, input_dtype="sats")
+        
+    print("Computing difference maps.")
+    if args.in_mtr:
+        difference_mtr = corrected_mtr - mtr
+        difference_name = "mtr_difference.nii.gz"
+        difference_path = out_folder / difference_name
+        nib.save(nib.Nifti1Image(difference_mtr, affine), difference_path)
+    if args.in_ihmtr:
+        difference_ihmtr = corrected_ihmtr - ihmtr
+        difference_name = "ihmtr_difference.nii.gz"
+        difference_path = out_folder / difference_name
+        nib.save(nib.Nifti1Image(difference_ihmtr, affine), difference_path)
+    if args.in_mtsat:
+        difference_mtsat = corrected_mtsat - mtsat
+        difference_name = "mtsat_difference.nii.gz"
+        difference_path = out_folder / difference_name
+        nib.save(nib.Nifti1Image(difference_mtsat, affine), difference_path)
+    if args.in_ihmtr:
+        difference_ihmtsat = corrected_ihmtsat - ihmtsat
+        difference_name = "ihmtsat_difference.nii.gz"
+        difference_path = out_folder / difference_name
+        nib.save(nib.Nifti1Image(difference_ihmtsat, affine), difference_path)
 
 if __name__ == "__main__":
     main()
