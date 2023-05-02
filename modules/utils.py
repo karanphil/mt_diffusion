@@ -60,10 +60,11 @@ def compute_single_fiber_averages(peaks, peak_values, fa, wm_mask, affine,
     return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels, peak_values_means, fa_means
 
 
-def compute_crossing_fibers_averages(peaks, wm_mask, affine, nufo, mtr=None,
-                                     ihmtr=None, mtsat=None, ihmtsat=None,
-                                     bin_width=10, norm_thr=0.7):
-    peaks, peaks_norm = normalize_peaks(np.copy(peaks))
+def compute_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
+                                     mtr=None, ihmtr=None, mtsat=None,
+                                     ihmtsat=None, bin_width=10, frac_thr=0.3):
+    # peaks, peaks_norm = normalize_peaks(np.copy(peaks))
+    peaks_fraction = compute_peaks_fraction(peak_values)
 
     # Find the direction of the B0 field
     rot = affine[0:3, 0:3]
@@ -87,7 +88,7 @@ def compute_crossing_fibers_averages(peaks, wm_mask, affine, nufo, mtr=None,
 
     # Apply the WM mask
     wm_mask_bool = (wm_mask > 0.9) & (nufo == 2)
-    norm_mask_bool = (peaks_norm[..., 0] > norm_thr) & (peaks_norm[..., 1] > norm_thr)
+    norm_mask_bool = (peaks_fraction[..., 0] > frac_thr) & (peaks_fraction[..., 1] > frac_thr)
 
     for i in range(len(bins) - 1):
         angle_mask_0_90 = (theta_f1 >= bins[i]) & (theta_f1 < bins[i+1])
@@ -158,23 +159,45 @@ def normalize_peaks(peaks):
     return peaks, peaks_norm
 
 
-def compute_corrections(polynome, angle, fraction):
+def compute_peaks_fraction(peak_values):
+    peak_values_sum = np.sum(peak_values, axis=-1)
+    peak_values_sum = np.repeat(peak_values_sum.reshape(peak_values_sum.shape + (1,)),
+                                peak_values.shape[-1], axis=-1)
+    peaks_fraction = peak_values / peak_values_sum
+    return peaks_fraction
+
+
+def compute_nufo_factor(peak_values, nufo, wm_mask):
+    pv_means = np.zeros((5))
+    nufo_factor = np.zeros((nufo.shape))
+    for i in range(5):
+        mask = (wm_mask > 0.9) & (nufo == i + 1)
+        pv_means[i] = np.mean(peak_values[mask, : i + 1])
+        nufo_factor[mask] = pv_means[i]
+    pv_means /= np.max(pv_means)
+    nufo_factor /= np.max(pv_means)
+    return nufo_factor
+
+
+def compute_corrections(polynome, angle, fraction, nufo_factor=None):
     bins = np.arange(0, 90 + 1, 1)
     max_poly = np.max(polynome(bins))
-    correction = fraction * (max_poly - polynome(angle))
+    if nufo_factor is not None:
+        correction = nufo_factor * fraction * (max_poly - polynome(angle))
+    else:
+        correction = fraction * (max_poly - polynome(angle))
     return correction
 
 
-def correct_measure(peaks, peak_values, measure, affine, wm_mask, polynome,
-                    peak_frac_thr=0):
-    wm_mask_bool = (wm_mask > 0.9)
+def correct_measure(peaks, peak_values, measure, affine, wm_mask, nufo,
+                    polynome, peak_frac_thr=0):
     # peaks, peaks_norm = normalize_peaks(np.copy(peaks))
     # peaks_sum = np.sum(peaks_norm, axis=-1)
     # peaks_sum = np.repeat(peaks_sum.reshape(peaks_sum.shape + (1,)),
     #                       peaks_norm.shape[-1], axis=-1)
     # peaks_fraction = peaks_norm / peaks_sum
-    max_peak_value = np.max(peak_values[wm_mask_bool])
-    peaks_fraction = peak_values / max_peak_value
+    nufo_factor = compute_nufo_factor(peak_values, nufo, wm_mask)
+    peaks_fraction = compute_peaks_fraction(peak_values)
     
     # Find the direction of the B0 field
     rot = affine[0:3, 0:3]
@@ -188,6 +211,7 @@ def correct_measure(peaks, peak_values, measure, affine, wm_mask, polynome,
     peaks_angles[:] = np.nan
     corrections = np.zeros((peaks_fraction.shape))
     # Calculate the angle between e1 and B0 field for each peak
+    wm_mask_bool = (wm_mask > 0.9)
     for i in range(peaks_angles.shape[-1]):
         mask = wm_mask_bool & (peaks_fraction[..., i] > peak_frac_thr)
         cos_theta = np.dot(peaks[mask, i*3:(i+1)*3], b0_field)
@@ -196,7 +220,8 @@ def correct_measure(peaks, peak_values, measure, affine, wm_mask, polynome,
 
         corrections[mask, i] = compute_corrections(polynome,
                                                    peaks_angles[mask, i],
-                                                   peaks_fraction[mask, i])
+                                                   peaks_fraction[mask, i],
+                                                   nufo_factor[mask])
     
     total_corrections = np.sum(corrections, axis=-1)
 
