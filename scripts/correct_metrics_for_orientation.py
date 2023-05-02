@@ -7,7 +7,7 @@ from modules.utils import (compute_single_fiber_averages,
                            compute_crossing_fibers_averages,
                            fit_single_fiber_results,
                            correct_measure)
-from modules.io import save_txt, plot_means, save_masks_by_angle_bins
+from modules.io import save_txt, plot_means, save_masks_by_angle_bins, plot_measure_mean
 
 from scilpy.io.utils import (add_overwrite_arg)
 
@@ -28,6 +28,8 @@ def _build_arg_parser():
     
     p.add_argument('--in_e1',
                    help='Path to the principal eigenvector of DTI.')
+    p.add_argument('--in_v1',
+                   help='Path to the principal eigenvalue of DTI.')
     p.add_argument('--in_nufo',
                    help='Path to the NuFO.')
     p.add_argument('--in_mtr',
@@ -84,6 +86,11 @@ def main():
         e1 = e1_img.get_fdata()
     else:
         e1 = peaks
+    if args.in_v1:
+        v1_img = nib.load(args.in_v1)
+        v1 = v1_img.get_fdata()
+    else:
+        v1 = peak_values
     if args.in_nufo:
         nufo_img = nib.load(args.in_nufo)
         nufo = nufo_img.get_fdata()
@@ -112,13 +119,16 @@ def main():
 
     print("Computing single fiber averages.")
     bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, \
-        nb_voxels = compute_single_fiber_averages(e1, fa, wm_mask, affine,
-                                                  mtr=mtr, ihmtr=ihmtr,
-                                                  mtsat=mtsat,
-                                                  ihmtsat=ihmtsat,
-                                                  nufo=nufo,
-                                                  bin_width=args.bin_width,
-                                                  fa_thr=args.fa_thr)
+        nb_voxels, peak_values_means, fa_means = compute_single_fiber_averages(e1, v1, fa,
+                                                                     wm_mask,
+                                                                     affine,
+                                                                     mtr=mtr,
+                                                                     ihmtr=ihmtr,
+                                                                     mtsat=mtsat,
+                                                                     ihmtsat=ihmtsat,
+                                                                     nufo=nufo,
+                                                                     bin_width=args.bin_width,
+                                                                     fa_thr=args.fa_thr)
 
     print("Saving results as txt files.")
     if args.in_mtr and args.in_ihmtr:
@@ -163,6 +173,16 @@ def main():
                              out_folder, nufo=nufo,
                              bin_width=10, fa_thr=args.fa_thr)
     
+    print("Saving peak_values mean as plot.")
+    output_name = "single_fiber_peak_values_plot" + files_basename + ".png"
+    output_path = out_folder / output_name
+    plot_measure_mean(bins, peak_values_means, str(output_path))
+
+    print("Saving FA mean as plot.")
+    output_name = "single_fiber_FA_plot" + files_basename + ".png"
+    output_path = out_folder / output_name
+    plot_measure_mean(bins, fa_means, str(output_path))
+
     # print("Computing crossing fibers average.")
     # bins_2f, mtr_2f_means, ihmtr_2f_means, mtsat_2f_means, ihmtsat_2f_means, \
     #     nb_voxels_2f = compute_crossing_fibers_averages(peaks, wm_mask, affine,
@@ -191,62 +211,64 @@ def main():
     #     plot_means(bins_2f, mtsat_2f_means_diag, ihmtsat_2f_means_diag,
     #                nb_voxels_2f_diag, str(output_path), input_dtype="sats")
     
-    print("Correcting measures.")
-    if args.in_mtr:
-        corrected_mtr = correct_measure(peaks, peak_values, mtr, affine,
-                                        wm_mask, mtr_poly,
-                                        peak_frac_thr=0.0)
-        corrected_name = "mtr_corrected.nii.gz"
-        corrected_path = out_folder / corrected_name
-        nib.save(nib.Nifti1Image(corrected_mtr, affine), corrected_path)
-    if args.in_ihmtr:
-        corrected_ihmtr = correct_measure(peaks, peak_values, ihmtr, affine,
-                                          wm_mask, ihmtr_poly,
-                                          peak_frac_thr=0.0)
-        corrected_name = "ihmtr_corrected.nii.gz"
-        corrected_path = out_folder / corrected_name
-        nib.save(nib.Nifti1Image(corrected_ihmtr, affine), corrected_path)
-    if args.in_mtsat:
-        corrected_mtsat = correct_measure(peaks, peak_values, mtsat, affine,
-                                          wm_mask, mtsat_poly,
-                                          peak_frac_thr=0.0)
-        corrected_name = "mtsat_corrected.nii.gz"
-        corrected_path = out_folder / corrected_name
-        nib.save(nib.Nifti1Image(corrected_mtsat, affine), corrected_path)
-    if args.in_ihmtr:
-        corrected_ihmtsat = correct_measure(peaks, peak_values, ihmtsat,
-                                            affine, wm_mask, ihmtsat_poly,
-                                            peak_frac_thr=0.0)
-        corrected_name = "ihmtsat_corrected.nii.gz"
-        corrected_path = out_folder / corrected_name
-        nib.save(nib.Nifti1Image(corrected_ihmtsat, affine), corrected_path)
+    # print("Correcting measures.")
+    # if args.in_mtr:
+    #     corrected_mtr = correct_measure(peaks, peak_values, mtr, affine,
+    #                                     wm_mask, mtr_poly,
+    #                                     peak_frac_thr=0.0)
+    #     corrected_name = "mtr_corrected.nii.gz"
+    #     corrected_path = out_folder / corrected_name
+    #     nib.save(nib.Nifti1Image(corrected_mtr, affine), corrected_path)
+    # if args.in_ihmtr:
+    #     corrected_ihmtr = correct_measure(peaks, peak_values, ihmtr, affine,
+    #                                       wm_mask, ihmtr_poly,
+    #                                       peak_frac_thr=0.0)
+    #     corrected_name = "ihmtr_corrected.nii.gz"
+    #     corrected_path = out_folder / corrected_name
+    #     nib.save(nib.Nifti1Image(corrected_ihmtr, affine), corrected_path)
+    # if args.in_mtsat:
+    #     corrected_mtsat = correct_measure(peaks, peak_values, mtsat, affine,
+    #                                       wm_mask, mtsat_poly,
+    #                                       peak_frac_thr=0.0)
+    #     corrected_name = "mtsat_corrected.nii.gz"
+    #     corrected_path = out_folder / corrected_name
+    #     nib.save(nib.Nifti1Image(corrected_mtsat, affine), corrected_path)
+    # if args.in_ihmtr:
+    #     corrected_ihmtsat = correct_measure(peaks, peak_values, ihmtsat,
+    #                                         affine, wm_mask, ihmtsat_poly,
+    #                                         peak_frac_thr=0.0)
+    #     corrected_name = "ihmtsat_corrected.nii.gz"
+    #     corrected_path = out_folder / corrected_name
+    #     nib.save(nib.Nifti1Image(corrected_ihmtsat, affine), corrected_path)
 
-    print("Computing single fiber averages on corrected data.")
-    bins, mtr_cr_means, ihmtr_cr_means, mtsat_cr_means, ihmtsat_cr_means, \
-        nb_voxels = compute_single_fiber_averages(e1, fa, wm_mask, affine,
-                                                  mtr=corrected_mtr,
-                                                  ihmtr=corrected_ihmtr,
-                                                  mtsat=corrected_mtsat,
-                                                  ihmtsat=corrected_ihmtsat,
-                                                  nufo=nufo,
-                                                  bin_width=args.bin_width,
-                                                  fa_thr=args.fa_thr)
+    # print("Computing single fiber averages on corrected data.")
+    # bins, mtr_cr_means, ihmtr_cr_means, mtsat_cr_means, ihmtsat_cr_means, \
+    #     nb_voxels, peak_values_means = compute_single_fiber_averages(e1, v1, fa,
+    #                                                                  wm_mask,
+    #                                                                  affine,
+    #                                                                  mtr=corrected_mtr,
+    #                                                                  ihmtr=corrected_ihmtr,
+    #                                                                  mtsat=corrected_mtsat,
+    #                                                                  ihmtsat=corrected_ihmtsat,
+    #                                                                  nufo=nufo,
+    #                                                                  bin_width=args.bin_width,
+    #                                                                  fa_thr=args.fa_thr)
 
-    print("Saving results as plots.")
-    if args.in_mtr and args.in_ihmtr:
-        output_name = "single_fiber_corrected_mtr_ihmtr_plot" + files_basename + ".png"
-        output_path = out_folder / output_name
-        plot_means(bins, mtr_means, ihmtr_means, nb_voxels,
-                   str(output_path), mt_cr_means=mtr_cr_means,
-                   ihmt_cr_means=ihmtr_cr_means, mt_poly=mtr_poly,
-                   ihmt_poly=ihmtr_poly, input_dtype="ratios")
-    if args.in_mtsat and args.in_ihmtsat:
-        output_name = "single_fiber_corrected_mtsat_ihmtsat_plot" + files_basename + ".png"
-        output_path = out_folder / output_name
-        plot_means(bins, mtsat_means, ihmtsat_means, nb_voxels,
-                   str(output_path), mt_cr_means=mtsat_cr_means,
-                   ihmt_cr_means=ihmtsat_cr_means, mt_poly=mtsat_poly,
-                   ihmt_poly=ihmtsat_poly, input_dtype="sats")
+    # print("Saving results as plots.")
+    # if args.in_mtr and args.in_ihmtr:
+    #     output_name = "single_fiber_corrected_mtr_ihmtr_plot" + files_basename + ".png"
+    #     output_path = out_folder / output_name
+    #     plot_means(bins, mtr_means, ihmtr_means, nb_voxels,
+    #                str(output_path), mt_cr_means=mtr_cr_means,
+    #                ihmt_cr_means=ihmtr_cr_means, mt_poly=mtr_poly,
+    #                ihmt_poly=ihmtr_poly, input_dtype="ratios")
+    # if args.in_mtsat and args.in_ihmtsat:
+    #     output_name = "single_fiber_corrected_mtsat_ihmtsat_plot" + files_basename + ".png"
+    #     output_path = out_folder / output_name
+    #     plot_means(bins, mtsat_means, ihmtsat_means, nb_voxels,
+    #                str(output_path), mt_cr_means=mtsat_cr_means,
+    #                ihmt_cr_means=ihmtsat_cr_means, mt_poly=mtsat_poly,
+    #                ihmt_poly=ihmtsat_poly, input_dtype="sats")
         
     # print("Computing crossing fibers average on corrected data.")
     # bins_2f, mtr_cr_2f_means, ihmtr_cr_2f_means, mtsat_cr_2f_means, ihmtsat_cr_2f_means, \

@@ -1,9 +1,10 @@
 import numpy as np
 
 
-def compute_single_fiber_averages(peaks, fa, wm_mask, affine, mtr=None,
-                                  ihmtr=None, mtsat=None, ihmtsat=None,
-                                  nufo=None, bin_width=1, fa_thr=0.5):
+def compute_single_fiber_averages(peaks, peak_values, fa, wm_mask, affine,
+                                  mtr=None, ihmtr=None, mtsat=None,
+                                  ihmtsat=None, nufo=None, bin_width=1,
+                                  fa_thr=0.5):
     peaks, _ = normalize_peaks(np.copy(peaks))
     # Find the direction of the B0 field
     rot = affine[0:3, 0:3]
@@ -21,6 +22,8 @@ def compute_single_fiber_averages(peaks, fa, wm_mask, affine, mtr=None,
     ihmtr_means = np.zeros((len(bins) - 1))
     mtsat_means = np.zeros((len(bins) - 1))
     ihmtsat_means = np.zeros((len(bins) - 1))
+    peak_values_means = np.zeros((len(bins) - 1))
+    fa_means = np.zeros((len(bins) - 1))
     nb_voxels = np.zeros((len(bins) - 1))
 
     # Apply the WM mask and FA threshold
@@ -40,7 +43,11 @@ def compute_single_fiber_averages(peaks, fa, wm_mask, affine, mtr=None,
             ihmtr_means[i] = None
             mtsat_means[i] = None
             ihmtsat_means[i] = None
+            peak_values_means[i] = None
+            fa_means[i] = None
         else:
+            peak_values_means[i] = np.mean(peak_values[mask])
+            fa_means[i] = np.mean(fa[mask])
             if mtr is not None:
                 mtr_means[i] = np.mean(mtr[mask])
             if ihmtr is not None:
@@ -50,7 +57,7 @@ def compute_single_fiber_averages(peaks, fa, wm_mask, affine, mtr=None,
             if ihmtsat is not None:
                 ihmtsat_means[i] = np.mean(ihmtsat[mask])
 
-    return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels
+    return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels, peak_values_means, fa_means
 
 
 def compute_crossing_fibers_averages(peaks, wm_mask, affine, nufo, mtr=None,

@@ -115,3 +115,18 @@ def save_masks_by_angle_bins(peaks, fa, wm_mask, affine, output_path,
             + "_degrees_angle_bin_" + str(fa_thr) + "_fa_thr_" + str(bin_width) + "_bin_width.nii.gz"
         mask_path = output_path / mask_name
         nib.save(nib.Nifti1Image(mask.astype(np.uint8), affine), mask_path)
+
+
+def plot_measure_mean(bins, peak_values, output_name):
+    mid_bins = (bins[:-1] + bins[1:]) / 2.
+    plot_init()
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(mid_bins, peak_values, linewidths=1)
+    ax.set_xlabel('Angle between e1 and B0 field (degrees)')
+    ax.set_ylabel('Measure mean')
+    ax.set_title('Measure mean vs Angle')
+    fig.tight_layout()
+    # plt.show()
+    plt.savefig(output_name, dpi=300)
+    plt.close()
