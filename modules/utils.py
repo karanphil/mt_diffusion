@@ -204,7 +204,7 @@ def correct_measure(peaks, peak_values, measure, affine, wm_mask, nufo,
     z_axis = np.array([0, 0, 1])
     b0_field = np.dot(rot.T, z_axis)
 
-    bins = np.arange(0, 90 + 1, 1)
+    # bins = np.arange(0, 90 + 1, 1)
     # mid_bins = (bins[:-1] + bins[1:]) / 2.
 
     peaks_angles = np.empty((peaks_fraction.shape))
