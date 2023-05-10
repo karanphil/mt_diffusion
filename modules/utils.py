@@ -174,7 +174,6 @@ def compute_nufo_factor(peak_values, nufo, wm_mask):
         mask = (wm_mask > 0.9) & (nufo == i + 1)
         pv_means[i] = np.mean(peak_values[mask, : i + 1])
         nufo_factor[mask] = pv_means[i]
-    pv_means /= np.max(pv_means)
     nufo_factor /= np.max(pv_means)
     return nufo_factor
 
