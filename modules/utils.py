@@ -3,8 +3,8 @@ import numpy as np
 
 def compute_single_fiber_averages(peaks, peak_values, fa, wm_mask, affine,
                                   mtr=None, ihmtr=None, mtsat=None,
-                                  ihmtsat=None, nufo=None, bin_width=1,
-                                  fa_thr=0.5):
+                                  ihmtsat=None, nufo=None, bundle_mask=None,
+                                  bin_width=1, fa_thr=0.5):
     # peaks, _ = normalize_peaks(np.copy(peaks))
     # Find the direction of the B0 field
     rot = affine[0:3, 0:3]
@@ -31,6 +31,8 @@ def compute_single_fiber_averages(peaks, peak_values, fa, wm_mask, affine,
         wm_mask_bool = (wm_mask > 0.9) & (fa > fa_thr) & (nufo == 1)
     else:
         wm_mask_bool = (wm_mask > 0.9) & (fa > fa_thr)
+    if bundle_mask is not None:
+        wm_mask_bool = wm_mask_bool & (bundle_mask > 0)
 
     for i in range(len(bins) - 1):
         angle_mask_0_90 = (theta >= bins[i]) & (theta < bins[i+1]) 

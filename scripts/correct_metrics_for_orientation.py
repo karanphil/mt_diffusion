@@ -41,13 +41,15 @@ def _build_arg_parser():
                    help='Path to the MTsat.')
     p.add_argument('--in_ihmtsat',
                    help='Path to the ihMTsat.')
+    p.add_argument('--in_bundle_mask',
+                   help='Path to the bundle mask.')
 
     p.add_argument('--files_basename',
                    help='Basename of all the saved txt or png files.')
 
     p.add_argument('--fa_thr', default=0.5,
                    help='Value of FA threshold [%(default)s].')
-    p.add_argument('--bin_width', default=1,
+    p.add_argument('--bin_width', default=3,
                    help='Value of the bin width [%(default)s].')
     p.add_argument('--frac_thr', default=0.4,
                    help='Value of the fraction threshold for selecting 2 fibers [%(default)s].')
@@ -117,6 +119,11 @@ def main():
         ihmtsat = ihmtsat_img.get_fdata()
     else:
         ihmtsat = None
+    if args.in_bundle_mask:
+        bundle_mask_img = nib.load(args.in_bundle_mask)
+        bundle_mask = bundle_mask_img.get_fdata()
+    else:
+        bundle_mask = None
 
     print("Computing single fiber averages.")
     bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, \
@@ -128,6 +135,7 @@ def main():
                                                                      mtsat=mtsat,
                                                                      ihmtsat=ihmtsat,
                                                                      nufo=nufo,
+                                                                     bundle_mask=bundle_mask,
                                                                      bin_width=args.bin_width,
                                                                      fa_thr=args.fa_thr)
 
@@ -254,6 +262,7 @@ def main():
                                                                      mtsat=corrected_mtsat,
                                                                      ihmtsat=corrected_ihmtsat,
                                                                      nufo=nufo,
+                                                                     bundle_mask=bundle_mask,
                                                                      bin_width=args.bin_width,
                                                                      fa_thr=args.fa_thr)
 
