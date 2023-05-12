@@ -60,6 +60,7 @@ def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
     if mt_poly:
         ax1.plot(highres_bins, mt_poly(highres_bins), "--g")
     ax1.set_xlabel(r'$\theta_n$')
+    ax1.set_xlim(0, 90)
     if input_dtype=="ratios":
         ax1.set_ylabel('MTR mean')
         # ax1.set_title('MTR vs Angle')
@@ -74,6 +75,7 @@ def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
     if ihmt_poly:
         ax2.plot(highres_bins, ihmt_poly(highres_bins), "--g")
     ax2.set_xlabel(r'$\theta_n$')
+    ax2.set_xlim(0, 90)
     if input_dtype=="ratios":
         ax2.set_ylabel('ihMTR mean')
         # ax2.set_title('ihMTR vs Angle')
