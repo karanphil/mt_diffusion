@@ -262,6 +262,7 @@ def main():
 #         ext = "".join(bundles_list[0].suffixes)
 #         bundle_name = str(bundles_list[i].name).replace(ext, "")
 #         print("Computing single fiber averages for " + bundle_name + ".")
+#         bundle = nib.load(str(bundles_list[i])).get_fdata()
 #         bundle_results = compute_single_fiber_averages(e1, fa,
 #                                                        wm_mask,
 #                                                        affine,
@@ -270,7 +271,7 @@ def main():
 #                                                        mtsat=mtsat,
 #                                                        ihmtsat=ihmtsat,
 #                                                        nufo=nufo,
-#                                                        mask=bundles_list[i],
+#                                                        mask=bundle,
 #                                                        bin_width=args.bin_width_bundles,
 #                                                        fa_thr=args.fa_thr)
 
@@ -407,6 +408,7 @@ def main():
         ext = "".join(bundles_list[0].suffixes)
         bundle_name = str(bundles_list[i].name).replace(ext, "")
         print("Computing single fiber averages for " + bundle_name + " on corrected data.")
+        bundle = nib.load(str(bundles_list[i])).get_fdata()
         bundle_results = compute_single_fiber_averages(e1, fa,
                                                        wm_mask,
                                                        affine,
@@ -415,7 +417,7 @@ def main():
                                                        mtsat=mtsat,
                                                        ihmtsat=ihmtsat,
                                                        nufo=nufo,
-                                                       mask=bundles_list[i],
+                                                       mask=bundle,
                                                        bin_width=args.bin_width_bundles,
                                                        fa_thr=args.fa_thr)
         bundle_cr_results = compute_single_fiber_averages(e1, fa,
@@ -426,7 +428,7 @@ def main():
                                                           mtsat=corrected_mtsat,
                                                           ihmtsat=corrected_ihmtsat,
                                                           nufo=nufo,
-                                                          mask=bundles_list[i],
+                                                          mask=bundle,
                                                           bin_width=args.bin_width_bundles,
                                                           fa_thr=args.fa_thr)
 
