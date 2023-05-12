@@ -1,9 +1,9 @@
 import numpy as np
 
 
-def compute_single_fiber_averages(peaks, peak_values, fa, wm_mask, affine,
+def compute_single_fiber_averages(peaks, fa, wm_mask, affine,
                                   mtr=None, ihmtr=None, mtsat=None,
-                                  ihmtsat=None, nufo=None, bundle_mask=None,
+                                  ihmtsat=None, nufo=None, mask=None,
                                   bin_width=1, fa_thr=0.5):
     # peaks, _ = normalize_peaks(np.copy(peaks))
     # Find the direction of the B0 field
@@ -22,8 +22,6 @@ def compute_single_fiber_averages(peaks, peak_values, fa, wm_mask, affine,
     ihmtr_means = np.zeros((len(bins) - 1))
     mtsat_means = np.zeros((len(bins) - 1))
     ihmtsat_means = np.zeros((len(bins) - 1))
-    peak_values_means = np.zeros((len(bins) - 1))
-    fa_means = np.zeros((len(bins) - 1))
     nb_voxels = np.zeros((len(bins) - 1))
 
     # Apply the WM mask and FA threshold
@@ -31,35 +29,31 @@ def compute_single_fiber_averages(peaks, peak_values, fa, wm_mask, affine,
         wm_mask_bool = (wm_mask > 0.9) & (fa > fa_thr) & (nufo == 1)
     else:
         wm_mask_bool = (wm_mask > 0.9) & (fa > fa_thr)
-    if bundle_mask is not None:
-        wm_mask_bool = wm_mask_bool & (bundle_mask > 0)
+    if mask is not None:
+        wm_mask_bool = wm_mask_bool & (mask > 0)
 
     for i in range(len(bins) - 1):
         angle_mask_0_90 = (theta >= bins[i]) & (theta < bins[i+1]) 
         angle_mask_90_180 = (180 - theta >= bins[i]) & (180 - theta < bins[i+1])
         angle_mask = angle_mask_0_90 | angle_mask_90_180
-        mask = wm_mask_bool & angle_mask
-        nb_voxels[i] = np.sum(mask)
-        if np.sum(mask) < 5:
+        mask_total = wm_mask_bool & angle_mask
+        nb_voxels[i] = np.sum(mask_total)
+        if np.sum(mask_total) < 5:
             mtr_means[i] = None
             ihmtr_means[i] = None
             mtsat_means[i] = None
             ihmtsat_means[i] = None
-            peak_values_means[i] = None
-            fa_means[i] = None
         else:
-            peak_values_means[i] = np.mean(peak_values[mask])
-            fa_means[i] = np.mean(fa[mask])
             if mtr is not None:
-                mtr_means[i] = np.mean(mtr[mask])
+                mtr_means[i] = np.mean(mtr[mask_total])
             if ihmtr is not None:
-                ihmtr_means[i] = np.mean(ihmtr[mask])
+                ihmtr_means[i] = np.mean(ihmtr[mask_total])
             if mtsat is not None:
-                mtsat_means[i] = np.mean(mtsat[mask])
+                mtsat_means[i] = np.mean(mtsat[mask_total])
             if ihmtsat is not None:
-                ihmtsat_means[i] = np.mean(ihmtsat[mask])
+                ihmtsat_means[i] = np.mean(ihmtsat[mask_total])
 
-    return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels, peak_values_means, fa_means
+    return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels
 
 
 def compute_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,

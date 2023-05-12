@@ -113,7 +113,7 @@ def save_masks_by_angle_bins(peaks, fa, wm_mask, affine, output_path,
         mask = wm_mask_bool & angle_mask
         mask_name = "single_fiber_mask_" + str(bins[i]) + "_to_" + str(bins[i+1]) \
             + "_degrees_angle_bin_" + str(fa_thr) + "_fa_thr_" + str(bin_width) + "_bin_width.nii.gz"
-        mask_path = output_path / mask_name
+        mask_path = output_path / "masks" / mask_name
         nib.save(nib.Nifti1Image(mask.astype(np.uint8), affine), mask_path)
 
 
