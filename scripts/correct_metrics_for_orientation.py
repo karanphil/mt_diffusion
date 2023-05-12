@@ -55,7 +55,7 @@ def _build_arg_parser():
                    help='Value of the bin width for the whole brain [%(default)s].')
     p.add_argument('--bin_width_mask', default=3,
                    help='Value of the bin width inside the mask [%(default)s].')
-    p.add_argument('--bin_width_bundles', default=3,
+    p.add_argument('--bin_width_bundles', default=5,
                    help='Value of the bin width inside bundles [%(default)s].')
     p.add_argument('--frac_thr', default=0.4,
                    help='Value of the fraction threshold for selecting 2 fibers [%(default)s].')
