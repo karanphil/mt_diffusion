@@ -59,13 +59,13 @@ def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
                     norm=norm, edgecolors='blue', linewidths=1)
     if mt_poly:
         ax1.plot(highres_bins, mt_poly(highres_bins), "--g")
-    ax1.set_xlabel('Angle between e1 and B0 field (degrees)')
+    ax1.set_xlabel(r'$\theta_n$')
     if input_dtype=="ratios":
         ax1.set_ylabel('MTR mean')
-        ax1.set_title('MTR vs Angle')
+        # ax1.set_title('MTR vs Angle')
     elif input_dtype=="sats":
         ax1.set_ylabel('MTsat mean')
-        ax1.set_title('MTsat vs Angle')
+        # ax1.set_title('MTsat vs Angle')
     colorbar = ax2.scatter(mid_bins, ihmt_means, c=nb_voxels, cmap='Greys',
                            norm=norm, edgecolors='black', linewidths=1)
     if ihmt_cr_means is not None:
@@ -73,13 +73,13 @@ def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
                     norm=norm, edgecolors='blue', linewidths=1)
     if ihmt_poly:
         ax2.plot(highres_bins, ihmt_poly(highres_bins), "--g")
-    ax2.set_xlabel('Angle between e1 and B0 field (degrees)')
+    ax2.set_xlabel(r'$\theta_n$')
     if input_dtype=="ratios":
         ax2.set_ylabel('ihMTR mean')
-        ax2.set_title('ihMTR vs Angle')
+        # ax2.set_title('ihMTR vs Angle')
     elif input_dtype=="sats":
         ax2.set_ylabel('ihMTsat mean')
-        ax2.set_title('ihMTsat vs Angle')
+        # ax2.set_title('ihMTsat vs Angle')
     fig.colorbar(colorbar, cax=cax, label="Voxel count")
     fig.tight_layout()
     # plt.show()
@@ -123,9 +123,9 @@ def plot_measure_mean(bins, peak_values, output_name):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.scatter(mid_bins, peak_values, linewidths=1)
-    ax.set_xlabel('Angle between e1 and B0 field (degrees)')
+    ax.set_xlabel(r'$\theta_n$')
     ax.set_ylabel('Measure mean')
-    ax.set_title('Measure mean vs Angle')
+    # ax.set_title('Measure mean vs Angle')
     fig.tight_layout()
     # plt.show()
     plt.savefig(output_name, dpi=300)

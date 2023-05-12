@@ -55,7 +55,7 @@ def _build_arg_parser():
                    help='Value of the bin width for the whole brain [%(default)s].')
     p.add_argument('--bin_width_mask', default=3,
                    help='Value of the bin width inside the mask [%(default)s].')
-    p.add_argument('--bin_width_bundles', default=10,
+    p.add_argument('--bin_width_bundles', default=3,
                    help='Value of the bin width inside bundles [%(default)s].')
     p.add_argument('--frac_thr', default=0.4,
                    help='Value of the fraction threshold for selecting 2 fibers [%(default)s].')
@@ -257,48 +257,6 @@ def main():
                    mask_results[5], str(output_path), mt_poly=mtsat_poly_mask,
                    ihmt_poly=ihmtsat_poly_mask, input_dtype="sats")
 
-# #----------------------------Bundles mask---------------------------------------
-#     for i in range(nb_bundles):
-#         ext = "".join(bundles_list[0].suffixes)
-#         bundle_name = str(bundles_list[i].name).replace(ext, "")
-#         print("Computing single fiber averages for " + bundle_name + ".")
-#         bundle = nib.load(str(bundles_list[i])).get_fdata()
-#         bundle_results = compute_single_fiber_averages(e1, fa,
-#                                                        wm_mask,
-#                                                        affine,
-#                                                        mtr=mtr,
-#                                                        ihmtr=ihmtr,
-#                                                        mtsat=mtsat,
-#                                                        ihmtsat=ihmtsat,
-#                                                        nufo=nufo,
-#                                                        mask=bundle,
-#                                                        bin_width=args.bin_width_bundles,
-#                                                        fa_thr=args.fa_thr)
-
-#         print("Saving " + bundle_name + " results as txt files.")
-#         if args.in_mtr and args.in_ihmtr:
-#             output_name = bundle_name + "_single_fiber_mtr_ihmtr_results" + files_basename + ".txt"
-#             output_path = out_folder / "results_txt" / output_name
-#             save_txt(bundle_results[0], bundle_results[1], bundle_results[2],
-#                     bundle_results[5], str(output_path), input_dtype="ratios")
-#         if args.in_mtsat and args.in_ihmtsat:
-#             output_name = bundle_name + "_single_fiber_mtsat_ihmtsat_results" + files_basename + ".txt"
-#             output_path = out_folder / "results_txt" / output_name
-#             save_txt(bundle_results[0], bundle_results[3], bundle_results[4],
-#                     bundle_results[5], str(output_path), input_dtype="sats")
-            
-#         print("Saving " + bundle_name + " results as plots.")
-#         if args.in_mtr and args.in_ihmtr:
-#             output_name = bundle_name + "_single_fiber_mtr_ihmtr_plot" + files_basename + ".png"
-#             output_path = out_folder / "plots" / output_name
-#             plot_means(bundle_results[0], bundle_results[1], bundle_results[2],
-#                     bundle_results[5], str(output_path), input_dtype="ratios")
-#         if args.in_mtsat and args.in_ihmtsat:
-#             output_name = bundle_name + "_single_fiber_mtsat_ihmtsat_plot" + files_basename + ".png"
-#             output_path = out_folder / "plots" / output_name
-#             plot_means(bundle_results[0], bundle_results[3], bundle_results[4],
-#                     bundle_results[5], str(output_path), input_dtype="sats")
-
 #----------------------------Crossing fibers------------------------------------
     print("Computing crossing fibers average.")
     crossing_results = compute_crossing_fibers_averages(peaks, peak_values,
@@ -435,38 +393,38 @@ def main():
         print("Saving " + bundle_name + " results as txt files.")
         if args.in_mtr and args.in_ihmtr:
             output_name = bundle_name + "_whole_brain_single_fiber_mtr_ihmtr_results" + files_basename + ".txt"
-            output_path = out_folder / "results_txt" / output_name
+            output_path = out_folder / "results_txt" / "bundles" / output_name
             save_txt(bundle_results[0], bundle_results[1], bundle_results[2],
                     bundle_results[5], str(output_path), input_dtype="ratios")
         if args.in_mtsat and args.in_ihmtsat:
             output_name = bundle_name + "_whole_brain_single_fiber_mtsat_ihmtsat_results" + files_basename + ".txt"
-            output_path = out_folder / "results_txt" / output_name
+            output_path = out_folder / "results_txt" / "bundles" / output_name
             save_txt(bundle_results[0], bundle_results[3], bundle_results[4],
                     bundle_results[5], str(output_path), input_dtype="sats")
             
         print("Saving " + bundle_name + " corrected results as txt files.")
         if args.in_mtr and args.in_ihmtr:
             output_name = bundle_name + "_whole_brain_single_fiber_corrected_mtr_ihmtr_results" + files_basename + ".txt"
-            output_path = out_folder / "results_txt" / output_name
+            output_path = out_folder / "results_txt" / "bundles" / output_name
             save_txt(bundle_cr_results[0], bundle_cr_results[1], bundle_cr_results[2],
                     bundle_cr_results[5], str(output_path), input_dtype="ratios")
         if args.in_mtsat and args.in_ihmtsat:
             output_name = bundle_name + "_whole_brain_single_fiber_corrected_mtsat_ihmtsat_results" + files_basename + ".txt"
-            output_path = out_folder / "results_txt" / output_name
+            output_path = out_folder / "results_txt" / "bundles" / output_name
             save_txt(bundle_cr_results[0], bundle_cr_results[3], bundle_cr_results[4],
                     bundle_cr_results[5], str(output_path), input_dtype="sats")
             
         print("Saving " + bundle_name + " corrected results as plots.")
         if args.in_mtr and args.in_ihmtr:
             output_name = bundle_name + "_whole_brain_single_fiber_corrected_mtr_ihmtr_plot" + files_basename + ".png"
-            output_path = out_folder / "plots" / output_name
+            output_path = out_folder / "plots" / "bundles" / output_name
             plot_means(bundle_results[0], bundle_results[1], bundle_results[2],
                        bundle_results[5], str(output_path),
                        mt_cr_means=bundle_cr_results[1],
                        ihmt_cr_means=bundle_cr_results[2], input_dtype="ratios")
         if args.in_mtsat and args.in_ihmtsat:
             output_name = bundle_name + "_whole_brain_single_fiber_corrected_mtsat_ihmtsat_plot" + files_basename + ".png"
-            output_path = out_folder / "plots" / output_name
+            output_path = out_folder / "plots" / "bundles" / output_name
             plot_means(bundle_results[0], bundle_results[3], bundle_results[4],
                        bundle_results[5], str(output_path), 
                        mt_cr_means=bundle_cr_results[3],
@@ -535,6 +493,49 @@ def main():
         corrected_name = "ihmtsat_corrected_masked.nii.gz"
         corrected_path = out_folder / "measures" / corrected_name
         nib.save(nib.Nifti1Image(corrected_ihmtsat, affine), corrected_path)
+
+#----------------------------Whole brain----------------------------------------
+    print("Computing single fiber averages on whole brain corrected data.")
+    w_brain_cr_results = compute_single_fiber_averages(e1, fa,
+                                                       wm_mask,
+                                                       affine,
+                                                       mtr=corrected_mtr,
+                                                       ihmtr=corrected_ihmtr,
+                                                       mtsat=corrected_mtsat,
+                                                       ihmtsat=corrected_ihmtsat,
+                                                       nufo=nufo,
+                                                       bin_width=args.bin_width,
+                                                       fa_thr=args.fa_thr)
+    
+    print("Saving whole brain corrected results as txt files.")
+    if args.in_mtr and args.in_ihmtr:
+        output_name = "masked_whole_brain_single_fiber_corrected_mtr_ihmtr_results" + files_basename + ".txt"
+        output_path = out_folder / "results_txt" / output_name
+        save_txt(w_brain_cr_results[0], w_brain_cr_results[1], w_brain_cr_results[2],
+                 w_brain_cr_results[5], str(output_path), input_dtype="ratios")
+    if args.in_mtsat and args.in_ihmtsat:
+        output_name = "masked_whole_brain_single_fiber_corrected_mtsat_ihmtsat_results" + files_basename + ".txt"
+        output_path = out_folder / "results_txt" / output_name
+        save_txt(w_brain_cr_results[0], w_brain_cr_results[3], w_brain_cr_results[4],
+                 w_brain_cr_results[5], str(output_path), input_dtype="sats")
+
+    print("Saving results as plots.")
+    if args.in_mtr and args.in_ihmtr:
+        output_name = "masked_whole_brain_single_fiber_corrected_mtr_ihmtr_plot" + files_basename + ".png"
+        output_path = out_folder / "plots" / output_name
+        plot_means(w_brain_results[0], w_brain_results[1], w_brain_results[2],
+                   w_brain_results[5], str(output_path),
+                   mt_cr_means=w_brain_cr_results[1],
+                   ihmt_cr_means=w_brain_cr_results[2], mt_poly=mtr_poly_wb,
+                   ihmt_poly=ihmtr_poly_wb, input_dtype="ratios")
+    if args.in_mtsat and args.in_ihmtsat:
+        output_name = "masked_whole_brain_single_fiber_corrected_mtsat_ihmtsat_plot" + files_basename + ".png"
+        output_path = out_folder / "plots" / output_name
+        plot_means(w_brain_results[0], w_brain_results[3], w_brain_results[4],
+                   w_brain_results[5],
+                   str(output_path), mt_cr_means=w_brain_cr_results[3],
+                   ihmt_cr_means=w_brain_cr_results[4], mt_poly=mtsat_poly_wb,
+                   ihmt_poly=ihmtsat_poly_wb, input_dtype="sats")
         
 #-----------------------------------Mask----------------------------------------
     print("Computing single fiber averages on masked corrected data.")
@@ -612,38 +613,38 @@ def main():
         print("Saving " + bundle_name + " results as txt files.")
         if args.in_mtr and args.in_ihmtr:
             output_name = bundle_name + "_masked_single_fiber_mtr_ihmtr_results" + files_basename + ".txt"
-            output_path = out_folder / "results_txt" / output_name
+            output_path = out_folder / "results_txt" / "bundles" / output_name
             save_txt(bundle_results[0], bundle_results[1], bundle_results[2],
                     bundle_results[5], str(output_path), input_dtype="ratios")
         if args.in_mtsat and args.in_ihmtsat:
             output_name = bundle_name + "_masked_single_fiber_mtsat_ihmtsat_results" + files_basename + ".txt"
-            output_path = out_folder / "results_txt" / output_name
+            output_path = out_folder / "results_txt" / "bundles" / output_name
             save_txt(bundle_results[0], bundle_results[3], bundle_results[4],
                     bundle_results[5], str(output_path), input_dtype="sats")
             
         print("Saving " + bundle_name + " corrected results as txt files.")
         if args.in_mtr and args.in_ihmtr:
             output_name = bundle_name + "_masked_single_fiber_corrected_mtr_ihmtr_results" + files_basename + ".txt"
-            output_path = out_folder / "results_txt" / output_name
+            output_path = out_folder / "results_txt" / "bundles" / output_name
             save_txt(bundle_cr_results[0], bundle_cr_results[1], bundle_cr_results[2],
                     bundle_cr_results[5], str(output_path), input_dtype="ratios")
         if args.in_mtsat and args.in_ihmtsat:
             output_name = bundle_name + "_masked_single_fiber_corrected_mtsat_ihmtsat_results" + files_basename + ".txt"
-            output_path = out_folder / "results_txt" / output_name
+            output_path = out_folder / "results_txt" / "bundles" / output_name
             save_txt(bundle_cr_results[0], bundle_cr_results[3], bundle_cr_results[4],
                     bundle_cr_results[5], str(output_path), input_dtype="sats")
             
         print("Saving " + bundle_name + " corrected results as plots.")
         if args.in_mtr and args.in_ihmtr:
             output_name = bundle_name + "_masked_single_fiber_corrected_mtr_ihmtr_plot" + files_basename + ".png"
-            output_path = out_folder / "plots" / output_name
+            output_path = out_folder / "plots" / "bundles" / output_name
             plot_means(bundle_results[0], bundle_results[1], bundle_results[2],
                        bundle_results[5], str(output_path),
                        mt_cr_means=bundle_cr_results[1],
                        ihmt_cr_means=bundle_cr_results[2], input_dtype="ratios")
         if args.in_mtsat and args.in_ihmtsat:
             output_name = bundle_name + "_masked_single_fiber_corrected_mtsat_ihmtsat_plot" + files_basename + ".png"
-            output_path = out_folder / "plots" / output_name
+            output_path = out_folder / "plots" / "bundles" / output_name
             plot_means(bundle_results[0], bundle_results[3], bundle_results[4],
                        bundle_results[5], str(output_path), 
                        mt_cr_means=bundle_cr_results[3],
