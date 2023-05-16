@@ -59,7 +59,7 @@ def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
                     norm=norm, edgecolors='blue', linewidths=1)
     if mt_poly:
         ax1.plot(highres_bins, mt_poly(highres_bins), "--g")
-    ax1.set_xlabel(r'$\theta_n$')
+    ax1.set_xlabel(r'$\theta_a$')
     ax1.set_xlim(0, 90)
     if input_dtype=="ratios":
         ax1.set_ylabel('MTR mean')
@@ -74,7 +74,7 @@ def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
                     norm=norm, edgecolors='blue', linewidths=1)
     if ihmt_poly:
         ax2.plot(highres_bins, ihmt_poly(highres_bins), "--g")
-    ax2.set_xlabel(r'$\theta_n$')
+    ax2.set_xlabel(r'$\theta_a$')
     ax2.set_xlim(0, 90)
     if input_dtype=="ratios":
         ax2.set_ylabel('ihMTR mean')
@@ -125,7 +125,7 @@ def plot_measure_mean(bins, peak_values, output_name):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.scatter(mid_bins, peak_values, linewidths=1)
-    ax.set_xlabel(r'$\theta_n$')
+    ax.set_xlabel(r'$\theta_a$')
     ax.set_ylabel('Measure mean')
     # ax.set_title('Measure mean vs Angle')
     fig.tight_layout()
