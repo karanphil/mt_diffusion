@@ -84,7 +84,7 @@ def compute_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
 
     # Apply the WM mask
     wm_mask_bool = (wm_mask > 0.9) & (nufo == 2)
-    norm_mask_bool = (peaks_fraction[..., 0] > frac_thr) & (peaks_fraction[..., 1] > frac_thr)
+    fraction_mask_bool = (peaks_fraction[..., 0] > frac_thr) & (peaks_fraction[..., 1] > frac_thr)
 
     for i in range(len(bins) - 1):
         angle_mask_0_90 = (theta_f1 >= bins[i]) & (theta_f1 < bins[i+1])
@@ -96,7 +96,7 @@ def compute_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
             angle_mask_90_180 = (180 - theta_f2 >= bins[j]) & (180 - theta_f2 < bins[j+1])
             angle_mask = angle_mask_0_90 | angle_mask_90_180
             mask_f2 = angle_mask
-            mask = mask_f1 & mask_f2 & wm_mask_bool & norm_mask_bool
+            mask = mask_f1 & mask_f2 & wm_mask_bool & fraction_mask_bool
             nb_voxels[i, j] = np.sum(mask)
             if np.sum(mask) < 5:
                 mtr_means[i, j] = None
