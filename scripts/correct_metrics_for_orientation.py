@@ -6,7 +6,8 @@ from pathlib import Path
 from modules.utils import (compute_single_fiber_averages,
                            compute_crossing_fibers_averages,
                            fit_single_fiber_results,
-                           correct_measure, compute_poor_ihmtr)
+                           correct_measure, compute_poor_ihmtr,
+                           analyse_crossing_fibers_averages)
 from modules.io import (save_txt, plot_means, save_masks_by_angle_bins,
                         plot_measure_mean)
 
@@ -285,6 +286,16 @@ def main():
         output_path = out_folder / "plots" / output_name
         plot_means(crossing_results[0], mtsat_2f_means_diag, ihmtsat_2f_means_diag,
                    nb_voxels_2f_diag, str(output_path), input_dtype="sats")
+        
+#----------------------------Crossing fibers analysis---------------------------
+    print("Analysing crossing fibers average.")
+    crossing_results = analyse_crossing_fibers_averages(peaks, peak_values,
+                                                        wm_mask, affine,
+                                                        nufo, mtr=mtr,
+                                                        ihmtr=ihmtr,
+                                                        mtsat=mtsat,
+                                                        ihmtsat=ihmtsat,
+                                                        bin_width=10)
 
 #------------------------------Correction whole brain---------------------------
     print("Correcting whole brain measures.")
@@ -445,20 +456,21 @@ def main():
     ihmtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[2])
     mtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[3])
     ihmtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[4])
+    nb_voxels_cr_2f_diag = np.diagonal(crossing_cr_results[5])
     
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:
         output_name = "WB_double_fibers_corrected_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
-        plot_means(crossing_results[0], mtr_2f_means_diag, ihmtr_2f_means_diag,
-                   nb_voxels_2f_diag, str(output_path),
+        plot_means(crossing_cr_results[0], mtr_2f_means_diag, ihmtr_2f_means_diag,
+                   nb_voxels_cr_2f_diag, str(output_path),
                    mt_cr_means=mtr_cr_2f_means_diag,
                    ihmt_cr_means=ihmtr_cr_2f_means_diag, input_dtype="ratios")
     if args.in_mtsat and args.in_ihmtsat:
         output_name = "WB_double_fibers_corrected_mtsat_ihmtsat_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
-        plot_means(crossing_results[0], mtsat_2f_means_diag, ihmtsat_2f_means_diag,
-                   nb_voxels_2f_diag, str(output_path),
+        plot_means(crossing_cr_results[0], mtsat_2f_means_diag, ihmtsat_2f_means_diag,
+                   nb_voxels_cr_2f_diag, str(output_path),
                    mt_cr_means=mtsat_cr_2f_means_diag,
                    ihmt_cr_means=ihmtsat_cr_2f_means_diag, input_dtype="sats")
 
@@ -665,20 +677,21 @@ def main():
     ihmtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[2])
     mtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[3])
     ihmtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[4])
+    nb_voxels_cr_2f_diag = np.diagonal(crossing_cr_results[5])
     
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:
         output_name = "CC_double_fibers_corrected_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
-        plot_means(crossing_results[0], mtr_2f_means_diag, ihmtr_2f_means_diag,
-                   nb_voxels_2f_diag, str(output_path),
+        plot_means(crossing_cr_results[0], mtr_2f_means_diag, ihmtr_2f_means_diag,
+                   nb_voxels_cr_2f_diag, str(output_path),
                    mt_cr_means=mtr_cr_2f_means_diag,
                    ihmt_cr_means=ihmtr_cr_2f_means_diag, input_dtype="ratios")
     if args.in_mtsat and args.in_ihmtsat:
         output_name = "CC_double_fibers_corrected_mtsat_ihmtsat_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
-        plot_means(crossing_results[0], mtsat_2f_means_diag, ihmtsat_2f_means_diag,
-                   nb_voxels_2f_diag, str(output_path),
+        plot_means(crossing_cr_results[0], mtsat_2f_means_diag, ihmtsat_2f_means_diag,
+                   nb_voxels_cr_2f_diag, str(output_path),
                    mt_cr_means=mtsat_cr_2f_means_diag,
                    ihmt_cr_means=ihmtsat_cr_2f_means_diag, input_dtype="sats")
         

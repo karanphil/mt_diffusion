@@ -132,3 +132,42 @@ def plot_measure_mean(bins, peak_values, output_name):
     # plt.show()
     plt.savefig(output_name, dpi=300)
     plt.close()
+
+
+def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
+                        labels, input_dtype="ratios"):
+    max_count = np.max(nb_voxels)
+    norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
+    mid_bins = (bins[:-1] + bins[1:]) / 2.
+    highres_bins = np.arange(0, 90 + 1, 0.5)
+    plot_init()
+    fig, (ax1, ax2, cax) = plt.subplots(1, 3,
+                                        gridspec_kw={"width_ratios":[1,1, 0.05]})
+    for i in range(mt_means.shape[0]):
+        ax1.scatter(mid_bins, mt_means[i], c=nb_voxels[i], cmap='Greys', norm=norm,
+                    linewidths=1, label=labels[i], edgecolors="C" + str(i))
+        colorbar = ax2.scatter(mid_bins, ihmt_means[i], c=nb_voxels[i], cmap='Greys',
+                               norm=norm, linewidths=1, label=labels[i], edgecolors="C" + str(i))
+    ax1.set_xlabel(r'$\theta_a$')
+    ax1.set_xlim(0, 90)
+    if input_dtype=="ratios":
+        ax1.set_ylabel('MTR mean')
+        # ax1.set_title('MTR vs Angle')
+    elif input_dtype=="sats":
+        ax1.set_ylabel('MTsat mean')
+        # ax1.set_title('MTsat vs Angle')
+    ax2.set_xlabel(r'$\theta_a$')
+    ax2.set_xlim(0, 90)
+    if input_dtype=="ratios":
+        ax2.set_ylabel('ihMTR mean')
+        # ax2.set_title('ihMTR vs Angle')
+    elif input_dtype=="sats":
+        ax2.set_ylabel('ihMTsat mean')
+        # ax2.set_title('ihMTsat vs Angle')
+    ax2.legend()
+    ax2.get_legend().set_title("Peaks fractions")
+    fig.colorbar(colorbar, cax=cax, label="Voxel count")
+    fig.tight_layout()
+    plt.show()
+    # plt.savefig(output_name, dpi=300)
+    plt.close()
