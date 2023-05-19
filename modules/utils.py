@@ -163,35 +163,20 @@ def compute_peaks_fraction(peak_values):
     return peaks_fraction
 
 
-def compute_nufo_factor(peak_values, nufo, wm_mask):
-    pv_means = np.zeros((5))
-    nufo_factor = np.zeros((nufo.shape))
-    for i in range(5):
-        mask = (wm_mask > 0.9) & (nufo == i + 1)
-        pv_means[i] = np.mean(peak_values[mask, : i + 1])
-        nufo_factor[mask] = pv_means[i]
-    nufo_factor /= np.max(pv_means)
-    return nufo_factor
-
-
-def compute_corrections(polynome, angle, fraction, nufo_factor=None):
+def compute_corrections(polynome, angle, fraction):
     bins = np.arange(0, 90 + 1, 1)
     max_poly = np.max(polynome(bins))
-    if nufo_factor is not None:
-        correction = nufo_factor * fraction * (max_poly - polynome(angle))
-    else:
-        correction = fraction * (max_poly - polynome(angle))
+    correction = fraction * (max_poly - polynome(angle))
     return correction
 
 
-def correct_measure(peaks, peak_values, measure, affine, wm_mask, nufo,
+def correct_measure(peaks, peak_values, measure, affine, wm_mask,
                     polynome, peak_frac_thr=0):
     # peaks, peaks_norm = normalize_peaks(np.copy(peaks))
     # peaks_sum = np.sum(peaks_norm, axis=-1)
     # peaks_sum = np.repeat(peaks_sum.reshape(peaks_sum.shape + (1,)),
     #                       peaks_norm.shape[-1], axis=-1)
     # peaks_fraction = peaks_norm / peaks_sum
-    nufo_factor = compute_nufo_factor(peak_values, nufo, wm_mask)
     peaks_fraction = compute_peaks_fraction(peak_values)
     
     # Find the direction of the B0 field
@@ -215,8 +200,7 @@ def correct_measure(peaks, peak_values, measure, affine, wm_mask, nufo,
 
         corrections[mask, i] = compute_corrections(polynome,
                                                    peaks_angles[mask, i],
-                                                   peaks_fraction[mask, i],
-                                                   nufo_factor[mask])
+                                                   peaks_fraction[mask, i])
     
     total_corrections = np.sum(corrections, axis=-1)
 
