@@ -1,5 +1,5 @@
 import numpy as np
-from modules.io import plot_multiple_means
+from modules.io import (plot_multiple_means, plot_delta_m_max)
 
 
 def compute_single_fiber_averages(peaks, fa, wm_mask, affine,
@@ -132,7 +132,8 @@ def compute_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
 
 def analyse_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
                                      mtr=None, ihmtr=None, mtsat=None,
-                                     ihmtsat=None, bin_width=10):
+                                     ihmtsat=None, bin_width=10, polyfit=None,
+                                     single_fiber_delta_m_max=0):
     # peaks, peaks_norm = normalize_peaks(np.copy(peaks))
     peaks_fraction = compute_peaks_fraction(peak_values)
 
@@ -143,6 +144,14 @@ def analyse_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
 
     bins = np.arange(0, 90 + bin_width, bin_width)
     # mid_bins = (bins[:-1] + bins[1:]) / 2.
+    # Calculate min and max MTR.
+    # min_angle = highres_bins[np.argwhere(polyfit(highres_bins) == np.min(polyfit(highres_bins)))][0][0]
+    # max_angle = highres_bins[np.argwhere(polyfit(highres_bins) == np.max(polyfit(highres_bins)))][0][0]
+    # bin_min = np.array([min_angle - 5, min_angle + 5])
+    # bin_max = np.array([max_angle - (10 - (90 - max_angle)), 90])
+    # print(bin_min, bin_max)
+    bin_min = np.array([40, 50])
+    bin_max = np.array([80, 90])
 
     # Calculate the angle between e1 and B0 field
     cos_theta_f1 = np.dot(peaks[..., 0:3], b0_field)
@@ -159,6 +168,9 @@ def analyse_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
     ihmtsat_2f_means_diag = np.zeros((len(frac_thrs) - 1, len(bins) - 1))
     nb_voxels_2f_diag = np.zeros((len(frac_thrs) - 1, len(bins) - 1))
 
+    mtr_min_max = np.zeros((len(frac_thrs) - 1, 2))
+    mtr_nb_voxels = np.zeros((len(frac_thrs) - 1, 2))
+
     for idx in range(len(frac_thrs) - 1):
         mtr_means = np.zeros((len(bins) - 1, len(bins) - 1))
         ihmtr_means = np.zeros((len(bins) - 1, len(bins) - 1))
@@ -169,6 +181,20 @@ def analyse_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
         # Apply the WM mask
         wm_mask_bool = (wm_mask > 0.9) & (nufo == 2)
         fraction_mask_bool = (peaks_fraction[..., 0] >= frac_thrs[idx]) & (peaks_fraction[..., 0] < frac_thrs[idx + 1]) | (peaks_fraction[..., 1] >= frac_thrs[idx]) & (peaks_fraction[..., 1] < frac_thrs[idx + 1])
+
+        bin_min_f1 = (theta_f1 >= bin_min[0]) & (theta_f1 < bin_min[1]) | (180 - theta_f1 >= bin_min[0]) & (180 - theta_f1 < bin_min[1])
+        bin_min_f2 = (theta_f2 >= bin_min[0]) & (theta_f2 < bin_min[1]) | (180 - theta_f2 >= bin_min[0]) & (180 - theta_f2 < bin_min[1])
+
+        bin_max_f1 = (theta_f1 >= bin_max[0]) & (theta_f1 < bin_max[1]) | (180 - theta_f1 >= bin_max[0]) & (180 - theta_f1 < bin_max[1])
+        bin_max_f2 = (theta_f2 >= bin_max[0]) & (theta_f2 < bin_max[1]) | (180 - theta_f2 >= bin_max[0]) & (180 - theta_f2 < bin_max[1])
+
+        mask_bin_min = bin_min_f1 & bin_min_f2 & wm_mask_bool & fraction_mask_bool
+        mask_bin_max = bin_max_f1 & bin_max_f2 & wm_mask_bool & fraction_mask_bool
+
+        mtr_min_max[idx, 0] = np.mean(mtr[mask_bin_min])
+        mtr_min_max[idx, 1] = np.mean(mtr[mask_bin_max])
+        mtr_nb_voxels[idx, 0] = np.sum(mask_bin_min)
+        mtr_nb_voxels[idx, 1] = np.sum(mask_bin_max)
 
         for i in range(len(bins) - 1):
             angle_mask_0_90 = (theta_f1 >= bins[i]) & (theta_f1 < bins[i+1])
@@ -222,6 +248,35 @@ def analyse_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
     plot_multiple_means(bins, mtr_2f_means_diag, ihmtr_2f_means_diag,
                         nb_voxels_2f_diag, output_name, labels,
                         input_dtype="ratios")
+    
+    bins_min_max = np.array([(bin_min[0] + bin_min[1]) / 2., (bin_max[0] + bin_max[1]) / 2.])
+
+    plot_delta_m_max(bins_min_max, mtr_min_max, mtr_nb_voxels, output_name, labels)
+
+    mtr_delta_m_max = np.zeros(6)
+    mtr_delta_m_max[0] = 0
+    mtr_delta_m_max[1:5] = mtr_min_max[:, 1] - mtr_min_max[:, 0]
+    mtr_delta_m_max[5] = single_fiber_delta_m_max
+    mtr_delta_m_max /= mtr_delta_m_max[5]
+
+    frac_thrs_mid = np.array([0, 0.55, 0.65, 0.75, 0.85, 1])
+    fit = np.polyfit(frac_thrs_mid[:5], mtr_delta_m_max[:5], 1)
+    polynome = np.poly1d(fit)
+    x = np.arange(0.0, 1.01, 0.01)
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.plot(frac_thrs_mid, mtr_delta_m_max[:], "o")
+    plt.plot(x, polynome(x), "--k")
+    plt.show()
+
+    return polynome
+
+
+def nb_peaks_factor(polynome, peak_fraction):
+    peak_fraction_09 = (peak_fraction < 0.9)
+    nb_peaks_factor = np.ones(peak_fraction.shape)
+    nb_peaks_factor[peak_fraction_09] = polynome(peak_fraction[peak_fraction_09])
+    return nb_peaks_factor    
 
 
 def extend_measure(bins, measure):
@@ -258,21 +313,26 @@ def compute_peaks_fraction(peak_values):
     return peaks_fraction
 
 
-def compute_corrections(polynome, angle, fraction):
+def compute_corrections(polynome, angle, fraction, fraction_factor):
     bins = np.arange(0, 90 + 1, 1)
     max_poly = np.max(polynome(bins))
-    correction = fraction * (max_poly - polynome(angle))
+    correction = fraction * (max_poly - polynome(angle)) * fraction_factor
     return correction
 
 
 def correct_measure(peaks, peak_values, measure, affine, wm_mask,
-                    polynome, peak_frac_thr=0):
+                    polynome, peak_frac_thr=0, polynome_factor=None):
     # peaks, peaks_norm = normalize_peaks(np.copy(peaks))
     # peaks_sum = np.sum(peaks_norm, axis=-1)
     # peaks_sum = np.repeat(peaks_sum.reshape(peaks_sum.shape + (1,)),
     #                       peaks_norm.shape[-1], axis=-1)
     # peaks_fraction = peaks_norm / peaks_sum
     peaks_fraction = compute_peaks_fraction(peak_values)
+
+    if polynome_factor is not None:
+        peaks_fraction_factor = nb_peaks_factor(polynome_factor, peaks_fraction[..., 0])
+    else:
+        peaks_fraction_factor = np.ones(peaks_fraction.shape[:3])
     
     # Find the direction of the B0 field
     rot = affine[0:3, 0:3]
@@ -295,7 +355,8 @@ def correct_measure(peaks, peak_values, measure, affine, wm_mask,
 
         corrections[mask, i] = compute_corrections(polynome,
                                                    peaks_angles[mask, i],
-                                                   peaks_fraction[mask, i])
+                                                   peaks_fraction[mask, i],
+                                                   peaks_fraction_factor[mask])
     
     total_corrections = np.sum(corrections, axis=-1)
 

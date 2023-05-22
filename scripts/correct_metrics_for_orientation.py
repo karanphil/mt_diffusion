@@ -289,34 +289,40 @@ def main():
         
 #----------------------------Crossing fibers analysis---------------------------
     print("Analysing crossing fibers average.")
-    crossing_results = analyse_crossing_fibers_averages(peaks, peak_values,
-                                                        wm_mask, affine,
-                                                        nufo, mtr=mtr,
-                                                        ihmtr=ihmtr,
-                                                        mtsat=mtsat,
-                                                        ihmtsat=ihmtsat,
-                                                        bin_width=10)
+    single_fiber_delta_m_max = np.nanmax(w_brain_results[1]) - np.nanmin(w_brain_results[1])
+    poly_crossing = analyse_crossing_fibers_averages(peaks, peak_values,
+                                                     wm_mask, affine,
+                                                     nufo, mtr=mtr,
+                                                     ihmtr=ihmtr,
+                                                     mtsat=mtsat,
+                                                     ihmtsat=ihmtsat,
+                                                     bin_width=10,
+                                                     polyfit=mtr_poly_wb,
+                                                     single_fiber_delta_m_max=single_fiber_delta_m_max)
 
 #------------------------------Correction whole brain---------------------------
     print("Correcting whole brain measures.")
     if args.in_mtr:
         corrected_mtr = correct_measure(peaks, peak_values, mtr, affine,
                                         wm_mask, mtr_poly_wb,
-                                        peak_frac_thr=args.min_frac_thr)
+                                        peak_frac_thr=args.min_frac_thr,
+                                        polynome_factor=poly_crossing)
         corrected_name = "mtr_corrected_WB.nii.gz"
         corrected_path = out_folder / "measures" / corrected_name
         nib.save(nib.Nifti1Image(corrected_mtr, affine), corrected_path)
     if args.in_ihmtr:
         corrected_ihmtr = correct_measure(peaks, peak_values, ihmtr, affine,
                                           wm_mask, ihmtr_poly_wb,
-                                          peak_frac_thr=args.min_frac_thr)
+                                          peak_frac_thr=args.min_frac_thr,
+                                        polynome_factor=poly_crossing)
         corrected_name = "ihmtr_corrected_WB.nii.gz"
         corrected_path = out_folder / "measures" / corrected_name
         nib.save(nib.Nifti1Image(corrected_ihmtr, affine), corrected_path)
     if args.in_mtsat:
         corrected_mtsat = correct_measure(peaks, peak_values, mtsat, affine,
                                           wm_mask, mtsat_poly_wb,
-                                          peak_frac_thr=args.min_frac_thr)
+                                          peak_frac_thr=args.min_frac_thr,
+                                        polynome_factor=poly_crossing)
         corrected_name = "mtsat_corrected_WB.nii.gz"
         corrected_path = out_folder / "measures" / corrected_name
         nib.save(nib.Nifti1Image(corrected_mtsat, affine), corrected_path)
@@ -324,7 +330,8 @@ def main():
         corrected_ihmtsat = correct_measure(peaks, peak_values, ihmtsat,
                                             affine, wm_mask,
                                             ihmtsat_poly_wb,
-                                            peak_frac_thr=args.min_frac_thr)
+                                            peak_frac_thr=args.min_frac_thr,
+                                        polynome_factor=poly_crossing)
         corrected_name = "ihmtsat_corrected_WB.nii.gz"
         corrected_path = out_folder / "measures" / corrected_name
         nib.save(nib.Nifti1Image(corrected_ihmtsat, affine), corrected_path)
