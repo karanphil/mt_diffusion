@@ -7,9 +7,9 @@ from modules.utils import (compute_single_fiber_averages,
                            compute_crossing_fibers_averages,
                            fit_single_fiber_results,
                            correct_measure, compute_poor_ihmtr,
-                           analyse_crossing_fibers_averages)
+                           analyse_delta_m_max, analyse_3_crossing_fibers_averages)
 from modules.io import (save_txt, plot_means, save_masks_by_angle_bins,
-                        plot_measure_mean)
+                        plot_multiple_means, plot_delta_m_max, plot_different_bins_means)
 
 from scilpy.io.utils import (add_overwrite_arg)
 
@@ -58,8 +58,8 @@ def _build_arg_parser():
                    help='Value of the bin width inside the mask [%(default)s].')
     p.add_argument('--bin_width_bundles', default=5,
                    help='Value of the bin width inside bundles [%(default)s].')
-    p.add_argument('--frac_thr', default=0.4,
-                   help='Value of the fraction threshold for selecting 2 fibers [%(default)s].')
+    # p.add_argument('--frac_thr', default=0.4,
+    #                help='Value of the fraction threshold for selecting 2 fibers [%(default)s].')
     p.add_argument('--min_frac_thr', default=0.1,
                    help='Value of the minimal fraction threshold for selecting peaks to correct [%(default)s].')
     p.add_argument('--poly_order', default=10,
@@ -257,6 +257,19 @@ def main():
         plot_means(roi_results[0], roi_results[3], roi_results[4],
                    roi_results[5], str(output_path), mt_poly=mtsat_poly_roi,
                    ihmt_poly=ihmtsat_poly_roi, input_dtype="sats")
+        
+    if args.in_mtr and args.in_ihmtr:
+        output_name = "CC_&_WB_single_fiber_mtr_ihmtr_plot" + files_basename + ".png"
+        output_path = out_folder / "plots" / output_name
+        plot_different_bins_means([w_brain_results[0], roi_results[0]], [w_brain_results[1], roi_results[1]], [w_brain_results[2], roi_results[2]],
+                   [w_brain_results[5], roi_results[5]], str(output_path), ["WB", "CC"], mt_poly=[mtr_poly_wb, mtr_poly_roi],
+                   ihmt_poly=[ihmtr_poly_wb, ihmtr_poly_roi], input_dtype="ratios")
+    # if args.in_mtsat and args.in_ihmtsat:
+    #     output_name = "CC_&_WB_single_fiber_mtsat_ihmtsat_plot" + files_basename + ".png"
+    #     output_path = out_folder / "plots" / output_name
+    #     plot_multiple_means(roi_results[0], roi_results[3], roi_results[4],
+    #                roi_results[5], str(output_path), mt_poly=mtsat_poly_roi,
+    #                ihmt_poly=ihmtsat_poly_roi, input_dtype="sats")
 
 #----------------------------Crossing fibers------------------------------------
     print("Computing crossing fibers average.")
@@ -266,39 +279,82 @@ def main():
                                                         ihmtr=ihmtr,
                                                         mtsat=mtsat,
                                                         ihmtsat=ihmtsat,
-                                                        bin_width=10,
-                                                        frac_thr=args.frac_thr)
+                                                        bin_width=10)
     
-    mtr_2f_means_diag = np.diagonal(crossing_results[1])
-    ihmtr_2f_means_diag = np.diagonal(crossing_results[2])
-    mtsat_2f_means_diag = np.diagonal(crossing_results[3])
-    ihmtsat_2f_means_diag = np.diagonal(crossing_results[4])
-    nb_voxels_2f_diag = np.diagonal(crossing_results[5])
+    mtr_2f_means_diag = np.diagonal(crossing_results[1], axis1=1, axis2=2)
+    ihmtr_2f_means_diag = np.diagonal(crossing_results[2], axis1=1, axis2=2)
+    mtsat_2f_means_diag = np.diagonal(crossing_results[3], axis1=1, axis2=2)
+    ihmtsat_2f_means_diag = np.diagonal(crossing_results[4], axis1=1, axis2=2)
+    nb_voxels_2f_diag = np.diagonal(crossing_results[5], axis1=1, axis2=2)
     
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:
-        output_name = "double_fibers_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
+        output_name = "WB_double_fibers_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
-        plot_means(crossing_results[0], mtr_2f_means_diag, ihmtr_2f_means_diag,
-                   nb_voxels_2f_diag, str(output_path), input_dtype="ratios")
+        plot_multiple_means(crossing_results[0], mtr_2f_means_diag, ihmtr_2f_means_diag,
+                            nb_voxels_2f_diag, str(output_path), crossing_results[6],
+                            input_dtype="ratios", legend_title=r"Peak$_1$ fraction")
     if args.in_mtsat and args.in_ihmtsat:
-        output_name = "double_fibers_mtsat_ihmtsat_diagonal_plot" + files_basename + ".png"
+        output_name = "WB_double_fibers_mtsat_ihmtsat_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
-        plot_means(crossing_results[0], mtsat_2f_means_diag, ihmtsat_2f_means_diag,
-                   nb_voxels_2f_diag, str(output_path), input_dtype="sats")
+        plot_multiple_means(crossing_results[0], mtsat_2f_means_diag, ihmtsat_2f_means_diag,
+                            nb_voxels_2f_diag, str(output_path), crossing_results[6],
+                            input_dtype="sats", legend_title=r"Peak$_1$ fraction")
         
 #----------------------------Crossing fibers analysis---------------------------
-    print("Analysing crossing fibers average.")
-    single_fiber_delta_m_max = np.nanmax(w_brain_results[1]) - np.nanmin(w_brain_results[1])
-    poly_crossing = analyse_crossing_fibers_averages(peaks, peak_values,
-                                                     wm_mask, affine,
-                                                     nufo, mtr=mtr,
-                                                     ihmtr=ihmtr,
-                                                     mtsat=mtsat,
-                                                     ihmtsat=ihmtsat,
-                                                     bin_width=10,
-                                                     polyfit=mtr_poly_wb,
-                                                     single_fiber_delta_m_max=single_fiber_delta_m_max)
+    print("Analysing crossing fibers delta_m_max.")
+    if args.bin_width == 1:
+        bin_min = np.array([40, 50])
+        bin_max = np.array([80, 90])
+        # bin_min_mid = np.mean(bin_min)
+        # bin_max_mid = np.mean(bin_max)
+        # min_idx = np.argwhere(w_brain_results[0] == bin_min_mid)[0][0]
+        # max_idx = np.argwhere(w_brain_results[0] == bin_max_mid)[0][0]
+        mtr_single_fiber_delta_m_max = np.nanmax(w_brain_results[1]) - np.nanmin(w_brain_results[1])
+        # mtr_single_fiber_delta_m_max = mtr_poly_wb(bin_max_mid) - mtr_poly_wb(bin_min_mid)
+        # ihmtr_single_fiber_delta_m_max = ihmtr_poly_wb(bin_min_mid) - ihmtr_poly_wb(bin_max_mid)
+        # ihmtr_single_fiber_delta_m_max = w_brain_results[2][min_idx] - w_brain_results[2][max_idx]
+        ihmtr_single_fiber_delta_m_max = 1
+
+        delta_m_max_results = analyse_delta_m_max(crossing_results[0],
+                                                  mtr_2f_means_diag,
+                                                  ihmtr_2f_means_diag,
+                                                  bin_min,
+                                                  bin_max,
+                                                  mtr_single_fiber_delta_m_max,
+                                                  ihmtr_single_fiber_delta_m_max)
+        
+        mtr_poly_crossing = delta_m_max_results[0]
+        # ihmtr_poly_crossing = delta_m_max_results[1]
+        # mtr_poly_crossing = None
+        ihmtr_poly_crossing = None
+        mtsat_poly_crossing = None
+        ihmtsat_poly_crossing = None
+        print("Saving crossing fibers delta_m_max plot.")
+        if args.in_mtr and args.in_ihmtr:
+            output_name = "WB_delta_m_max_mtr_plot" + files_basename + ".png"
+            output_path = out_folder / "plots" / output_name
+            plot_delta_m_max(delta_m_max_results[4][1:], delta_m_max_results[2][1:],
+                             delta_m_max_results[0], str(output_path))
+    else:
+        raise ValueError("Not implemented yet for bin_width!=1.")
+    
+#----------------------------3 Crossing fibers analysis-------------------------
+    print("Computing 3 crossing fibers average.")
+    three_crossing_results = analyse_3_crossing_fibers_averages(peaks, peak_values,
+                                                        wm_mask, affine,
+                                                        nufo, mtr=mtr,
+                                                        ihmtr=ihmtr,
+                                                        mtsat=mtsat,
+                                                        ihmtsat=ihmtsat,
+                                                        bin_width=30)
+    print("Saving results as plots.")
+    if args.in_mtr and args.in_ihmtr:
+        output_name = "WB_triple_fibers_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
+        output_path = out_folder / "plots" / output_name
+        plot_multiple_means(three_crossing_results[0], three_crossing_results[1], three_crossing_results[2],
+                            three_crossing_results[5], str(output_path), three_crossing_results[6],
+                            input_dtype="ratios", legend_title=r"Peak$_1$ fraction")
 
 #------------------------------Correction whole brain---------------------------
     print("Correcting whole brain measures.")
@@ -306,7 +362,7 @@ def main():
         corrected_mtr = correct_measure(peaks, peak_values, mtr, affine,
                                         wm_mask, mtr_poly_wb,
                                         peak_frac_thr=args.min_frac_thr,
-                                        polynome_factor=poly_crossing)
+                                        polynome_factor=mtr_poly_crossing)
         corrected_name = "mtr_corrected_WB.nii.gz"
         corrected_path = out_folder / "measures" / corrected_name
         nib.save(nib.Nifti1Image(corrected_mtr, affine), corrected_path)
@@ -314,7 +370,7 @@ def main():
         corrected_ihmtr = correct_measure(peaks, peak_values, ihmtr, affine,
                                           wm_mask, ihmtr_poly_wb,
                                           peak_frac_thr=args.min_frac_thr,
-                                        polynome_factor=poly_crossing)
+                                          polynome_factor=ihmtr_poly_crossing)
         corrected_name = "ihmtr_corrected_WB.nii.gz"
         corrected_path = out_folder / "measures" / corrected_name
         nib.save(nib.Nifti1Image(corrected_ihmtr, affine), corrected_path)
@@ -322,7 +378,7 @@ def main():
         corrected_mtsat = correct_measure(peaks, peak_values, mtsat, affine,
                                           wm_mask, mtsat_poly_wb,
                                           peak_frac_thr=args.min_frac_thr,
-                                        polynome_factor=poly_crossing)
+                                          polynome_factor=mtsat_poly_crossing)
         corrected_name = "mtsat_corrected_WB.nii.gz"
         corrected_path = out_folder / "measures" / corrected_name
         nib.save(nib.Nifti1Image(corrected_mtsat, affine), corrected_path)
@@ -331,7 +387,7 @@ def main():
                                             affine, wm_mask,
                                             ihmtsat_poly_wb,
                                             peak_frac_thr=args.min_frac_thr,
-                                        polynome_factor=poly_crossing)
+                                            polynome_factor=ihmtsat_poly_crossing)
         corrected_name = "ihmtsat_corrected_WB.nii.gz"
         corrected_path = out_folder / "measures" / corrected_name
         nib.save(nib.Nifti1Image(corrected_ihmtsat, affine), corrected_path)
@@ -456,30 +512,49 @@ def main():
                                                         ihmtr=corrected_ihmtr,
                                                         mtsat=corrected_mtsat,
                                                         ihmtsat=corrected_ihmtsat,
-                                                        bin_width=10,
-                                                        frac_thr=args.frac_thr)
+                                                        bin_width=10)
     
-    mtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[1])
-    ihmtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[2])
-    mtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[3])
-    ihmtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[4])
-    nb_voxels_cr_2f_diag = np.diagonal(crossing_cr_results[5])
+    mtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[1], axis1=1, axis2=2)
+    ihmtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[2], axis1=1, axis2=2)
+    mtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[3], axis1=1, axis2=2)
+    ihmtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[4], axis1=1, axis2=2)
+    nb_voxels_cr_2f_diag = np.diagonal(crossing_cr_results[5], axis1=1, axis2=2)
     
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:
         output_name = "WB_double_fibers_corrected_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
-        plot_means(crossing_cr_results[0], mtr_2f_means_diag, ihmtr_2f_means_diag,
-                   nb_voxels_cr_2f_diag, str(output_path),
+        plot_multiple_means(crossing_cr_results[0], mtr_2f_means_diag, ihmtr_2f_means_diag,
+                   nb_voxels_cr_2f_diag, str(output_path), crossing_cr_results[6],
                    mt_cr_means=mtr_cr_2f_means_diag,
-                   ihmt_cr_means=ihmtr_cr_2f_means_diag, input_dtype="ratios")
+                   ihmt_cr_means=ihmtr_cr_2f_means_diag, input_dtype="ratios",
+                   legend_title=r"Peak$_1$ fraction")
     if args.in_mtsat and args.in_ihmtsat:
         output_name = "WB_double_fibers_corrected_mtsat_ihmtsat_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
-        plot_means(crossing_cr_results[0], mtsat_2f_means_diag, ihmtsat_2f_means_diag,
-                   nb_voxels_cr_2f_diag, str(output_path),
+        plot_multiple_means(crossing_cr_results[0], mtsat_2f_means_diag, ihmtsat_2f_means_diag,
+                   nb_voxels_cr_2f_diag, str(output_path), crossing_cr_results[6],
                    mt_cr_means=mtsat_cr_2f_means_diag,
-                   ihmt_cr_means=ihmtsat_cr_2f_means_diag, input_dtype="sats")
+                   ihmt_cr_means=ihmtsat_cr_2f_means_diag, input_dtype="sats",
+                   legend_title=r"Peak$_1$ fraction")
+        
+#----------------------------3 Crossing fibers analysis-------------------------
+    print("Computing 3 crossing fibers average.")
+    three_crossing_cr_results = analyse_3_crossing_fibers_averages(peaks, peak_values,
+                                                        wm_mask, affine,
+                                                        nufo, mtr=corrected_mtr,
+                                                        ihmtr=corrected_ihmtr,
+                                                        mtsat=corrected_mtsat,
+                                                        ihmtsat=corrected_ihmtsat,
+                                                        bin_width=30)
+    print("Saving results as plots.")
+    if args.in_mtr and args.in_ihmtr:
+        output_name = "WB_triple_fibers_corrected_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
+        output_path = out_folder / "plots" / output_name
+        plot_multiple_means(three_crossing_results[0], three_crossing_results[1], three_crossing_results[2],
+                            three_crossing_results[5], str(output_path), three_crossing_results[6],
+                            input_dtype="ratios", legend_title=r"Peak$_1$ fraction",
+                            mt_cr_means=three_crossing_cr_results[1], ihmt_cr_means=three_crossing_cr_results[2])
 
 #------------------------------Correction CC---------------------------
     print("Correcting ROI measures.")
@@ -677,30 +752,31 @@ def main():
                                                         ihmtr=corrected_ihmtr,
                                                         mtsat=corrected_mtsat,
                                                         ihmtsat=corrected_ihmtsat,
-                                                        bin_width=10,
-                                                        frac_thr=args.frac_thr)
+                                                        bin_width=10)
     
-    mtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[1])
-    ihmtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[2])
-    mtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[3])
-    ihmtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[4])
-    nb_voxels_cr_2f_diag = np.diagonal(crossing_cr_results[5])
+    mtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[1], axis1=1, axis2=2)
+    ihmtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[2], axis1=1, axis2=2)
+    mtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[3], axis1=1, axis2=2)
+    ihmtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[4], axis1=1, axis2=2)
+    nb_voxels_cr_2f_diag = np.diagonal(crossing_cr_results[5], axis1=1, axis2=2)
     
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:
         output_name = "CC_double_fibers_corrected_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
-        plot_means(crossing_cr_results[0], mtr_2f_means_diag, ihmtr_2f_means_diag,
-                   nb_voxels_cr_2f_diag, str(output_path),
+        plot_multiple_means(crossing_cr_results[0], mtr_2f_means_diag, ihmtr_2f_means_diag,
+                   nb_voxels_cr_2f_diag, str(output_path), crossing_cr_results[6],
                    mt_cr_means=mtr_cr_2f_means_diag,
-                   ihmt_cr_means=ihmtr_cr_2f_means_diag, input_dtype="ratios")
+                   ihmt_cr_means=ihmtr_cr_2f_means_diag, input_dtype="ratios",
+                   legend_title=r"Peak$_1$ fraction")
     if args.in_mtsat and args.in_ihmtsat:
         output_name = "CC_double_fibers_corrected_mtsat_ihmtsat_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
-        plot_means(crossing_cr_results[0], mtsat_2f_means_diag, ihmtsat_2f_means_diag,
-                   nb_voxels_cr_2f_diag, str(output_path),
+        plot_multiple_means(crossing_cr_results[0], mtsat_2f_means_diag, ihmtsat_2f_means_diag,
+                   nb_voxels_cr_2f_diag, str(output_path), crossing_cr_results[6],
                    mt_cr_means=mtsat_cr_2f_means_diag,
-                   ihmt_cr_means=ihmtsat_cr_2f_means_diag, input_dtype="sats")
+                   ihmt_cr_means=ihmtsat_cr_2f_means_diag, input_dtype="sats",
+                   legend_title=r"Peak$_1$ fraction")
         
     # print("Computing difference maps.")
     # if args.in_mtr:

@@ -135,18 +135,31 @@ def plot_measure_mean(bins, peak_values, output_name):
 
 
 def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
-                        labels, input_dtype="ratios"):
+                        labels, mt_cr_means=None, ihmt_cr_means=None,
+                        input_dtype="ratios", legend_title=None,
+                        mt_poly=None, ihmt_poly=None):
     max_count = np.max(nb_voxels)
     norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
     mid_bins = (bins[:-1] + bins[1:]) / 2.
+    highres_bins = np.arange(0, 90 + 1, 0.5)
     plot_init()
     fig, (ax1, ax2, cax) = plt.subplots(1, 3,
                                         gridspec_kw={"width_ratios":[1,1, 0.05]})
     for i in range(mt_means.shape[0]):
         ax1.scatter(mid_bins, mt_means[i], c=nb_voxels[i], cmap='Greys', norm=norm,
                     linewidths=1, label=labels[i], edgecolors="C" + str(i))
+        if mt_cr_means is not None:
+            ax1.scatter(mid_bins, mt_cr_means[i], c=nb_voxels[i], cmap='Greys',
+                        norm=norm, edgecolors="C" + str(i), linewidths=1, marker="s")
+        if mt_poly is not None:
+            ax1.plot(highres_bins, mt_poly[i](highres_bins), "--", color="C" + str(i))
         colorbar = ax2.scatter(mid_bins, ihmt_means[i], c=nb_voxels[i], cmap='Greys',
                                norm=norm, linewidths=1, label=labels[i], edgecolors="C" + str(i))
+        if ihmt_cr_means is not None:
+            ax2.scatter(mid_bins, ihmt_cr_means[i], c=nb_voxels[i], cmap='Greys',
+                        norm=norm, edgecolors="C" + str(i), linewidths=1, marker="s")
+        if ihmt_poly is not None:
+            ax1.plot(highres_bins, ihmt_poly[i](highres_bins), "--", color="C" + str(i))
     ax1.set_xlabel(r'$\theta_a$')
     ax1.set_xlim(0, 90)
     if input_dtype=="ratios":
@@ -164,24 +177,85 @@ def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
         ax2.set_ylabel('ihMTsat mean')
         # ax2.set_title('ihMTsat vs Angle')
     ax2.legend()
-    ax2.get_legend().set_title("Peaks fractions")
+    if legend_title is not None:
+        ax2.get_legend().set_title(legend_title)
     fig.colorbar(colorbar, cax=cax, label="Voxel count")
     fig.tight_layout()
-    plt.show()
-    # plt.savefig(output_name, dpi=300)
+    # plt.show()
+    plt.savefig(output_name, dpi=300)
     plt.close()
 
 
-def plot_delta_m_max(bins, mt_means, nb_voxels, output_name,
-                     labels, input_dtype="ratios"):
-    max_count = np.max(nb_voxels)
-    norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
+def plot_delta_m_max(bins, mt_means, mt_poly, output_name, ihmt_means=None,
+                     ihmt_poly=None, input_dtype="ratios", xlim=[0, 1]):
+    highres_bins = np.arange(0, 1.01, 0.01)
     plot_init()
-    fig, (ax1, cax) = plt.subplots(1, 2,
-                                        gridspec_kw={"width_ratios":[1, 0.05]})
-    for i in range(mt_means.shape[0]):
-        colorbar = ax1.scatter(bins, mt_means[i], c=nb_voxels[i], cmap='Greys', norm=norm,
+    if ihmt_means is not None:
+        fig, (ax1, ax2) = plt.subplots(1, 2,
+                                            gridspec_kw={"width_ratios":[1,1]})
+        ax1.scatter(bins, mt_means, color='black', linewidths=1)
+        ax1.plot(highres_bins, mt_poly(highres_bins), "--g")
+        ax1.set_xlabel(r'Peak$_1$ fraction')
+        ax1.set_xlim(xlim[0], xlim[1])
+        if input_dtype=="ratios":
+            ax1.set_ylabel(r'MTR $\Delta m_{max}$')
+            # ax1.set_title('MTR vs Angle')
+        elif input_dtype=="sats":
+            ax1.set_ylabel(r'MTsat $\Delta m_{max}$')
+            # ax1.set_title('MTsat vs Angle')
+        ax2.scatter(bins, ihmt_means, color='black', linewidths=1)
+        ax2.plot(highres_bins, ihmt_poly(highres_bins), "--g")
+        ax2.set_xlabel(r'Peak$_1$ fraction')
+        ax2.set_xlim(xlim[0], xlim[1])
+        if input_dtype=="ratios":
+            ax2.set_ylabel(r'ihMTR $\Delta m_{max}$')
+            # ax2.set_title('ihMTR vs Angle')
+        elif input_dtype=="sats":
+            ax2.set_ylabel(r'ihMTsat $\Delta m_{max}$')
+            # ax2.set_title('ihMTsat vs Angle')
+        fig.tight_layout()
+        # plt.show()
+        plt.savefig(output_name, dpi=300)
+        plt.close()
+    else:
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.scatter(bins, mt_means, color='black', linewidths=1)
+        ax.plot(highres_bins, mt_poly(highres_bins), "--g")
+        ax.set_xlabel(r'Peak$_1$ fraction')
+        ax.set_xlim(xlim[0], xlim[1])
+        if input_dtype=="ratios":
+            ax.set_ylabel(r'MTR $\Delta m_{max}$')
+        elif input_dtype=="sats":
+            ax.set_ylabel(r'MTsat $\Delta m_{max}$')
+        fig.tight_layout()
+        # plt.show()
+        plt.savefig(output_name, dpi=300)
+        plt.close()
+
+
+def plot_different_bins_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
+                              labels, input_dtype="ratios", legend_title=None,
+                              mt_poly=None, ihmt_poly=None):
+    max_count = 0
+    for i in range(len(nb_voxels)):
+        if np.max(nb_voxels[i]) > max_count:
+            max_count = np.max(nb_voxels[i])
+    norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
+    highres_bins = np.arange(0, 90 + 1, 0.5)
+    plot_init()
+    fig, (ax1, ax2, cax) = plt.subplots(1, 3,
+                                        gridspec_kw={"width_ratios":[1,1, 0.05]})
+    for i in range(len(mt_means)):
+        mid_bins = (bins[i][:-1] + bins[i][1:]) / 2.
+        ax1.scatter(mid_bins, mt_means[i], c=nb_voxels[i], cmap='Greys', norm=norm,
                     linewidths=1, label=labels[i], edgecolors="C" + str(i))
+        if mt_poly is not None:
+            ax1.plot(highres_bins, mt_poly[i](highres_bins), "--", color="C" + str(i))
+        colorbar = ax2.scatter(mid_bins, ihmt_means[i], c=nb_voxels[i], cmap='Greys',
+                               norm=norm, linewidths=1, label=labels[i], edgecolors="C" + str(i))
+        if ihmt_poly is not None:
+            ax2.plot(highres_bins, ihmt_poly[i](highres_bins), "--", color="C" + str(i))
     ax1.set_xlabel(r'$\theta_a$')
     ax1.set_xlim(0, 90)
     if input_dtype=="ratios":
@@ -190,10 +264,19 @@ def plot_delta_m_max(bins, mt_means, nb_voxels, output_name,
     elif input_dtype=="sats":
         ax1.set_ylabel('MTsat mean')
         # ax1.set_title('MTsat vs Angle')
-    ax1.legend()
-    ax1.get_legend().set_title("Peaks fractions")
+    ax2.set_xlabel(r'$\theta_a$')
+    ax2.set_xlim(0, 90)
+    if input_dtype=="ratios":
+        ax2.set_ylabel('ihMTR mean')
+        # ax2.set_title('ihMTR vs Angle')
+    elif input_dtype=="sats":
+        ax2.set_ylabel('ihMTsat mean')
+        # ax2.set_title('ihMTsat vs Angle')
+    ax2.legend()
+    if legend_title is not None:
+        ax2.get_legend().set_title(legend_title)
     fig.colorbar(colorbar, cax=cax, label="Voxel count")
     fig.tight_layout()
-    plt.show()
-    # plt.savefig(output_name, dpi=300)
+    # plt.show()
+    plt.savefig(output_name, dpi=300)
     plt.close()

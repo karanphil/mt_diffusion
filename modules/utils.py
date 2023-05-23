@@ -59,7 +59,8 @@ def compute_single_fiber_averages(peaks, fa, wm_mask, affine,
 
 def compute_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
                                      mtr=None, ihmtr=None, mtsat=None,
-                                     ihmtsat=None, bin_width=10, frac_thr=0.3):
+                                     ihmtsat=None, bin_width=10, 
+                                     frac_thrs=np.array([0.5, 0.6, 0.7, 0.8, 0.9])):
     # peaks, peaks_norm = normalize_peaks(np.copy(peaks))
     peaks_fraction = compute_peaks_fraction(peak_values)
 
@@ -76,126 +77,18 @@ def compute_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
     theta_f1 = np.arccos(cos_theta_f1) * 180 / np.pi
     cos_theta_f2 = np.dot(peaks[..., 3:6], b0_field)
     theta_f2 = np.arccos(cos_theta_f2) * 180 / np.pi
-
-    mtr_means = np.zeros((len(bins) - 1, len(bins) - 1))
-    ihmtr_means = np.zeros((len(bins) - 1, len(bins) - 1))
-    mtsat_means = np.zeros((len(bins) - 1, len(bins) - 1))
-    ihmtsat_means = np.zeros((len(bins) - 1, len(bins) - 1))
-    nb_voxels = np.zeros((len(bins) - 1, len(bins) - 1))
-
-    # Apply the WM mask
-    wm_mask_bool = (wm_mask > 0.9) & (nufo == 2)
-    fraction_mask_bool = (peaks_fraction[..., 0] > frac_thr) & (peaks_fraction[..., 1] > frac_thr)
-
-    for i in range(len(bins) - 1):
-        angle_mask_0_90 = (theta_f1 >= bins[i]) & (theta_f1 < bins[i+1])
-        angle_mask_90_180 = (180 - theta_f1 >= bins[i]) & (180 - theta_f1 < bins[i+1])
-        angle_mask = angle_mask_0_90 | angle_mask_90_180
-        mask_f1 = angle_mask
-        for j in range(len(bins) - 1):
-            angle_mask_0_90 = (theta_f2 >= bins[j]) & (theta_f2 < bins[j+1]) 
-            angle_mask_90_180 = (180 - theta_f2 >= bins[j]) & (180 - theta_f2 < bins[j+1])
-            angle_mask = angle_mask_0_90 | angle_mask_90_180
-            mask_f2 = angle_mask
-            mask = mask_f1 & mask_f2 & wm_mask_bool & fraction_mask_bool
-            nb_voxels[i, j] = np.sum(mask)
-            if np.sum(mask) < 5:
-                mtr_means[i, j] = None
-                ihmtr_means[i, j] = None
-                mtsat_means[i, j] = None
-                ihmtsat_means[i, j] = None
-            else:
-                if mtr is not None:
-                    mtr_means[i, j] = np.mean(mtr[mask])
-                if ihmtr is not None:
-                    ihmtr_means[i, j] = np.mean(ihmtr[mask])
-                if mtsat is not None:
-                    mtsat_means[i, j] = np.mean(mtsat[mask])
-                if ihmtsat is not None:
-                    ihmtsat_means[i, j] = np.mean(ihmtsat[mask])
-    
-    for i in range(len(bins) - 1):
-        for j in range(i):
-            mtr_means[i, j] = (mtr_means[i, j] + mtr_means[j, i]) / 2
-            mtr_means[j, i] = mtr_means[i, j]
-            ihmtr_means[i, j] = (ihmtr_means[i, j] + ihmtr_means[j, i]) / 2
-            ihmtr_means[j, i] = ihmtr_means[i, j]
-            mtsat_means[i, j] = (mtsat_means[i, j] + mtsat_means[j, i]) / 2
-            mtsat_means[j, i] = mtsat_means[i, j]
-            ihmtsat_means[i, j] = (ihmtsat_means[i, j] + ihmtsat_means[j, i]) / 2
-            ihmtsat_means[j, i] = ihmtsat_means[i, j]
-            nb_voxels[i, j] = nb_voxels[i, j] + nb_voxels[j, i]
-            nb_voxels[j, i] = nb_voxels[i, j]
-
-    return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels
-
-
-def analyse_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
-                                     mtr=None, ihmtr=None, mtsat=None,
-                                     ihmtsat=None, bin_width=10, polyfit=None,
-                                     single_fiber_delta_m_max=0):
-    # peaks, peaks_norm = normalize_peaks(np.copy(peaks))
-    peaks_fraction = compute_peaks_fraction(peak_values)
-
-    # Find the direction of the B0 field
-    rot = affine[0:3, 0:3]
-    z_axis = np.array([0, 0, 1])
-    b0_field = np.dot(rot.T, z_axis)
-
-    bins = np.arange(0, 90 + bin_width, bin_width)
-    # mid_bins = (bins[:-1] + bins[1:]) / 2.
-    # Calculate min and max MTR.
-    # min_angle = highres_bins[np.argwhere(polyfit(highres_bins) == np.min(polyfit(highres_bins)))][0][0]
-    # max_angle = highres_bins[np.argwhere(polyfit(highres_bins) == np.max(polyfit(highres_bins)))][0][0]
-    # bin_min = np.array([min_angle - 5, min_angle + 5])
-    # bin_max = np.array([max_angle - (10 - (90 - max_angle)), 90])
-    # print(bin_min, bin_max)
-    bin_min = np.array([40, 50])
-    bin_max = np.array([80, 90])
-
-    # Calculate the angle between e1 and B0 field
-    cos_theta_f1 = np.dot(peaks[..., 0:3], b0_field)
-    theta_f1 = np.arccos(cos_theta_f1) * 180 / np.pi
-    cos_theta_f2 = np.dot(peaks[..., 3:6], b0_field)
-    theta_f2 = np.arccos(cos_theta_f2) * 180 / np.pi
-
-    frac_thrs = np.array([0.5, 0.6, 0.7, 0.8, 0.9])
 
     labels = np.zeros((len(frac_thrs) - 1), dtype=object)
-    mtr_2f_means_diag = np.zeros((len(frac_thrs) - 1, len(bins) - 1))
-    ihmtr_2f_means_diag = np.zeros((len(frac_thrs) - 1, len(bins) - 1))
-    mtsat_2f_means_diag = np.zeros((len(frac_thrs) - 1, len(bins) - 1))
-    ihmtsat_2f_means_diag = np.zeros((len(frac_thrs) - 1, len(bins) - 1))
-    nb_voxels_2f_diag = np.zeros((len(frac_thrs) - 1, len(bins) - 1))
-
-    mtr_min_max = np.zeros((len(frac_thrs) - 1, 2))
-    mtr_nb_voxels = np.zeros((len(frac_thrs) - 1, 2))
+    mtr_means = np.zeros((len(frac_thrs) - 1, len(bins) - 1, len(bins) - 1))
+    ihmtr_means = np.zeros((len(frac_thrs) - 1, len(bins) - 1, len(bins) - 1))
+    mtsat_means = np.zeros((len(frac_thrs) - 1, len(bins) - 1, len(bins) - 1))
+    ihmtsat_means = np.zeros((len(frac_thrs) - 1, len(bins) - 1, len(bins) - 1))
+    nb_voxels = np.zeros((len(frac_thrs) - 1, len(bins) - 1, len(bins) - 1))
 
     for idx in range(len(frac_thrs) - 1):
-        mtr_means = np.zeros((len(bins) - 1, len(bins) - 1))
-        ihmtr_means = np.zeros((len(bins) - 1, len(bins) - 1))
-        mtsat_means = np.zeros((len(bins) - 1, len(bins) - 1))
-        ihmtsat_means = np.zeros((len(bins) - 1, len(bins) - 1))
-        nb_voxels = np.zeros((len(bins) - 1, len(bins) - 1))
-
         # Apply the WM mask
         wm_mask_bool = (wm_mask > 0.9) & (nufo == 2)
-        fraction_mask_bool = (peaks_fraction[..., 0] >= frac_thrs[idx]) & (peaks_fraction[..., 0] < frac_thrs[idx + 1]) | (peaks_fraction[..., 1] >= frac_thrs[idx]) & (peaks_fraction[..., 1] < frac_thrs[idx + 1])
-
-        bin_min_f1 = (theta_f1 >= bin_min[0]) & (theta_f1 < bin_min[1]) | (180 - theta_f1 >= bin_min[0]) & (180 - theta_f1 < bin_min[1])
-        bin_min_f2 = (theta_f2 >= bin_min[0]) & (theta_f2 < bin_min[1]) | (180 - theta_f2 >= bin_min[0]) & (180 - theta_f2 < bin_min[1])
-
-        bin_max_f1 = (theta_f1 >= bin_max[0]) & (theta_f1 < bin_max[1]) | (180 - theta_f1 >= bin_max[0]) & (180 - theta_f1 < bin_max[1])
-        bin_max_f2 = (theta_f2 >= bin_max[0]) & (theta_f2 < bin_max[1]) | (180 - theta_f2 >= bin_max[0]) & (180 - theta_f2 < bin_max[1])
-
-        mask_bin_min = bin_min_f1 & bin_min_f2 & wm_mask_bool & fraction_mask_bool
-        mask_bin_max = bin_max_f1 & bin_max_f2 & wm_mask_bool & fraction_mask_bool
-
-        mtr_min_max[idx, 0] = np.mean(mtr[mask_bin_min])
-        mtr_min_max[idx, 1] = np.mean(mtr[mask_bin_max])
-        mtr_nb_voxels[idx, 0] = np.sum(mask_bin_min)
-        mtr_nb_voxels[idx, 1] = np.sum(mask_bin_max)
-
+        fraction_mask_bool = (peaks_fraction[..., 0] >= frac_thrs[idx]) & (peaks_fraction[..., 0] < frac_thrs[idx + 1])
         for i in range(len(bins) - 1):
             angle_mask_0_90 = (theta_f1 >= bins[i]) & (theta_f1 < bins[i+1])
             angle_mask_90_180 = (180 - theta_f1 >= bins[i]) & (180 - theta_f1 < bins[i+1])
@@ -207,69 +100,148 @@ def analyse_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
                 angle_mask = angle_mask_0_90 | angle_mask_90_180
                 mask_f2 = angle_mask
                 mask = mask_f1 & mask_f2 & wm_mask_bool & fraction_mask_bool
-                nb_voxels[i, j] = np.sum(mask)
+                nb_voxels[idx, i, j] = np.sum(mask)
                 if np.sum(mask) < 5:
-                    mtr_means[i, j] = None
-                    ihmtr_means[i, j] = None
-                    mtsat_means[i, j] = None
-                    ihmtsat_means[i, j] = None
+                    mtr_means[idx, i, j] = None
+                    ihmtr_means[idx, i, j] = None
+                    mtsat_means[idx, i, j] = None
+                    ihmtsat_means[idx, i, j] = None
                 else:
                     if mtr is not None:
-                        mtr_means[i, j] = np.mean(mtr[mask])
+                        mtr_means[idx, i, j] = np.mean(mtr[mask])
                     if ihmtr is not None:
-                        ihmtr_means[i, j] = np.mean(ihmtr[mask])
+                        ihmtr_means[idx, i, j] = np.mean(ihmtr[mask])
                     if mtsat is not None:
-                        mtsat_means[i, j] = np.mean(mtsat[mask])
+                        mtsat_means[idx, i, j] = np.mean(mtsat[mask])
                     if ihmtsat is not None:
-                        ihmtsat_means[i, j] = np.mean(ihmtsat[mask])
+                        ihmtsat_means[idx, i, j] = np.mean(ihmtsat[mask])
         
         for i in range(len(bins) - 1):
             for j in range(i):
-                mtr_means[i, j] = (mtr_means[i, j] + mtr_means[j, i]) / 2
-                mtr_means[j, i] = mtr_means[i, j]
-                ihmtr_means[i, j] = (ihmtr_means[i, j] + ihmtr_means[j, i]) / 2
-                ihmtr_means[j, i] = ihmtr_means[i, j]
-                mtsat_means[i, j] = (mtsat_means[i, j] + mtsat_means[j, i]) / 2
-                mtsat_means[j, i] = mtsat_means[i, j]
-                ihmtsat_means[i, j] = (ihmtsat_means[i, j] + ihmtsat_means[j, i]) / 2
-                ihmtsat_means[j, i] = ihmtsat_means[i, j]
-                nb_voxels[i, j] = nb_voxels[i, j] + nb_voxels[j, i]
-                nb_voxels[j, i] = nb_voxels[i, j]
+                mtr_means[idx, i, j] = (mtr_means[idx, i, j] + mtr_means[idx, j, i]) / 2
+                mtr_means[idx, j, i] = mtr_means[idx, i, j]
+                ihmtr_means[idx, i, j] = (ihmtr_means[idx, i, j] + ihmtr_means[idx, j, i]) / 2
+                ihmtr_means[idx, j, i] = ihmtr_means[idx, i, j]
+                mtsat_means[idx, i, j] = (mtsat_means[idx, i, j] + mtsat_means[idx, j, i]) / 2
+                mtsat_means[idx, j, i] = mtsat_means[idx, i, j]
+                ihmtsat_means[idx, i, j] = (ihmtsat_means[idx, i, j] + ihmtsat_means[idx, j, i]) / 2
+                ihmtsat_means[idx, j, i] = ihmtsat_means[idx, i, j]
+                nb_voxels[idx, i, j] = nb_voxels[idx, i, j] + nb_voxels[idx, j, i]
+                nb_voxels[idx, j, i] = nb_voxels[idx, i, j]
 
-        mtr_2f_means_diag[idx] = np.diagonal(mtr_means)
-        ihmtr_2f_means_diag[idx] = np.diagonal(ihmtr_means)
-        mtsat_2f_means_diag[idx] = np.diagonal(mtsat_means)
-        ihmtsat_2f_means_diag[idx] = np.diagonal(ihmtsat_means)
-        nb_voxels_2f_diag[idx] = np.diagonal(nb_voxels)
+        labels[idx] = "[" + str(frac_thrs[idx]) + ", " + str(frac_thrs[idx + 1]) + "["
 
-        labels[idx] = "[" + str(frac_thrs[idx]) + ", " + str(frac_thrs[idx + 1]) + "] / [" + str(round(1-frac_thrs[idx + 1], 2)) + ", " + str(round(1-frac_thrs[idx], 2)) + "]"
+    return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels, labels
 
-    output_name = "toto.png"
-    plot_multiple_means(bins, mtr_2f_means_diag, ihmtr_2f_means_diag,
-                        nb_voxels_2f_diag, output_name, labels,
-                        input_dtype="ratios")
-    
-    bins_min_max = np.array([(bin_min[0] + bin_min[1]) / 2., (bin_max[0] + bin_max[1]) / 2.])
 
-    plot_delta_m_max(bins_min_max, mtr_min_max, mtr_nb_voxels, output_name, labels)
+def analyse_delta_m_max(bins, mtr_diag, ihmtr_diag, bin_min, bin_max,
+                        mtr_single_fiber_delta_m_max,
+                        ihmtr_single_fiber_delta_m_max,
+                        frac_thrs=np.array([0.5, 0.6, 0.7, 0.8, 0.9])):
 
+    min_idx = np.argwhere(bins == bin_min[0])[0][0]
+    max_idx = np.argwhere(bins == bin_max[0])[0][0]
+
+    mtr_min = mtr_diag[:, min_idx]
+    mtr_max = mtr_diag[:, max_idx]
     mtr_delta_m_max = np.zeros(6)
     mtr_delta_m_max[0] = 0
-    mtr_delta_m_max[1:5] = mtr_min_max[:, 1] - mtr_min_max[:, 0]
-    mtr_delta_m_max[5] = single_fiber_delta_m_max
+    mtr_delta_m_max[1:5] = mtr_max - mtr_min
+    mtr_delta_m_max[5] = mtr_single_fiber_delta_m_max
     mtr_delta_m_max /= mtr_delta_m_max[5]
 
-    frac_thrs_mid = np.array([0, 0.55, 0.65, 0.75, 0.85, 1])
-    fit = np.polyfit(frac_thrs_mid[:5], mtr_delta_m_max[:5], 1)
-    polynome = np.poly1d(fit)
-    x = np.arange(0.0, 1.01, 0.01)
-    import matplotlib.pyplot as plt
-    plt.figure()
-    plt.plot(frac_thrs_mid, mtr_delta_m_max[:], "o")
-    plt.plot(x, polynome(x), "--k")
-    plt.show()
+    ihmtr_min = ihmtr_diag[:, min_idx]
+    ihmtr_max = ihmtr_diag[:, max_idx]
+    ihmtr_delta_m_max = np.zeros(6)
+    ihmtr_delta_m_max[0] = 0
+    ihmtr_delta_m_max[1:5] = ihmtr_min - ihmtr_max
+    ihmtr_delta_m_max[5] = ihmtr_single_fiber_delta_m_max
+    ihmtr_delta_m_max /= ihmtr_delta_m_max[5]
 
-    return polynome
+    frac_thrs_mid = np.zeros((1 + len(frac_thrs)))
+    frac_thrs_mid[0] = 0
+    frac_thrs_mid[-1] = 1
+    frac_thrs_mid[1:-1] = (frac_thrs[:-1] + frac_thrs[1:])/2.
+
+    mtr_fit = np.polyfit(frac_thrs_mid[:5], mtr_delta_m_max[:5], 1)
+    mtr_polynome = np.poly1d(mtr_fit)
+
+    ihmtr_fit = np.polyfit(frac_thrs_mid[:5], ihmtr_delta_m_max[:5], 1)
+    ihmtr_polynome = np.poly1d(ihmtr_fit)
+    
+    return mtr_polynome, ihmtr_polynome, mtr_delta_m_max, ihmtr_delta_m_max, frac_thrs_mid
+
+
+def analyse_3_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
+                                     mtr=None, ihmtr=None, mtsat=None,
+                                     ihmtsat=None, bin_width=10, 
+                                     frac_thrs=np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])):
+    # peaks, peaks_norm = normalize_peaks(np.copy(peaks))
+    peaks_fraction = compute_peaks_fraction(peak_values)
+
+    # Find the direction of the B0 field
+    rot = affine[0:3, 0:3]
+    z_axis = np.array([0, 0, 1])
+    b0_field = np.dot(rot.T, z_axis)
+
+    bins = np.arange(0, 90 + bin_width, bin_width)
+    # mid_bins = (bins[:-1] + bins[1:]) / 2.
+
+    # Calculate the angle between e1 and B0 field
+    cos_theta_f1 = np.dot(peaks[..., 0:3], b0_field)
+    theta_f1 = np.arccos(cos_theta_f1) * 180 / np.pi
+    cos_theta_f2 = np.dot(peaks[..., 3:6], b0_field)
+    theta_f2 = np.arccos(cos_theta_f2) * 180 / np.pi
+    cos_theta_f3 = np.dot(peaks[..., 6:9], b0_field)
+    theta_f3 = np.arccos(cos_theta_f3) * 180 / np.pi
+
+    labels = np.zeros((len(frac_thrs) - 1), dtype=object)
+    mtr_means = np.zeros((len(frac_thrs) - 1, len(bins) - 1))
+    ihmtr_means = np.zeros((len(frac_thrs) - 1, len(bins) - 1))
+    mtsat_means = np.zeros((len(frac_thrs) - 1, len(bins) - 1))
+    ihmtsat_means = np.zeros((len(frac_thrs) - 1, len(bins) - 1))
+    nb_voxels = np.zeros((len(frac_thrs) - 1, len(bins) - 1))
+
+    for idx in range(len(frac_thrs) - 1):
+        # Apply the WM mask
+        wm_mask_bool = (wm_mask > 0.9) & (nufo == 3)
+        fraction_mask_bool = (peaks_fraction[..., 0] >= frac_thrs[idx]) & (peaks_fraction[..., 0] < frac_thrs[idx + 1])
+        for i in range(len(bins) - 1):
+            angle_mask_0_90 = (theta_f1 >= bins[i]) & (theta_f1 < bins[i+1])
+            angle_mask_90_180 = (180 - theta_f1 >= bins[i]) & (180 - theta_f1 < bins[i+1])
+            angle_mask = angle_mask_0_90 | angle_mask_90_180
+            mask_f1 = angle_mask
+
+            angle_mask_0_90 = (theta_f2 >= bins[i]) & (theta_f2 < bins[i+1]) 
+            angle_mask_90_180 = (180 - theta_f2 >= bins[i]) & (180 - theta_f2 < bins[i+1])
+            angle_mask = angle_mask_0_90 | angle_mask_90_180
+            mask_f2 = angle_mask
+
+            angle_mask_0_90 = (theta_f3 >= bins[i]) & (theta_f3 < bins[i+1]) 
+            angle_mask_90_180 = (180 - theta_f3 >= bins[i]) & (180 - theta_f3 < bins[i+1])
+            angle_mask = angle_mask_0_90 | angle_mask_90_180
+            mask_f3 = angle_mask
+
+            mask = mask_f1 & mask_f2 & mask_f3 & wm_mask_bool & fraction_mask_bool
+            nb_voxels[idx, i] = np.sum(mask)
+            if np.sum(mask) < 5:
+                mtr_means[idx, i] = None
+                ihmtr_means[idx, i] = None
+                mtsat_means[idx, i] = None
+                ihmtsat_means[idx, i] = None
+            else:
+                if mtr is not None:
+                    mtr_means[idx, i] = np.mean(mtr[mask])
+                if ihmtr is not None:
+                    ihmtr_means[idx, i] = np.mean(ihmtr[mask])
+                if mtsat is not None:
+                    mtsat_means[idx, i] = np.mean(mtsat[mask])
+                if ihmtsat is not None:
+                    ihmtsat_means[idx, i] = np.mean(ihmtsat[mask])
+
+        labels[idx] = "[" + str(frac_thrs[idx]) + ", " + str(frac_thrs[idx + 1]) + "["
+
+    return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels, labels
 
 
 def nb_peaks_factor(polynome, peak_fraction):
