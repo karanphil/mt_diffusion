@@ -392,6 +392,28 @@ def main():
         corrected_path = out_folder / "measures" / corrected_name
         nib.save(nib.Nifti1Image(corrected_ihmtsat, affine), corrected_path)
 
+    print("Computing difference maps.")
+    if args.in_mtr:
+        difference_mtr = corrected_mtr - mtr
+        difference_name = "mtr_difference_WB.nii.gz"
+        difference_path = out_folder / "measures" / difference_name
+        nib.save(nib.Nifti1Image(difference_mtr, affine), difference_path)
+    if args.in_ihmtr:
+        difference_ihmtr = corrected_ihmtr - ihmtr
+        difference_name = "ihmtr_difference_WB.nii.gz"
+        difference_path = out_folder / "measures" / difference_name
+        nib.save(nib.Nifti1Image(difference_ihmtr, affine), difference_path)
+    if args.in_mtsat:
+        difference_mtsat = corrected_mtsat - mtsat
+        difference_name = "mtsat_difference_WB.nii.gz"
+        difference_path = out_folder / "measures" / difference_name
+        nib.save(nib.Nifti1Image(difference_mtsat, affine), difference_path)
+    if args.in_ihmtsat:
+        difference_ihmtsat = corrected_ihmtsat - ihmtsat
+        difference_name = "ihmtsat_difference_WB.nii.gz"
+        difference_path = out_folder / "measures" / difference_name
+        nib.save(nib.Nifti1Image(difference_ihmtsat, affine), difference_path)
+
 #----------------------------Whole brain----------------------------------------
     print("Computing single fiber averages on whole brain corrected data.")
     w_brain_cr_results = compute_single_fiber_averages(e1, fa,
@@ -777,28 +799,6 @@ def main():
                    mt_cr_means=mtsat_cr_2f_means_diag,
                    ihmt_cr_means=ihmtsat_cr_2f_means_diag, input_dtype="sats",
                    legend_title=r"Peak$_1$ fraction")
-        
-    # print("Computing difference maps.")
-    # if args.in_mtr:
-    #     difference_mtr = corrected_mtr - mtr
-    #     difference_name = "mtr_difference.nii.gz"
-    #     difference_path = out_folder / difference_name
-    #     nib.save(nib.Nifti1Image(difference_mtr, affine), difference_path)
-    # if args.in_ihmtr:
-    #     difference_ihmtr = corrected_ihmtr - ihmtr
-    #     difference_name = "ihmtr_difference.nii.gz"
-    #     difference_path = out_folder / difference_name
-    #     nib.save(nib.Nifti1Image(difference_ihmtr, affine), difference_path)
-    # if args.in_mtsat:
-    #     difference_mtsat = corrected_mtsat - mtsat
-    #     difference_name = "mtsat_difference.nii.gz"
-    #     difference_path = out_folder / difference_name
-    #     nib.save(nib.Nifti1Image(difference_mtsat, affine), difference_path)
-    # if args.in_ihmtsat:
-    #     difference_ihmtsat = corrected_ihmtsat - ihmtsat
-    #     difference_name = "ihmtsat_difference.nii.gz"
-    #     difference_path = out_folder / difference_name
-    #     nib.save(nib.Nifti1Image(difference_ihmtsat, affine), difference_path)
 
     # print("Computing poor's man ihMTR.")
     # if args.in_mtr:

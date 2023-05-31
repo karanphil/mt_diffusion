@@ -190,6 +190,7 @@ def plot_delta_m_max(bins, mt_means, mt_poly, output_name, ihmt_means=None,
                      ihmt_poly=None, input_dtype="ratios", xlim=[0, 1]):
     highres_bins = np.arange(0, 1.01, 0.01)
     plot_init()
+    plt.rcParams['figure.figsize'] = (6.0, 5.0)
     if ihmt_means is not None:
         fig, (ax1, ax2) = plt.subplots(1, 2,
                                             gridspec_kw={"width_ratios":[1,1]})
@@ -198,20 +199,20 @@ def plot_delta_m_max(bins, mt_means, mt_poly, output_name, ihmt_means=None,
         ax1.set_xlabel(r'Peak$_1$ fraction')
         ax1.set_xlim(xlim[0], xlim[1])
         if input_dtype=="ratios":
-            ax1.set_ylabel(r'MTR $\Delta m_{max}$')
+            ax1.set_ylabel(r'MTR $\delta m_{max}$')
             # ax1.set_title('MTR vs Angle')
         elif input_dtype=="sats":
-            ax1.set_ylabel(r'MTsat $\Delta m_{max}$')
+            ax1.set_ylabel(r'MTsat $\delta m_{max}$')
             # ax1.set_title('MTsat vs Angle')
         ax2.scatter(bins, ihmt_means, color='black', linewidths=1)
         ax2.plot(highres_bins, ihmt_poly(highres_bins), "--g")
         ax2.set_xlabel(r'Peak$_1$ fraction')
         ax2.set_xlim(xlim[0], xlim[1])
         if input_dtype=="ratios":
-            ax2.set_ylabel(r'ihMTR $\Delta m_{max}$')
+            ax2.set_ylabel(r'ihMTR $\delta m_{max}$')
             # ax2.set_title('ihMTR vs Angle')
         elif input_dtype=="sats":
-            ax2.set_ylabel(r'ihMTsat $\Delta m_{max}$')
+            ax2.set_ylabel(r'ihMTsat $\delta m_{max}$')
             # ax2.set_title('ihMTsat vs Angle')
         fig.tight_layout()
         # plt.show()
@@ -225,9 +226,9 @@ def plot_delta_m_max(bins, mt_means, mt_poly, output_name, ihmt_means=None,
         ax.set_xlabel(r'Peak$_1$ fraction')
         ax.set_xlim(xlim[0], xlim[1])
         if input_dtype=="ratios":
-            ax.set_ylabel(r'MTR $\Delta m_{max}$')
+            ax.set_ylabel(r'MTR $\delta m_{max}$')
         elif input_dtype=="sats":
-            ax.set_ylabel(r'MTsat $\Delta m_{max}$')
+            ax.set_ylabel(r'MTsat $\delta m_{max}$')
         fig.tight_layout()
         # plt.show()
         plt.savefig(output_name, dpi=300)
