@@ -9,7 +9,8 @@ from modules.utils import (compute_single_fiber_averages,
                            correct_measure, compute_poor_ihmtr,
                            analyse_delta_m_max, analyse_3_crossing_fibers_averages)
 from modules.io import (save_txt, plot_means, save_masks_by_angle_bins,
-                        plot_multiple_means, plot_delta_m_max, plot_different_bins_means)
+                        plot_multiple_means, plot_delta_m_max, plot_different_bins_means,
+                        plot_3d_means)
 
 from scilpy.io.utils import (add_overwrite_arg)
 
@@ -154,6 +155,42 @@ def main():
                                                     nufo=nufo,
                                                     bin_width=args.bin_width,
                                                     fa_thr=args.fa_thr)
+    
+    print("Computing single fiber averages for whole brain.")
+    w_brain_results_3 = compute_single_fiber_averages(e1, fa,
+                                                    wm_mask,
+                                                    affine,
+                                                    mtr=mtr,
+                                                    ihmtr=ihmtr,
+                                                    mtsat=mtsat,
+                                                    ihmtsat=ihmtsat,
+                                                    nufo=nufo,
+                                                    bin_width=3,
+                                                    fa_thr=args.fa_thr)
+    
+    print("Computing single fiber averages for whole brain.")
+    w_brain_results_5 = compute_single_fiber_averages(e1, fa,
+                                                    wm_mask,
+                                                    affine,
+                                                    mtr=mtr,
+                                                    ihmtr=ihmtr,
+                                                    mtsat=mtsat,
+                                                    ihmtsat=ihmtsat,
+                                                    nufo=nufo,
+                                                    bin_width=5,
+                                                    fa_thr=args.fa_thr)
+    
+    print("Computing single fiber averages for whole brain.")
+    w_brain_results_10 = compute_single_fiber_averages(e1, fa,
+                                                    wm_mask,
+                                                    affine,
+                                                    mtr=mtr,
+                                                    ihmtr=ihmtr,
+                                                    mtsat=mtsat,
+                                                    ihmtsat=ihmtsat,
+                                                    nufo=nufo,
+                                                    bin_width=10,
+                                                    fa_thr=args.fa_thr)
 
     print("Saving whole brain results as txt files.")
     if args.in_mtr and args.in_ihmtr:
@@ -196,6 +233,17 @@ def main():
         plot_means(w_brain_results[0], w_brain_results[3], w_brain_results[4],
                    w_brain_results[5], str(output_path), mt_poly=mtsat_poly_wb,
                    ihmt_poly=ihmtsat_poly_wb, input_dtype="sats")
+
+    if args.in_mtr and args.in_ihmtr:
+        output_name = "WB_single_fiber_mtr_ihmtr_bin_width_plot.png"
+        output_path = out_folder / "plots" / output_name
+        plot_different_bins_means([w_brain_results[0], w_brain_results_3[0], w_brain_results_5[0], w_brain_results_10[0]],
+                                  [w_brain_results[1], w_brain_results_3[1], w_brain_results_5[1], w_brain_results_10[1]],
+                                  [w_brain_results[2], w_brain_results_3[2], w_brain_results_5[2], w_brain_results_10[2]],
+                                  [w_brain_results[5], w_brain_results_3[5], w_brain_results_5[5], w_brain_results_10[5]],
+                                  str(output_path),
+                                  [r'$1^\circ$ bins', r'$3^\circ$ bins', r'$5^\circ$ bins', r'$10^\circ$ bins'],
+                                   input_dtype="ratios")
 
     print("Saving single fiber masks.")
     save_masks_by_angle_bins(e1, fa, wm_mask, affine,
@@ -286,6 +334,22 @@ def main():
     mtsat_2f_means_diag = np.diagonal(crossing_results[3], axis1=1, axis2=2)
     ihmtsat_2f_means_diag = np.diagonal(crossing_results[4], axis1=1, axis2=2)
     nb_voxels_2f_diag = np.diagonal(crossing_results[5], axis1=1, axis2=2)
+
+    print("Saving results as 3D plots.")
+    if args.in_mtr and args.in_ihmtr:
+        output_name = "WB_double_fibers_mtr_3D_plot" + files_basename
+        output_path = out_folder / "plots" / output_name
+        plot_3d_means(crossing_results[0], crossing_results[1][0], str(output_path), input_dtype="MTR")
+        output_name = "WB_double_fibers_ihmtr_3D_plot" + files_basename
+        output_path = out_folder / "plots" / output_name
+        plot_3d_means(crossing_results[0], crossing_results[2][0], str(output_path), input_dtype="ihMTR")
+    if args.in_mtsat and args.in_ihmtsat:
+        output_name = "WB_double_fibers_mtsat_3D_plot" + files_basename
+        output_path = out_folder / "plots" / output_name
+        plot_3d_means(crossing_results[0], crossing_results[3][0], str(output_path), input_dtype="MTsat")
+        output_name = "WB_double_fibers_ihmtsat_3D_plot" + files_basename
+        output_path = out_folder / "plots" / output_name
+        plot_3d_means(crossing_results[0], crossing_results[4][0], str(output_path), input_dtype="ihMTsat")
     
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:
@@ -541,6 +605,22 @@ def main():
     mtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[3], axis1=1, axis2=2)
     ihmtsat_cr_2f_means_diag = np.diagonal(crossing_cr_results[4], axis1=1, axis2=2)
     nb_voxels_cr_2f_diag = np.diagonal(crossing_cr_results[5], axis1=1, axis2=2)
+
+    print("Saving results as 3D plots.")
+    if args.in_mtr and args.in_ihmtr:
+        output_name = "WB_double_fibers_corrected_mtr_3D_plot" + files_basename
+        output_path = out_folder / "plots" / output_name
+        plot_3d_means(crossing_cr_results[0], crossing_cr_results[1][0], str(output_path), input_dtype="MTR")
+        output_name = "WB_double_fibers_corrected_ihmtr_3D_plot" + files_basename
+        output_path = out_folder / "plots" / output_name
+        plot_3d_means(crossing_cr_results[0], crossing_cr_results[2][0], str(output_path), input_dtype="ihMTR")
+    if args.in_mtsat and args.in_ihmtsat:
+        output_name = "WB_double_fibers_corrected_mtsat_3D_plot" + files_basename
+        output_path = out_folder / "plots" / output_name
+        plot_3d_means(crossing_cr_results[0], crossing_cr_results[3][0], str(output_path), input_dtype="MTsat")
+        output_name = "WB_double_fibers_corrected_ihmtsat_3D_plot" + files_basename
+        output_path = out_folder / "plots" / output_name
+        plot_3d_means(crossing_cr_results[0], crossing_cr_results[4][0], str(output_path), input_dtype="ihMTsat")
     
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:

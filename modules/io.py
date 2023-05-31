@@ -281,3 +281,26 @@ def plot_different_bins_means(bins, mt_means, ihmt_means, nb_voxels, output_name
     # plt.show()
     plt.savefig(output_name, dpi=300)
     plt.close()
+
+
+def plot_3d_means(bins, means, base_name, input_dtype="MTR"):
+    mid_bins = (bins[:-1] + bins[1:]) / 2.
+    plot_init()
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    X, Y = np.meshgrid(mid_bins, mid_bins)
+    ax.plot_surface(X, Y, means, cmap="jet")
+    ax.set_xlabel(r'$\theta_{a1}$')
+    ax.set_ylabel(r'$\theta_{a2}$')
+    ax.set_zlabel(input_dtype + ' mean')
+    fig.tight_layout()
+    # plt.show()
+    if input_dtype=="MTR" or input_dtype=="MTsat":
+        views = np.array([[30, -135], [30, -45], [10, -90], [10, 0]])
+    elif input_dtype=="ihMTR" or input_dtype=="ihMTsat":
+        views = np.array([[30, 45], [30, -45], [10, -90], [10, 0]])
+    for v, view in enumerate(views[:]):
+        output_name = base_name + "view_" + str(v) + ".png"
+        ax.view_init(view[0], view[1])
+        plt.savefig(output_name, dpi=300)
+    plt.close()
