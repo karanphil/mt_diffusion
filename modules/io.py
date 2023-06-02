@@ -135,7 +135,7 @@ def plot_measure_mean(bins, peak_values, output_name):
 
 
 def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
-                        labels, mt_cr_means=None, ihmt_cr_means=None,
+                        labels=None, mt_cr_means=None, ihmt_cr_means=None,
                         input_dtype="ratios", legend_title=None,
                         mt_poly=None, ihmt_poly=None):
     max_count = np.max(nb_voxels)
@@ -147,14 +147,18 @@ def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
                                         gridspec_kw={"width_ratios":[1,1, 0.05]})
     for i in range(mt_means.shape[0]):
         ax1.scatter(mid_bins, mt_means[i], c=nb_voxels[i], cmap='Greys', norm=norm,
-                    linewidths=1, label=labels[i], edgecolors="C" + str(i))
+                    linewidths=1, edgecolors="C" + str(i))
         if mt_cr_means is not None:
             ax1.scatter(mid_bins, mt_cr_means[i], c=nb_voxels[i], cmap='Greys',
                         norm=norm, edgecolors="C" + str(i), linewidths=1, marker="s")
         if mt_poly is not None:
             ax1.plot(highres_bins, mt_poly[i](highres_bins), "--", color="C" + str(i))
-        colorbar = ax2.scatter(mid_bins, ihmt_means[i], c=nb_voxels[i], cmap='Greys',
-                               norm=norm, linewidths=1, label=labels[i], edgecolors="C" + str(i))
+        if labels is not None:
+            colorbar = ax2.scatter(mid_bins, ihmt_means[i], c=nb_voxels[i], cmap='Greys',
+                                norm=norm, linewidths=1, label=labels[i], edgecolors="C" + str(i))
+        else:
+            colorbar = ax2.scatter(mid_bins, ihmt_means[i], c=nb_voxels[i], cmap='Greys',
+                                norm=norm, linewidths=1, edgecolors="C" + str(i))
         if ihmt_cr_means is not None:
             ax2.scatter(mid_bins, ihmt_cr_means[i], c=nb_voxels[i], cmap='Greys',
                         norm=norm, edgecolors="C" + str(i), linewidths=1, marker="s")
@@ -176,7 +180,9 @@ def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
     elif input_dtype=="sats":
         ax2.set_ylabel('ihMTsat mean')
         # ax2.set_title('ihMTsat vs Angle')
-    ax2.legend()
+    plt.rcParams['legend.fontsize'] = 8
+    if labels is not None:
+        ax2.legend(loc=1)
     if legend_title is not None:
         ax2.get_legend().set_title(legend_title)
     fig.colorbar(colorbar, cax=cax, label="Voxel count")
