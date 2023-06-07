@@ -244,11 +244,14 @@ def analyse_3_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo
     return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels, labels
 
 
+# def nb_peaks_factor(polynome, peak_fraction):
+#     peak_fraction_09 = (peak_fraction < 0.9)
+#     nb_peaks_factor = np.ones(peak_fraction.shape)
+#     nb_peaks_factor[peak_fraction_09] = polynome(peak_fraction[peak_fraction_09])
+#     return nb_peaks_factor   
 def nb_peaks_factor(polynome, peak_fraction):
-    peak_fraction_09 = (peak_fraction < 0.9)
-    nb_peaks_factor = np.ones(peak_fraction.shape)
-    nb_peaks_factor[peak_fraction_09] = polynome(peak_fraction[peak_fraction_09])
-    return nb_peaks_factor    
+    nb_peaks_factor = polynome(peak_fraction)
+    return np.clip(nb_peaks_factor, 0, 1)   
 
 
 def extend_measure(bins, measure):
