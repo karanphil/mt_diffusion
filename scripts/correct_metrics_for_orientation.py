@@ -63,6 +63,8 @@ def _build_arg_parser():
     #                help='Value of the fraction threshold for selecting 2 fibers [%(default)s].')
     p.add_argument('--min_frac_thr', default=0.1,
                    help='Value of the minimal fraction threshold for selecting peaks to correct [%(default)s].')
+    p.add_argument('--min_nb_voxels', default=30, type=int,
+                   help='Value of the minimal number of voxels per bin [%(default)s].')
     p.add_argument('--poly_order', default=10,
                    help='Order of the polynome to fit [%(default)s].')
     add_overwrite_arg(p)
@@ -154,7 +156,8 @@ def main():
                                                     ihmtsat=ihmtsat,
                                                     nufo=nufo,
                                                     bin_width=args.bin_width,
-                                                    fa_thr=args.fa_thr)
+                                                    fa_thr=args.fa_thr,
+                                                    min_nb_voxels=args.min_nb_voxels)
     
     print("Computing single fiber averages for whole brain.")
     w_brain_results_3 = compute_single_fiber_averages(e1, fa,
@@ -166,7 +169,8 @@ def main():
                                                     ihmtsat=ihmtsat,
                                                     nufo=nufo,
                                                     bin_width=3,
-                                                    fa_thr=args.fa_thr)
+                                                    fa_thr=args.fa_thr,
+                                                    min_nb_voxels=args.min_nb_voxels)
     
     print("Computing single fiber averages for whole brain.")
     w_brain_results_5 = compute_single_fiber_averages(e1, fa,
@@ -178,7 +182,8 @@ def main():
                                                     ihmtsat=ihmtsat,
                                                     nufo=nufo,
                                                     bin_width=5,
-                                                    fa_thr=args.fa_thr)
+                                                    fa_thr=args.fa_thr,
+                                                    min_nb_voxels=args.min_nb_voxels)
     
     print("Computing single fiber averages for whole brain.")
     w_brain_results_10 = compute_single_fiber_averages(e1, fa,
@@ -190,7 +195,8 @@ def main():
                                                     ihmtsat=ihmtsat,
                                                     nufo=nufo,
                                                     bin_width=10,
-                                                    fa_thr=args.fa_thr)
+                                                    fa_thr=args.fa_thr,
+                                                    min_nb_voxels=args.min_nb_voxels)
 
     print("Saving whole brain results as txt files.")
     if args.in_mtr and args.in_ihmtr:
@@ -262,7 +268,8 @@ def main():
                                                 nufo=nufo,
                                                 mask=roi,
                                                 bin_width=args.bin_width_mask,
-                                                fa_thr=args.fa_thr)
+                                                fa_thr=args.fa_thr,
+                                                min_nb_voxels=args.min_nb_voxels)
     
     print("Saving ROI results as txt files.")
     if args.in_mtr and args.in_ihmtr:
@@ -327,7 +334,8 @@ def main():
                                                         ihmtr=ihmtr,
                                                         mtsat=mtsat,
                                                         ihmtsat=ihmtsat,
-                                                        bin_width=10)
+                                                        bin_width=10,
+                                                        min_nb_voxels=args.min_nb_voxels)
     
     mtr_2f_means_diag = np.diagonal(crossing_results[1], axis1=1, axis2=2)
     ihmtr_2f_means_diag = np.diagonal(crossing_results[2], axis1=1, axis2=2)
@@ -411,7 +419,8 @@ def main():
                                                         ihmtr=ihmtr,
                                                         mtsat=mtsat,
                                                         ihmtsat=ihmtsat,
-                                                        bin_width=30)
+                                                        bin_width=30,
+                                                        min_nb_voxels=args.min_nb_voxels)
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:
         output_name = "WB_triple_fibers_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
@@ -489,7 +498,8 @@ def main():
                                                        ihmtsat=corrected_ihmtsat,
                                                        nufo=nufo,
                                                        bin_width=args.bin_width,
-                                                       fa_thr=args.fa_thr)
+                                                       fa_thr=args.fa_thr,
+                                                       min_nb_voxels=args.min_nb_voxels)
     
     print("Saving whole brain corrected results as txt files.")
     if args.in_mtr and args.in_ihmtr:
@@ -537,7 +547,8 @@ def main():
                                                        nufo=nufo,
                                                        mask=bundle,
                                                        bin_width=args.bin_width_bundles,
-                                                       fa_thr=args.fa_thr)
+                                                       fa_thr=args.fa_thr,
+                                                       min_nb_voxels=args.min_nb_voxels)
         bundle_cr_results = compute_single_fiber_averages(e1, fa,
                                                           wm_mask,
                                                           affine,
@@ -548,7 +559,8 @@ def main():
                                                           nufo=nufo,
                                                           mask=bundle,
                                                           bin_width=args.bin_width_bundles,
-                                                          fa_thr=args.fa_thr)
+                                                          fa_thr=args.fa_thr,
+                                                          min_nb_voxels=args.min_nb_voxels)
 
         print("Saving " + bundle_name + " results as txt files.")
         if args.in_mtr and args.in_ihmtr:
@@ -598,7 +610,8 @@ def main():
                                                         ihmtr=corrected_ihmtr,
                                                         mtsat=corrected_mtsat,
                                                         ihmtsat=corrected_ihmtsat,
-                                                        bin_width=10)
+                                                        bin_width=10,
+                                                        min_nb_voxels=args.min_nb_voxels)
     
     mtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[1], axis1=1, axis2=2)
     ihmtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[2], axis1=1, axis2=2)
@@ -648,7 +661,8 @@ def main():
                                                         ihmtr=corrected_ihmtr,
                                                         mtsat=corrected_mtsat,
                                                         ihmtsat=corrected_ihmtsat,
-                                                        bin_width=30)
+                                                        bin_width=30,
+                                                        min_nb_voxels=args.min_nb_voxels)
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:
         output_name = "WB_triple_fibers_corrected_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
@@ -701,7 +715,8 @@ def main():
                                                        ihmtsat=corrected_ihmtsat,
                                                        nufo=nufo,
                                                        bin_width=args.bin_width,
-                                                       fa_thr=args.fa_thr)
+                                                       fa_thr=args.fa_thr,
+                                                       min_nb_voxels=args.min_nb_voxels)
     
     print("Saving whole brain corrected results as txt files.")
     if args.in_mtr and args.in_ihmtr:
@@ -745,7 +760,8 @@ def main():
                                                    nufo=nufo,
                                                    mask=roi,
                                                    bin_width=args.bin_width_mask,
-                                                   fa_thr=args.fa_thr)
+                                                   fa_thr=args.fa_thr,
+                                                   min_nb_voxels=args.min_nb_voxels)
     
     print("Saving ROI corrected results as txt files.")
     if args.in_mtr and args.in_ihmtr:
@@ -793,7 +809,8 @@ def main():
                                                        nufo=nufo,
                                                        mask=bundle,
                                                        bin_width=args.bin_width_bundles,
-                                                       fa_thr=args.fa_thr)
+                                                       fa_thr=args.fa_thr,
+                                                       min_nb_voxels=args.min_nb_voxels)
         bundle_cr_results = compute_single_fiber_averages(e1, fa,
                                                           wm_mask,
                                                           affine,
@@ -804,7 +821,8 @@ def main():
                                                           nufo=nufo,
                                                           mask=bundle,
                                                           bin_width=args.bin_width_bundles,
-                                                          fa_thr=args.fa_thr)
+                                                          fa_thr=args.fa_thr,
+                                                          min_nb_voxels=args.min_nb_voxels)
 
         print("Saving " + bundle_name + " results as txt files.")
         if args.in_mtr and args.in_ihmtr:
@@ -854,7 +872,8 @@ def main():
                                                         ihmtr=corrected_ihmtr,
                                                         mtsat=corrected_mtsat,
                                                         ihmtsat=corrected_ihmtsat,
-                                                        bin_width=10)
+                                                        bin_width=10,
+                                                        min_nb_voxels=args.min_nb_voxels)
     
     mtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[1], axis1=1, axis2=2)
     ihmtr_cr_2f_means_diag = np.diagonal(crossing_cr_results[2], axis1=1, axis2=2)

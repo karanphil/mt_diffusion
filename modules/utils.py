@@ -1,11 +1,13 @@
 import numpy as np
 from modules.io import (plot_multiple_means, plot_delta_m_max)
 
+import matplotlib.pyplot as plt
+
 
 def compute_single_fiber_averages(peaks, fa, wm_mask, affine,
                                   mtr=None, ihmtr=None, mtsat=None,
                                   ihmtsat=None, nufo=None, mask=None,
-                                  bin_width=1, fa_thr=0.5):
+                                  bin_width=1, fa_thr=0.5, min_nb_voxels=5):
     # peaks, _ = normalize_peaks(np.copy(peaks))
     # Find the direction of the B0 field
     rot = affine[0:3, 0:3]
@@ -37,9 +39,10 @@ def compute_single_fiber_averages(peaks, fa, wm_mask, affine,
         angle_mask_0_90 = (theta >= bins[i]) & (theta < bins[i+1]) 
         angle_mask_90_180 = (180 - theta >= bins[i]) & (180 - theta < bins[i+1])
         angle_mask = angle_mask_0_90 | angle_mask_90_180
-        mask_total = wm_mask_bool & angle_mask
+        mt_crop_mask = (mtr != 0)
+        mask_total = wm_mask_bool & angle_mask & mt_crop_mask
         nb_voxels[i] = np.sum(mask_total)
-        if np.sum(mask_total) < 5:
+        if np.sum(mask_total) < min_nb_voxels:
             mtr_means[i] = None
             ihmtr_means[i] = None
             mtsat_means[i] = None
@@ -53,6 +56,12 @@ def compute_single_fiber_averages(peaks, fa, wm_mask, affine,
                 mtsat_means[i] = np.mean(mtsat[mask_total])
             if ihmtsat is not None:
                 ihmtsat_means[i] = np.mean(ihmtsat[mask_total])
+        
+        #if bins[i] == 89 and bins[i+1] == 90:
+        # plt.figure()
+        # plt.hist(mtr[mask_total])
+        # plt.title(str(bins[i]) + " to " + str(bins[i+1]) + " and " + str(nb_voxels[i]) + " voxels")
+        # plt.show()
 
     return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels
 
@@ -60,7 +69,8 @@ def compute_single_fiber_averages(peaks, fa, wm_mask, affine,
 def compute_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
                                      mtr=None, ihmtr=None, mtsat=None,
                                      ihmtsat=None, bin_width=10, 
-                                     frac_thrs=np.array([0.5, 0.6, 0.7, 0.8, 0.9])):
+                                     frac_thrs=np.array([0.5, 0.6, 0.7, 0.8, 0.9]),
+                                     min_nb_voxels=5):
     # peaks, peaks_norm = normalize_peaks(np.copy(peaks))
     peaks_fraction = compute_peaks_fraction(peak_values)
 
@@ -101,7 +111,7 @@ def compute_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
                 mask_f2 = angle_mask
                 mask = mask_f1 & mask_f2 & wm_mask_bool & fraction_mask_bool
                 nb_voxels[idx, i, j] = np.sum(mask)
-                if np.sum(mask) < 5:
+                if np.sum(mask) < min_nb_voxels:
                     mtr_means[idx, i, j] = None
                     ihmtr_means[idx, i, j] = None
                     mtsat_means[idx, i, j] = None
@@ -175,7 +185,8 @@ def analyse_delta_m_max(bins, mtr_diag, ihmtr_diag, bin_min, bin_max,
 def analyse_3_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
                                      mtr=None, ihmtr=None, mtsat=None,
                                      ihmtsat=None, bin_width=10, 
-                                     frac_thrs=np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])):
+                                     frac_thrs=np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]),
+                                     min_nb_voxels=5):
     # peaks, peaks_norm = normalize_peaks(np.copy(peaks))
     peaks_fraction = compute_peaks_fraction(peak_values)
 
@@ -224,7 +235,7 @@ def analyse_3_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo
 
             mask = mask_f1 & mask_f2 & mask_f3 & wm_mask_bool & fraction_mask_bool
             nb_voxels[idx, i] = np.sum(mask)
-            if np.sum(mask) < 5:
+            if np.sum(mask) < min_nb_voxels:
                 mtr_means[idx, i] = None
                 ihmtr_means[idx, i] = None
                 mtsat_means[idx, i] = None
