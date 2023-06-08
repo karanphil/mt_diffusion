@@ -25,3 +25,4 @@ for dir in "${all_dirs[@]}";
     fi;
 done;
 python ~/source/mt_diffusion/scripts/plot_intersubject_corrected.py intersubject/all_subjects_${specs}.png --in_name results_txt/${specs}.txt --input_type ${output_choice} --in_subjects ${subjects};
+python ~/source/mt_diffusion/scripts/plot_intersubject_corrected.py intersubject/all_subjects_${specs_cr}.png --in_name results_txt/${specs}.txt --in_name_cr results_txt/${specs_cr}.txt --input_type ${output_choice} --in_subjects ${subjects};

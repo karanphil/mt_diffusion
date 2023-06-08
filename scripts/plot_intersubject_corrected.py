@@ -56,14 +56,15 @@ def main():
 
     if args.in_name_cr:
         results_cr = np.zeros(((len(subjects),) + dims))
-        print(subject)
-        sessions = list(Path('.').glob(subject + "*"))
-        for session in sessions[:5]:
-            print(session)
-            results_cr[i] += np.loadtxt(str(session) + "/" + args.in_name_cr, skiprows=1)
-        results_cr[i] /= 5
-        mt_cr_means = results_cr[:, :, 2]
-        ihmt_cr_means = results_cr[:, :, 3]
+        for i, subject in enumerate(subjects):
+            print(subject)
+            sessions = list(Path('.').glob(subject + "*"))
+            for session in sessions[:5]:
+                print(session)
+                results_cr[i] += np.loadtxt(str(session) + "/" + args.in_name_cr, skiprows=1)
+            results_cr[i] /= 5
+            mt_cr_means = results_cr[:, :, 2]
+            ihmt_cr_means = results_cr[:, :, 3]
     else:
         mt_cr_means = None
         ihmt_cr_means = None

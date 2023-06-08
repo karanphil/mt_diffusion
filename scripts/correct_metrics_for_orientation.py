@@ -406,7 +406,7 @@ def main():
         if args.in_mtr and args.in_ihmtr:
             output_name = "WB_delta_m_max_mtr_plot" + files_basename + ".png"
             output_path = out_folder / "plots" / output_name
-            plot_delta_m_max(delta_m_max_results[4][1:], delta_m_max_results[2][1:],
+            plot_delta_m_max(delta_m_max_results[4][0:], delta_m_max_results[2][0:],
                              delta_m_max_results[0], str(output_path))
     else:
         raise ValueError("Not implemented yet for bin_width!=1.")

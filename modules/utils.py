@@ -154,29 +154,33 @@ def analyse_delta_m_max(bins, mtr_diag, ihmtr_diag, bin_min, bin_max,
 
     mtr_min = mtr_diag[:, min_idx]
     mtr_max = mtr_diag[:, max_idx]
-    mtr_delta_m_max = np.zeros(6)
-    mtr_delta_m_max[0] = 0
-    mtr_delta_m_max[1:5] = mtr_max - mtr_min
-    mtr_delta_m_max[5] = mtr_single_fiber_delta_m_max
-    mtr_delta_m_max /= mtr_delta_m_max[5]
+    mtr_delta_m_max = np.zeros(5)
+    #mtr_delta_m_max[0] = 0
+    mtr_delta_m_max[0:4] = mtr_max - mtr_min
+    mtr_delta_m_max[4] = mtr_single_fiber_delta_m_max
+    mtr_delta_m_max /= mtr_delta_m_max[4]
 
     ihmtr_min = ihmtr_diag[:, min_idx]
     ihmtr_max = ihmtr_diag[:, max_idx]
-    ihmtr_delta_m_max = np.zeros(6)
-    ihmtr_delta_m_max[0] = 0
-    ihmtr_delta_m_max[1:5] = ihmtr_min - ihmtr_max
-    ihmtr_delta_m_max[5] = ihmtr_single_fiber_delta_m_max
-    ihmtr_delta_m_max /= ihmtr_delta_m_max[5]
+    ihmtr_delta_m_max = np.zeros(5)
+    #ihmtr_delta_m_max[0] = 0
+    ihmtr_delta_m_max[0:4] = ihmtr_min - ihmtr_max
+    ihmtr_delta_m_max[4] = ihmtr_single_fiber_delta_m_max
+    ihmtr_delta_m_max /= ihmtr_delta_m_max[4]
 
-    frac_thrs_mid = np.zeros((1 + len(frac_thrs)))
-    frac_thrs_mid[0] = 0
+    frac_thrs_mid = np.zeros((len(frac_thrs)))
+    # frac_thrs_mid[0] = 0
     frac_thrs_mid[-1] = 1
-    frac_thrs_mid[1:-1] = (frac_thrs[:-1] + frac_thrs[1:])/2.
+    frac_thrs_mid[0:-1] = (frac_thrs[:-1] + frac_thrs[1:])/2.
 
-    mtr_fit = np.polyfit(frac_thrs_mid[:5], mtr_delta_m_max[:5], 1)
+    frac_thrs_mid = frac_thrs_mid[~np.isnan(mtr_delta_m_max)]
+    mtr_delta_m_max = mtr_delta_m_max[~np.isnan(mtr_delta_m_max)]
+    ihmtr_delta_m_max = ihmtr_delta_m_max[~np.isnan(ihmtr_delta_m_max)]
+
+    mtr_fit = np.polyfit(frac_thrs_mid[:4], mtr_delta_m_max[:4], 1)
     mtr_polynome = np.poly1d(mtr_fit)
 
-    ihmtr_fit = np.polyfit(frac_thrs_mid[:5], ihmtr_delta_m_max[:5], 1)
+    ihmtr_fit = np.polyfit(frac_thrs_mid[:4], ihmtr_delta_m_max[:4], 1)
     ihmtr_polynome = np.poly1d(ihmtr_fit)
     
     return mtr_polynome, ihmtr_polynome, mtr_delta_m_max, ihmtr_delta_m_max, frac_thrs_mid
