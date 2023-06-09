@@ -197,6 +197,32 @@ def main():
                                                     bin_width=10,
                                                     fa_thr=args.fa_thr,
                                                     min_nb_voxels=args.min_nb_voxels)
+    
+    print("Computing single fiber averages for whole brain.")
+    w_brain_results_06 = compute_single_fiber_averages(e1, fa,
+                                                    wm_mask,
+                                                    affine,
+                                                    mtr=mtr,
+                                                    ihmtr=ihmtr,
+                                                    mtsat=mtsat,
+                                                    ihmtsat=ihmtsat,
+                                                    nufo=nufo,
+                                                    bin_width=1,
+                                                    fa_thr=0.6,
+                                                    min_nb_voxels=args.min_nb_voxels)
+    
+    print("Computing single fiber averages for whole brain.")
+    w_brain_results_07 = compute_single_fiber_averages(e1, fa,
+                                                    wm_mask,
+                                                    affine,
+                                                    mtr=mtr,
+                                                    ihmtr=ihmtr,
+                                                    mtsat=mtsat,
+                                                    ihmtsat=ihmtsat,
+                                                    nufo=nufo,
+                                                    bin_width=1,
+                                                    fa_thr=0.7,
+                                                    min_nb_voxels=args.min_nb_voxels)
 
     print("Saving whole brain results as txt files.")
     if args.in_mtr and args.in_ihmtr:
@@ -250,6 +276,18 @@ def main():
                                   str(output_path),
                                   [r'$1^\circ$ bins', r'$3^\circ$ bins', r'$5^\circ$ bins', r'$10^\circ$ bins'],
                                    input_dtype="ratios")
+        
+    if args.in_mtr and args.in_ihmtr:
+        output_name = "WB_single_fiber_mtr_ihmtr_fa_thr_plot.png"
+        output_path = out_folder / "plots" / output_name
+        plot_multiple_means(w_brain_results[0],
+                                  np.array([w_brain_results[1], w_brain_results_06[1], w_brain_results_07[1]]),
+                                  np.array([w_brain_results[2], w_brain_results_06[2], w_brain_results_07[2]]),
+                                  np.array([w_brain_results[5], w_brain_results_06[5], w_brain_results_07[5]]),
+                                  str(output_path),
+                                  labels=["0.5", "0.6", "0.7"],
+                                  input_dtype="ratios",
+                                  legend_title="FA threshold")
 
     print("Saving single fiber masks.")
     save_masks_by_angle_bins(e1, fa, wm_mask, affine,
