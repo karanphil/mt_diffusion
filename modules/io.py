@@ -180,7 +180,6 @@ def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
     elif input_dtype=="sats":
         ax2.set_ylabel('ihMTsat mean')
         # ax2.set_title('ihMTsat vs Angle')
-    plt.rcParams['legend.fontsize'] = 8
     if labels is not None:
         ax2.legend(loc=1)
     if legend_title is not None:
