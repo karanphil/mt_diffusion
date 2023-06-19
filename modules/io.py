@@ -2,6 +2,7 @@ import nibabel as nib
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from pathlib import Path
 
 
@@ -137,7 +138,9 @@ def plot_measure_mean(bins, peak_values, output_name):
 def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
                         labels=None, mt_cr_means=None, ihmt_cr_means=None,
                         input_dtype="ratios", legend_title=None,
-                        mt_poly=None, ihmt_poly=None):
+                        mt_poly=None, ihmt_poly=None, delta_plot=False,
+                        xlim=[0, 1.1], p_frac=None, mt_max=None,
+                        mt_max_poly=None):
     max_count = np.max(nb_voxels)
     norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
     mid_bins = (bins[:-1] + bins[1:]) / 2.
@@ -172,6 +175,27 @@ def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
     elif input_dtype=="sats":
         ax1.set_ylabel('MTsat mean')
         # ax1.set_title('MTsat vs Angle')
+
+    if delta_plot:
+        # this is an inset axes over the main axes
+        highres_frac = np.arange(0, 1.01, 0.01)
+        # ax = inset_axes(ax1,
+        #                 bbox_to_anchor=[0.2, 0.2, 0.2, 0.2],
+        #                 width="50%", # width = 40% of parent_bbox
+        #                 height=1.0) # height : 1 inch
+        #                 # loc=2)
+        ax = plt.axes([0.16, 0.75, 0.15, 0.2])
+        for i in range(len(p_frac) - 1):
+            ax.scatter(p_frac[i], mt_max[i], color="C" + str(i), linewidths=1)
+        ax.scatter(p_frac[-1], mt_max[-1], color="black", linewidths=1)
+        ax.plot(highres_frac, mt_max_poly(highres_frac), "--", color="grey")
+        ax.set_xlabel(r'Peak$_1$ fraction')
+        ax.set_xlim(xlim[0], xlim[1])
+        if input_dtype=="ratios":
+            ax.set_ylabel(r'MTR $\delta m_{max}$')
+        elif input_dtype=="sats":
+            ax.set_ylabel(r'MTsat $\delta m_{max}$')
+    
     ax2.set_xlabel(r'$\theta_a$')
     ax2.set_xlim(0, 90)
     if input_dtype=="ratios":

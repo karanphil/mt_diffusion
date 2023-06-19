@@ -446,6 +446,17 @@ def main():
             output_path = out_folder / "plots" / output_name
             plot_delta_m_max(delta_m_max_results[4][0:], delta_m_max_results[2][0:],
                              delta_m_max_results[0], str(output_path))
+            
+        print("Saving results as plots.")
+        if args.in_mtr and args.in_ihmtr:
+            output_name = "WB_double_fibers_mtr_ihmtr_diagonal_plot_w_delta" + files_basename + ".png"
+            output_path = out_folder / "plots" / output_name
+            plot_multiple_means(crossing_results[0], mtr_2f_means_diag, ihmtr_2f_means_diag,
+                                nb_voxels_2f_diag, str(output_path), crossing_results[6],
+                                input_dtype="ratios", legend_title=r"Peak$_1$ fraction",
+                                delta_plot=True, p_frac=delta_m_max_results[4][0:],
+                                mt_max=delta_m_max_results[2][0:],
+                                mt_max_poly=delta_m_max_results[0])
     else:
         raise ValueError("Not implemented yet for bin_width!=1.")
     
