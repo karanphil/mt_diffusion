@@ -357,6 +357,7 @@ def main():
         plot_different_bins_means([w_brain_results[0], roi_results[0]], [w_brain_results[1], roi_results[1]], [w_brain_results[2], roi_results[2]],
                    [w_brain_results[5], roi_results[5]], str(output_path), ["WB", "CC"], mt_poly=[mtr_poly_wb, mtr_poly_roi],
                    ihmt_poly=[ihmtr_poly_wb, ihmtr_poly_roi], input_dtype="ratios")
+
     # if args.in_mtsat and args.in_ihmtsat:
     #     output_name = "CC_&_WB_single_fiber_mtsat_ihmtsat_plot" + files_basename + ".png"
     #     output_path = out_folder / "plots" / output_name
@@ -456,7 +457,7 @@ def main():
                                 input_dtype="ratios", legend_title=r"Peak$_1$ fraction",
                                 delta_plot=True, p_frac=delta_m_max_results[4][0:],
                                 mt_max=delta_m_max_results[2][0:],
-                                mt_max_poly=delta_m_max_results[0])
+                                mt_max_poly=delta_m_max_results[0],leg_loc=3)
     else:
         raise ValueError("Not implemented yet for bin_width!=1.")
     
@@ -570,7 +571,7 @@ def main():
                    w_brain_results[5], str(output_path),
                    mt_cr_means=w_brain_cr_results[1],
                    ihmt_cr_means=w_brain_cr_results[2], mt_poly=mtr_poly_wb,
-                   ihmt_poly=ihmtr_poly_wb, input_dtype="ratios")
+                   ihmt_poly=ihmtr_poly_wb, input_dtype="ratios", labels=["Original", "Corrected", "Polyfit"])
     if args.in_mtsat and args.in_ihmtsat:
         output_name = "WB_single_fiber_corrected_mtsat_ihmtsat_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
@@ -578,7 +579,7 @@ def main():
                    w_brain_results[5],
                    str(output_path), mt_cr_means=w_brain_cr_results[3],
                    ihmt_cr_means=w_brain_cr_results[4], mt_poly=mtsat_poly_wb,
-                   ihmt_poly=ihmtsat_poly_wb, input_dtype="sats")
+                   ihmt_poly=ihmtsat_poly_wb, input_dtype="sats", labels=["Original", "Corrected", "Polyfit"])
         
 #----------------------------Bundles mask---------------------------------------
     for i in range(nb_bundles):
@@ -693,6 +694,12 @@ def main():
                    mt_cr_means=mtr_cr_2f_means_diag,
                    ihmt_cr_means=ihmtr_cr_2f_means_diag, input_dtype="ratios",
                    legend_title=r"Peak$_1$ fraction")
+        
+        output_name = "WB_double_fibers_corrected_only_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
+        output_path = out_folder / "plots" / output_name
+        plot_multiple_means(crossing_cr_results[0], mtr_cr_2f_means_diag, ihmtr_cr_2f_means_diag,
+                   nb_voxels_cr_2f_diag, str(output_path), input_dtype="ratios", markers="s")
+
     if args.in_mtsat and args.in_ihmtsat:
         output_name = "WB_double_fibers_corrected_mtsat_ihmtsat_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
@@ -755,7 +762,7 @@ def main():
 
 #----------------------------Whole brain----------------------------------------
     print("Computing single fiber averages on whole brain corrected data.")
-    w_brain_cr_results = compute_single_fiber_averages(e1, fa,
+    w_brain_CC_cr_results = compute_single_fiber_averages(e1, fa,
                                                        wm_mask,
                                                        affine,
                                                        mtr=corrected_mtr,
@@ -771,13 +778,13 @@ def main():
     if args.in_mtr and args.in_ihmtr:
         output_name = "CC_WB_single_fiber_corrected_mtr_ihmtr_results" + files_basename + ".txt"
         output_path = out_folder / "results_txt" / output_name
-        save_txt(w_brain_cr_results[0], w_brain_cr_results[1], w_brain_cr_results[2],
-                 w_brain_cr_results[5], str(output_path), input_dtype="ratios")
+        save_txt(w_brain_CC_cr_results[0], w_brain_CC_cr_results[1], w_brain_CC_cr_results[2],
+                 w_brain_CC_cr_results[5], str(output_path), input_dtype="ratios")
     if args.in_mtsat and args.in_ihmtsat:
         output_name = "CC_WB_single_fiber_corrected_mtsat_ihmtsat_results" + files_basename + ".txt"
         output_path = out_folder / "results_txt" / output_name
-        save_txt(w_brain_cr_results[0], w_brain_cr_results[3], w_brain_cr_results[4],
-                 w_brain_cr_results[5], str(output_path), input_dtype="sats")
+        save_txt(w_brain_CC_cr_results[0], w_brain_CC_cr_results[3], w_brain_CC_cr_results[4],
+                 w_brain_CC_cr_results[5], str(output_path), input_dtype="sats")
 
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:
@@ -785,16 +792,16 @@ def main():
         output_path = out_folder / "plots" / output_name
         plot_means(w_brain_results[0], w_brain_results[1], w_brain_results[2],
                    w_brain_results[5], str(output_path),
-                   mt_cr_means=w_brain_cr_results[1],
-                   ihmt_cr_means=w_brain_cr_results[2], mt_poly=mtr_poly_wb,
+                   mt_cr_means=w_brain_CC_cr_results[1],
+                   ihmt_cr_means=w_brain_CC_cr_results[2], mt_poly=mtr_poly_wb,
                    ihmt_poly=ihmtr_poly_wb, input_dtype="ratios")
     if args.in_mtsat and args.in_ihmtsat:
         output_name = "CC_WB_single_fiber_corrected_mtsat_ihmtsat_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
         plot_means(w_brain_results[0], w_brain_results[3], w_brain_results[4],
                    w_brain_results[5],
-                   str(output_path), mt_cr_means=w_brain_cr_results[3],
-                   ihmt_cr_means=w_brain_cr_results[4], mt_poly=mtsat_poly_wb,
+                   str(output_path), mt_cr_means=w_brain_CC_cr_results[3],
+                   ihmt_cr_means=w_brain_CC_cr_results[4], mt_poly=mtsat_poly_wb,
                    ihmt_poly=ihmtsat_poly_wb, input_dtype="sats")
         
 #-----------------------------------CC----------------------------------------
@@ -841,6 +848,15 @@ def main():
                    str(output_path), mt_cr_means=roi_cr_results[3],
                    ihmt_cr_means=roi_cr_results[4], mt_poly=mtsat_poly_roi,
                    ihmt_poly=ihmtsat_poly_roi, input_dtype="sats")
+        
+    if args.in_mtr and args.in_ihmtr:
+        output_name = "CC_&_WB_single_fiber_corrected_mtr_ihmtr_plot" + files_basename + ".png"
+        output_path = out_folder / "plots" / output_name
+
+        plot_different_bins_means([w_brain_results[0], roi_results[0]], [w_brain_results[1], roi_results[1]], [w_brain_results[2], roi_results[2]],
+                   [w_brain_results[5], roi_results[5]], str(output_path), ["WB", "CC"], mt_poly=[mtr_poly_wb, mtr_poly_roi],
+                   ihmt_poly=[ihmtr_poly_wb, ihmtr_poly_roi], input_dtype="ratios", mt_cr_means=[w_brain_cr_results[1], w_brain_CC_cr_results[1]],
+                   ihmt_cr_means=[w_brain_cr_results[2], w_brain_CC_cr_results[2]], ax1_legend=True)
         
 #----------------------------Bundles mask---------------------------------------
     for i in range(nb_bundles):

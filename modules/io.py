@@ -28,7 +28,7 @@ def plot_init():
     plt.rcParams['grid.linewidth'] = 1
     plt.rcParams['grid.linestyle'] = "-"
     plt.rcParams['grid.alpha'] = "0.5"
-    plt.rcParams['figure.figsize'] = (10.0, 5.0)
+    plt.rcParams['figure.figsize'] = (12.0, 5.0)
     plt.rcParams['font.size'] = 12
     plt.rcParams['axes.labelsize'] = plt.rcParams['font.size']
     plt.rcParams['axes.titlesize'] = 1.2*plt.rcParams['font.size']
@@ -45,7 +45,8 @@ def plot_init():
 
 def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
                mt_cr_means=None, ihmt_cr_means=None,
-               mt_poly=None, ihmt_poly=None, input_dtype="ratios"):
+               mt_poly=None, ihmt_poly=None, input_dtype="ratios",
+               labels=[None, None, None]):
     max_count = np.max(nb_voxels)
     norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
     mid_bins = (bins[:-1] + bins[1:]) / 2.
@@ -54,12 +55,12 @@ def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
     fig, (ax1, ax2, cax) = plt.subplots(1, 3,
                                         gridspec_kw={"width_ratios":[1,1, 0.05]})
     ax1.scatter(mid_bins, mt_means, c=nb_voxels, cmap='Greys', norm=norm,
-                edgecolors='black', linewidths=1)
+                edgecolors="C0", linewidths=1)
     if mt_cr_means is not None:
         ax1.scatter(mid_bins, mt_cr_means, c=nb_voxels, cmap='Greys',
-                    norm=norm, edgecolors='blue', linewidths=1)
+                    norm=norm, edgecolors="C0", linewidths=1, marker="s")
     if mt_poly:
-        ax1.plot(highres_bins, mt_poly(highres_bins), "--g")
+        ax1.plot(highres_bins, mt_poly(highres_bins), "--", color="C0")
     ax1.set_xlabel(r'$\theta_a$')
     ax1.set_xlim(0, 90)
     if input_dtype=="ratios":
@@ -69,12 +70,12 @@ def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
         ax1.set_ylabel('MTsat mean')
         # ax1.set_title('MTsat vs Angle')
     colorbar = ax2.scatter(mid_bins, ihmt_means, c=nb_voxels, cmap='Greys',
-                           norm=norm, edgecolors='black', linewidths=1)
+                           norm=norm, edgecolors="C0", linewidths=1, label=labels[0])
     if ihmt_cr_means is not None:
         ax2.scatter(mid_bins, ihmt_cr_means, c=nb_voxels, cmap='Greys',
-                    norm=norm, edgecolors='blue', linewidths=1)
+                    norm=norm, edgecolors="C0", linewidths=1, marker="s", label=labels[1])
     if ihmt_poly:
-        ax2.plot(highres_bins, ihmt_poly(highres_bins), "--g")
+        ax2.plot(highres_bins, ihmt_poly(highres_bins), "--", color="C0", label=labels[2])
     ax2.set_xlabel(r'$\theta_a$')
     ax2.set_xlim(0, 90)
     if input_dtype=="ratios":
@@ -83,6 +84,8 @@ def plot_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
     elif input_dtype=="sats":
         ax2.set_ylabel('ihMTsat mean')
         # ax2.set_title('ihMTsat vs Angle')
+    if labels[0] is not None:
+        ax2.legend(loc=5)
     fig.colorbar(colorbar, cax=cax, label="Voxel count")
     fig.tight_layout()
     # plt.show()
@@ -139,8 +142,8 @@ def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
                         labels=None, mt_cr_means=None, ihmt_cr_means=None,
                         input_dtype="ratios", legend_title=None,
                         mt_poly=None, ihmt_poly=None, delta_plot=False,
-                        xlim=[0, 1.1], p_frac=None, mt_max=None,
-                        mt_max_poly=None):
+                        xlim=[0, 1.03], p_frac=None, mt_max=None,
+                        mt_max_poly=None, leg_loc=1, markers="o"):
     max_count = np.max(nb_voxels)
     norm = mpl.colors.Normalize(vmin=0, vmax=max_count)
     mid_bins = (bins[:-1] + bins[1:]) / 2.
@@ -150,7 +153,7 @@ def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
                                         gridspec_kw={"width_ratios":[1,1, 0.05]})
     for i in range(mt_means.shape[0]):
         ax1.scatter(mid_bins, mt_means[i], c=nb_voxels[i], cmap='Greys', norm=norm,
-                    linewidths=1, edgecolors="C" + str(i))
+                    linewidths=1, edgecolors="C" + str(i), marker=markers)
         if mt_cr_means is not None:
             ax1.scatter(mid_bins, mt_cr_means[i], c=nb_voxels[i], cmap='Greys',
                         norm=norm, edgecolors="C" + str(i), linewidths=1, marker="s")
@@ -161,7 +164,7 @@ def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
                                 norm=norm, linewidths=1, label=labels[i], edgecolors="C" + str(i))
         else:
             colorbar = ax2.scatter(mid_bins, ihmt_means[i], c=nb_voxels[i], cmap='Greys',
-                                norm=norm, linewidths=1, edgecolors="C" + str(i))
+                                norm=norm, linewidths=1, edgecolors="C" + str(i), marker=markers)
         if ihmt_cr_means is not None:
             ax2.scatter(mid_bins, ihmt_cr_means[i], c=nb_voxels[i], cmap='Greys',
                         norm=norm, edgecolors="C" + str(i), linewidths=1, marker="s")
@@ -184,7 +187,7 @@ def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
         #                 width="50%", # width = 40% of parent_bbox
         #                 height=1.0) # height : 1 inch
         #                 # loc=2)
-        ax = plt.axes([0.16, 0.75, 0.15, 0.2])
+        ax = plt.axes([0.13, 0.75, 0.16, 0.2])
         for i in range(len(p_frac) - 1):
             ax.scatter(p_frac[i], mt_max[i], color="C" + str(i), linewidths=1)
         ax.scatter(p_frac[-1], mt_max[-1], color="black", linewidths=1)
@@ -205,7 +208,7 @@ def plot_multiple_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
         ax2.set_ylabel('ihMTsat mean')
         # ax2.set_title('ihMTsat vs Angle')
     if labels is not None:
-        ax2.legend(loc=1)
+        ax2.legend(loc=leg_loc)
     if legend_title is not None:
         ax2.get_legend().set_title(legend_title)
     fig.colorbar(colorbar, cax=cax, label="Voxel count")
@@ -266,7 +269,8 @@ def plot_delta_m_max(bins, mt_means, mt_poly, output_name, ihmt_means=None,
 
 def plot_different_bins_means(bins, mt_means, ihmt_means, nb_voxels, output_name,
                               labels, input_dtype="ratios", legend_title=None,
-                              mt_poly=None, ihmt_poly=None):
+                              mt_poly=None, ihmt_poly=None, mt_cr_means=None,
+                              ihmt_cr_means=None, ax1_legend=False):
     max_count = 0
     for i in range(len(nb_voxels)):
         if np.max(nb_voxels[i]) > max_count:
@@ -276,14 +280,21 @@ def plot_different_bins_means(bins, mt_means, ihmt_means, nb_voxels, output_name
     plot_init()
     fig, (ax1, ax2, cax) = plt.subplots(1, 3,
                                         gridspec_kw={"width_ratios":[1,1, 0.05]})
+    mid_bins_1 = (bins[0][:-1] + bins[0][1:]) / 2.
     for i in range(len(mt_means)):
         mid_bins = (bins[i][:-1] + bins[i][1:]) / 2.
         ax1.scatter(mid_bins, mt_means[i], c=nb_voxels[i], cmap='Greys', norm=norm,
                     linewidths=1, label=labels[i], edgecolors="C" + str(i))
+        if mt_cr_means is not None:
+            ax1.scatter(mid_bins_1, mt_cr_means[i], c=nb_voxels[0], cmap='Greys',
+                        norm=norm, edgecolors="C" + str(i), linewidths=1, marker="s")
         if mt_poly is not None:
             ax1.plot(highres_bins, mt_poly[i](highres_bins), "--", color="C" + str(i))
         colorbar = ax2.scatter(mid_bins, ihmt_means[i], c=nb_voxels[i], cmap='Greys',
                                norm=norm, linewidths=1, label=labels[i], edgecolors="C" + str(i))
+        if ihmt_cr_means is not None:
+            ax2.scatter(mid_bins_1, ihmt_cr_means[i], c=nb_voxels[0], cmap='Greys',
+                        norm=norm, edgecolors="C" + str(i), linewidths=1, marker="s")
         if ihmt_poly is not None:
             ax2.plot(highres_bins, ihmt_poly[i](highres_bins), "--", color="C" + str(i))
     ax1.set_xlabel(r'$\theta_a$')
@@ -302,9 +313,14 @@ def plot_different_bins_means(bins, mt_means, ihmt_means, nb_voxels, output_name
     elif input_dtype=="sats":
         ax2.set_ylabel('ihMTsat mean')
         # ax2.set_title('ihMTsat vs Angle')
-    ax2.legend()
-    if legend_title is not None:
-        ax2.get_legend().set_title(legend_title)
+    if ax1_legend:
+        ax1.legend(loc=4)
+        if legend_title is not None:
+            ax1.get_legend().set_title(legend_title)
+    else:
+        ax2.legend()
+        if legend_title is not None:
+            ax2.get_legend().set_title(legend_title)
     fig.colorbar(colorbar, cax=cax, label="Voxel count")
     fig.tight_layout()
     # plt.show()
