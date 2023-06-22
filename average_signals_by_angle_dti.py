@@ -27,6 +27,7 @@ def plot_init():
     plt.rcParams['axes.linewidth'] =1
     plt.rcParams['lines.linewidth']=1
     plt.rcParams['lines.markersize']=4
+    plt.rcParams['axes.unicode_minus']=False
     # plt.rcParams['text.latex.unicode']=True
     # plt.rcParams['text.latex.preamble'] = [r'\usepackage{amssymb}', r"\usepackage{amstext}"]
     # plt.rcParams['mathtext.default']='regular'
@@ -145,11 +146,15 @@ for j in bins_width: # width of the angle bins
             # ax1.scatter(mid_bins, sp_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='green', linewidths=1)
             # ax1.scatter(mid_bins, sn_means[k, :], c=nb_voxels[k, :], cmap='Greys', norm=norm, edgecolors='blue', linewidths=1)
             ax[0, 0].scatter(mid_bins, spn_means[k, :], linewidths=1, color="C1", label=r"(S$_+$+S$_-)/2$")
+            ax[0, 0].scatter(mid_bins, sp_means[k, :], linewidths=1, color="C1", label=r"S$_+$", marker=">", alpha=0.5, s=3)
+            ax[0, 0].scatter(mid_bins, sn_means[k, :], linewidths=1, color="C1", label=r"S$_+$", marker="<", alpha=0.5, s=3)
             ax[0, 0].scatter(mid_bins, sdualpnnp_means[k, :], linewidths=1, color="C2", label=r"(S$_{+-}$+S$_{-+})/2$")
+            ax[0, 0].scatter(mid_bins, sdualpn_means[k, :], linewidths=1, color="C2", label=r"S$_{+-}$", marker=">", alpha=0.5, s=3)
+            ax[0, 0].scatter(mid_bins, sdualnp_means[k, :], linewidths=1, color="C2", label=r"S$_{-+}$", marker="<", alpha=0.5, s=3)
             ax[0, 0].scatter(mid_bins, ref_means[k, :], color="darkgrey", linewidths=1, label=r"S$_0$")
             # ax[0, 0].set_xlabel('Angle between e1 and B0 field (degrees)')
-            ax[0, 0].set_ylabel('Basic measures')
-            ax[0, 0].legend(loc=5)
+            ax[0, 0].set_ylabel('Basic signals')
+            ax[0, 0].legend(loc=5, bbox_to_anchor=(1,0.6))
             # ax1.set_title('S+- vs Angle')
     
             # ax[0, 1].scatter(mid_bins, ref_means[k, :], c="red", linewidths=1)
@@ -162,7 +167,7 @@ for j in bins_width: # width of the angle bins
             ax[0, 1].scatter(mid_bins, spn_means[k, :] / ref_means[k, :], color="C1", linewidths=1, label=r"(S$_+$+S$_-)/2$S$_0$")
             ax[0, 1].scatter(mid_bins, sdualpnnp_means[k, :] / ref_means[k, :], color="C2", linewidths=1, label=r"(S$_{+-}$+S$_{-+})/2$S$_0$")
             # ax[1, 0].set_xlabel('Angle between e1 and B0 field (degrees)')
-            ax[0, 1].set_ylabel('Normalized measures')
+            ax[0, 1].set_ylabel('Normalized signals')
             ax[0, 1].legend(loc=6)
             # ax3.set_title('Sdual +-/-+ vs Angle')
 
