@@ -10,7 +10,7 @@ from modules.utils import (compute_single_fiber_averages,
                            analyse_delta_m_max, analyse_3_crossing_fibers_averages)
 from modules.io import (save_txt, plot_means, save_masks_by_angle_bins,
                         plot_multiple_means, plot_delta_m_max, plot_different_bins_means,
-                        plot_3d_means)
+                        plot_3d_means, save_angle_map)
 
 from scilpy.io.utils import (add_overwrite_arg)
 
@@ -144,6 +144,10 @@ def main():
     else:
         bundles = None
         nb_bundles = 0
+
+#-----------------------------Angle maps----------------------------------------
+    print("Computing angle maps.")
+    save_angle_map(e1, fa, wm_mask, affine, out_folder, peaks, peak_values, nufo)
 
 #----------------------------Whole brain----------------------------------------
     print("Computing single fiber averages for whole brain.")
