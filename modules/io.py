@@ -166,6 +166,8 @@ def save_angle_map(peaks, fa, wm_mask, affine, output_path, fodf_peaks, peak_val
         angle_mask = angle_mask_0_90 | angle_mask_90_180
         mask = wm_mask_bool & angle_mask
         peak_1[mask] = (bins[i] + bins[i + 1]) /2.
+    
+    peak_1_sf = np.copy(peak_1)
 
     wm_mask_bool = (wm_mask > 0.9) & (nufo == 2)
     fraction_mask_bool = (peaks_fraction[..., 0] >= 0.5) & (peaks_fraction[..., 0] < 0.9)
@@ -202,6 +204,10 @@ def save_angle_map(peaks, fa, wm_mask, affine, output_path, fodf_peaks, peak_val
         angle_mask = angle_mask_0_90 | angle_mask_90_180
         mask_f3 = angle_mask & wm_mask_bool & fraction_mask_bool
         peak_3[mask_f3] = (bins[i] + bins[i + 1]) /2.
+
+    map_1_name = "peak_1_sf_angles_map.nii.gz"
+    map_1_path = output_path / "masks" / map_1_name
+    nib.save(nib.Nifti1Image(peak_1_sf, affine), map_1_path)
 
     map_1_name = "peak_1_angles_map.nii.gz"
     map_1_path = output_path / "masks" / map_1_name
