@@ -746,6 +746,11 @@ def main():
                                                         min_nb_voxels=args.min_nb_voxels)
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:
+        output_name = "WB_triple_fibers_corrected_only_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
+        output_path = out_folder / "plots" / output_name
+        plot_multiple_means(three_crossing_cr_results[0], three_crossing_cr_results[1], three_crossing_cr_results[2],
+                   three_crossing_cr_results[5], str(output_path), input_dtype="ratios", markers="s")
+        
         output_name = "WB_triple_fibers_corrected_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
         plot_multiple_means(three_crossing_results[0], three_crossing_results[1], three_crossing_results[2],
