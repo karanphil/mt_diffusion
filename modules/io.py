@@ -109,9 +109,9 @@ def save_masks_by_angle_bins(peaks, fa, wm_mask, affine, output_path,
 
     # Apply the WM mask and FA threshold
     if nufo is not None:
-        wm_mask_bool = (wm_mask > 0.9) & (fa > fa_thr) & (nufo == 1)
+        wm_mask_bool = (wm_mask >= 0.9) & (fa > fa_thr) & (nufo == 1)
     else:
-        wm_mask_bool = (wm_mask > 0.9) & (fa > fa_thr)
+        wm_mask_bool = (wm_mask >= 0.9) & (fa > fa_thr)
     for i in range(len(bins) - 1):
         angle_mask_0_90 = (theta >= bins[i]) & (theta < bins[i+1]) 
         angle_mask_90_180 = (180 - theta >= bins[i]) & (180 - theta < bins[i+1])

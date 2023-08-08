@@ -29,9 +29,9 @@ def compute_single_fiber_averages(peaks, fa, wm_mask, affine,
 
     # Apply the WM mask and FA threshold
     if nufo is not None:
-        wm_mask_bool = (wm_mask > 0.9) & (fa > fa_thr) & (nufo == 1)
+        wm_mask_bool = (wm_mask >= 0.9) & (fa > fa_thr) & (nufo == 1)
     else:
-        wm_mask_bool = (wm_mask > 0.9) & (fa > fa_thr)
+        wm_mask_bool = (wm_mask >= 0.9) & (fa > fa_thr)
     if mask is not None:
         wm_mask_bool = wm_mask_bool & (mask > 0)
 
@@ -97,7 +97,7 @@ def compute_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
 
     for idx in range(len(frac_thrs) - 1):
         # Apply the WM mask
-        wm_mask_bool = (wm_mask > 0.9) & (nufo == 2)
+        wm_mask_bool = (wm_mask >= 0.9) & (nufo == 2)
         fraction_mask_bool = (peaks_fraction[..., 0] >= frac_thrs[idx]) & (peaks_fraction[..., 0] < frac_thrs[idx + 1])
         for i in range(len(bins) - 1):
             angle_mask_0_90 = (theta_f1 >= bins[i]) & (theta_f1 < bins[i+1])
@@ -219,7 +219,7 @@ def analyse_3_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo
 
     for idx in range(len(frac_thrs) - 1):
         # Apply the WM mask
-        wm_mask_bool = (wm_mask > 0.9) & (nufo == 3)
+        wm_mask_bool = (wm_mask >= 0.9) & (nufo == 3)
         fraction_mask_bool = (peaks_fraction[..., 0] >= frac_thrs[idx]) & (peaks_fraction[..., 0] < frac_thrs[idx + 1])
         for i in range(len(bins) - 1):
             angle_mask_0_90 = (theta_f1 >= bins[i]) & (theta_f1 < bins[i+1])
@@ -336,7 +336,7 @@ def correct_measure(peaks, peak_values, measure, affine, wm_mask,
     peaks_angles[:] = np.nan
     corrections = np.zeros((peaks_fraction.shape))
     # Calculate the angle between e1 and B0 field for each peak
-    wm_mask_bool = (wm_mask > 0.9)
+    wm_mask_bool = (wm_mask >= 0.9)
     for i in range(peaks_angles.shape[-1]):
         mask = wm_mask_bool & (peaks_fraction[..., i] > peak_frac_thr)
         cos_theta = np.dot(peaks[mask, i*3:(i+1)*3], b0_field)
@@ -354,7 +354,7 @@ def correct_measure(peaks, peak_values, measure, affine, wm_mask,
 
 
 def compute_poor_ihmtr(corrected_mtr, wm_mask, polynome):
-    wm_mask_bool = (wm_mask > 0.9)
+    wm_mask_bool = (wm_mask >= 0.9)
     bins = np.arange(0, 90 + 1, 1)
     min_poly = np.min(polynome(bins))
     mtr_dipolar = corrected_mtr - min_poly
