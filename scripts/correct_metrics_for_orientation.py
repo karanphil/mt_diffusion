@@ -10,7 +10,7 @@ from modules.utils import (compute_single_fiber_averages,
                            analyse_delta_m_max, analyse_3_crossing_fibers_averages)
 from modules.io import (save_txt, plot_means, save_masks_by_angle_bins,
                         plot_multiple_means, plot_delta_m_max, plot_different_bins_means,
-                        plot_3d_means)
+                        plot_3d_means, save_angle_map)
 
 from scilpy.io.utils import (add_overwrite_arg)
 
@@ -144,6 +144,10 @@ def main():
     else:
         bundles = None
         nb_bundles = 0
+
+#-----------------------------Angle maps----------------------------------------
+    print("Computing angle maps.")
+    save_angle_map(e1, fa, wm_mask, affine, out_folder, peaks, peak_values, nufo)
 
 #----------------------------Whole brain----------------------------------------
     print("Computing single fiber averages for whole brain.")
@@ -422,10 +426,12 @@ def main():
         # min_idx = np.argwhere(w_brain_results[0] == bin_min_mid)[0][0]
         # max_idx = np.argwhere(w_brain_results[0] == bin_max_mid)[0][0]
         mtr_single_fiber_delta_m_max = np.nanmax(w_brain_results[1]) - np.nanmin(w_brain_results[1])
+        mtsat_single_fiber_delta_m_max = np.nanmax(w_brain_results[3]) - np.nanmin(w_brain_results[3])
         # mtr_single_fiber_delta_m_max = mtr_poly_wb(bin_max_mid) - mtr_poly_wb(bin_min_mid)
         # ihmtr_single_fiber_delta_m_max = ihmtr_poly_wb(bin_min_mid) - ihmtr_poly_wb(bin_max_mid)
         # ihmtr_single_fiber_delta_m_max = w_brain_results[2][min_idx] - w_brain_results[2][max_idx]
         ihmtr_single_fiber_delta_m_max = 1
+        ihmtsat_single_fiber_delta_m_max = 1
 
         delta_m_max_results = analyse_delta_m_max(crossing_results[0],
                                                   mtr_2f_means_diag,
@@ -439,7 +445,15 @@ def main():
         # ihmtr_poly_crossing = delta_m_max_results[1]
         # mtr_poly_crossing = None
         ihmtr_poly_crossing = None
-        mtsat_poly_crossing = None
+
+        delta_m_max_results_sat = analyse_delta_m_max(crossing_results[0],
+                                                  mtsat_2f_means_diag,
+                                                  ihmtsat_2f_means_diag,
+                                                  bin_min,
+                                                  bin_max,
+                                                  mtsat_single_fiber_delta_m_max,
+                                                  ihmtsat_single_fiber_delta_m_max)
+        mtsat_poly_crossing = delta_m_max_results_sat[0]
         ihmtsat_poly_crossing = None
         print("Saving crossing fibers delta_m_max plot.")
         if args.in_mtr and args.in_ihmtr:
@@ -458,6 +472,17 @@ def main():
                                 delta_plot=True, p_frac=delta_m_max_results[4][0:],
                                 mt_max=delta_m_max_results[2][0:],
                                 mt_max_poly=delta_m_max_results[0],leg_loc=3)
+            
+        print("Saving results as plots.")
+        if args.in_mtsat and args.in_ihmtsat:
+            output_name = "WB_double_fibers_mtsat_ihmtsat_diagonal_plot_w_delta" + files_basename + ".png"
+            output_path = out_folder / "plots" / output_name
+            plot_multiple_means(crossing_results[0], mtsat_2f_means_diag, ihmtsat_2f_means_diag,
+                                nb_voxels_2f_diag, str(output_path), crossing_results[6],
+                                input_dtype="sats", legend_title=r"Peak$_1$ fraction",
+                                delta_plot=True, p_frac=delta_m_max_results_sat[4][0:],
+                                mt_max=delta_m_max_results_sat[2][0:],
+                                mt_max_poly=delta_m_max_results_sat[0],leg_loc=3)
     else:
         raise ValueError("Not implemented yet for bin_width!=1.")
     
@@ -721,6 +746,11 @@ def main():
                                                         min_nb_voxels=args.min_nb_voxels)
     print("Saving results as plots.")
     if args.in_mtr and args.in_ihmtr:
+        output_name = "WB_triple_fibers_corrected_only_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
+        output_path = out_folder / "plots" / output_name
+        plot_multiple_means(three_crossing_cr_results[0], three_crossing_cr_results[1], three_crossing_cr_results[2],
+                   three_crossing_cr_results[5], str(output_path), input_dtype="ratios", markers="s")
+        
         output_name = "WB_triple_fibers_corrected_mtr_ihmtr_diagonal_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
         plot_multiple_means(three_crossing_results[0], three_crossing_results[1], three_crossing_results[2],
