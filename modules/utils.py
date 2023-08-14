@@ -270,8 +270,8 @@ def nb_peaks_factor(polynome, peak_fraction):
 
 
 def extend_measure(bins, measure):
-    new_bins = np.concatenate((np.flip(-bins[1:6]), bins, 180 - np.flip(bins[-6:-1])))
-    new_measure = np.concatenate((np.flip(measure[1:6]), measure, np.flip(measure[-6:-1])))
+    new_bins = np.concatenate((np.flip(-bins[1:10]), bins, 180 - np.flip(bins[-10:-1])))
+    new_measure = np.concatenate((np.flip(measure[1:10]), measure, np.flip(measure[-10:-1])))
     return new_bins, new_measure
 
 
