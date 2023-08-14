@@ -439,7 +439,8 @@ def main():
                                                   bin_min,
                                                   bin_max,
                                                   mtr_single_fiber_delta_m_max,
-                                                  ihmtr_single_fiber_delta_m_max)
+                                                  ihmtr_single_fiber_delta_m_max,
+                                                  nb_voxels_2f_diag)
         
         mtr_poly_crossing = delta_m_max_results[0]
         # ihmtr_poly_crossing = delta_m_max_results[1]
@@ -452,7 +453,8 @@ def main():
                                                   bin_min,
                                                   bin_max,
                                                   mtsat_single_fiber_delta_m_max,
-                                                  ihmtsat_single_fiber_delta_m_max)
+                                                  ihmtsat_single_fiber_delta_m_max,
+                                                  nb_voxels_2f_diag)
         mtsat_poly_crossing = delta_m_max_results_sat[0]
         ihmtsat_poly_crossing = None
         print("Saving crossing fibers delta_m_max plot.")

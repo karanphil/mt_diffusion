@@ -146,11 +146,14 @@ def compute_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
 
 def analyse_delta_m_max(bins, mtr_diag, ihmtr_diag, bin_min, bin_max,
                         mtr_single_fiber_delta_m_max,
-                        ihmtr_single_fiber_delta_m_max,
+                        ihmtr_single_fiber_delta_m_max, nb_voxels,
                         frac_thrs=np.array([0.5, 0.6, 0.7, 0.8, 0.9])):
 
     min_idx = np.argwhere(bins == bin_min[0])[0][0]
     max_idx = np.argwhere(bins == bin_max[0])[0][0]
+
+    # min_nb_voxels = nb_voxels[:, min_idx]
+    # max_nb_voxels = nb_voxels[:, max_idx]
 
     mtr_min = mtr_diag[:, min_idx]
     mtr_max = mtr_diag[:, max_idx]
@@ -177,10 +180,14 @@ def analyse_delta_m_max(bins, mtr_diag, ihmtr_diag, bin_min, bin_max,
     mtr_delta_m_max = mtr_delta_m_max[~np.isnan(mtr_delta_m_max)]
     ihmtr_delta_m_max = ihmtr_delta_m_max[~np.isnan(ihmtr_delta_m_max)]
 
-    mtr_fit = np.polyfit(frac_thrs_mid[:4], mtr_delta_m_max[:4], 1)
+    idx_to_fit = np.array([0, 1, 2, 4])
+
+    mtr_fit = np.polyfit(np.take(frac_thrs_mid, idx_to_fit), np.take(mtr_delta_m_max, idx_to_fit), 1)
+    # mtr_fit = np.polyfit(frac_thrs_mid[:5], mtr_delta_m_max[:5], 1)
     mtr_polynome = np.poly1d(mtr_fit)
 
-    ihmtr_fit = np.polyfit(frac_thrs_mid[:4], ihmtr_delta_m_max[:4], 1)
+    ihmtr_fit = np.polyfit(np.take(frac_thrs_mid, idx_to_fit), np.take(ihmtr_delta_m_max, idx_to_fit), 1)
+    # ihmtr_fit = np.polyfit(frac_thrs_mid[:5], ihmtr_delta_m_max[:5], 1)
     ihmtr_polynome = np.poly1d(ihmtr_fit)
     
     return mtr_polynome, ihmtr_polynome, mtr_delta_m_max, ihmtr_delta_m_max, frac_thrs_mid
