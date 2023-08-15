@@ -182,15 +182,31 @@ def analyse_delta_m_max(bins, mtr_diag, ihmtr_diag, bin_min, bin_max,
 
     idx_to_fit = np.array([0, 1, 2, 4])
 
-    mtr_fit = np.polyfit(np.take(frac_thrs_mid, idx_to_fit), np.take(mtr_delta_m_max, idx_to_fit), 1)
-    # mtr_fit = np.polyfit(frac_thrs_mid[:5], mtr_delta_m_max[:5], 1)
-    mtr_polynome = np.poly1d(mtr_fit)
+    mtr_to_fit = np.take(mtr_delta_m_max, idx_to_fit) - 1
+    frac_thrs_to_fit = np.take(frac_thrs_mid, idx_to_fit) - 1
+    frac_thrs_to_fit = frac_thrs_to_fit[:, np.newaxis]
+    slope_mtr, _, _, _ = np.linalg.lstsq(frac_thrs_to_fit, mtr_to_fit)
+    origin_mtr = slope_mtr * (-1) + 1
 
-    ihmtr_fit = np.polyfit(np.take(frac_thrs_mid, idx_to_fit), np.take(ihmtr_delta_m_max, idx_to_fit), 1)
-    # ihmtr_fit = np.polyfit(frac_thrs_mid[:5], ihmtr_delta_m_max[:5], 1)
-    ihmtr_polynome = np.poly1d(ihmtr_fit)
+    def mtr_fct(x):
+        return slope_mtr * x + origin_mtr
     
-    return mtr_polynome, ihmtr_polynome, mtr_delta_m_max, ihmtr_delta_m_max, frac_thrs_mid
+    ihmtr_to_fit = np.take(ihmtr_delta_m_max, idx_to_fit) - 1
+    slope_ihmtr, _, _, _ = np.linalg.lstsq(frac_thrs_to_fit, ihmtr_to_fit)
+    origin_ihmtr = slope_ihmtr * (-1) + 1
+
+    def ihmtr_fct(x):
+        return slope_ihmtr * x + origin_ihmtr
+
+    # mtr_fit = np.polyfit(np.take(frac_thrs_mid, idx_to_fit), np.take(mtr_delta_m_max, idx_to_fit), 1)
+    # mtr_fit = np.polyfit(frac_thrs_mid[:5], mtr_delta_m_max[:5], 1)
+    # mtr_polynome = np.poly1d(mtr_fit)
+
+    # ihmtr_fit = np.polyfit(np.take(frac_thrs_mid, idx_to_fit), np.take(ihmtr_delta_m_max, idx_to_fit), 1)
+    # ihmtr_fit = np.polyfit(frac_thrs_mid[:5], ihmtr_delta_m_max[:5], 1)
+    # ihmtr_polynome = np.poly1d(ihmtr_fit)
+    
+    return mtr_fct, ihmtr_fct, mtr_delta_m_max, ihmtr_delta_m_max, frac_thrs_mid
 
 
 def analyse_3_crossing_fibers_averages(peaks, peak_values, wm_mask, affine, nufo,
