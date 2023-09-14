@@ -359,7 +359,7 @@ def main():
         output_name = "CC_&_WB_single_fiber_mtr_ihmtr_plot" + files_basename + ".png"
         output_path = out_folder / "plots" / output_name
         plot_different_bins_means([w_brain_results[0], roi_results[0]], [w_brain_results[1], roi_results[1]], [w_brain_results[2], roi_results[2]],
-                   [w_brain_results[5], roi_results[5]], str(output_path), ["WB", "CC"], mt_poly=[mtr_poly_wb, mtr_poly_roi],
+                   [w_brain_results[5], roi_results[5]], str(output_path), ["WM", "CC"], mt_poly=[mtr_poly_wb, mtr_poly_roi],
                    ihmt_poly=[ihmtr_poly_wb, ihmtr_poly_roi], input_dtype="ratios")
 
     # if args.in_mtsat and args.in_ihmtsat:
@@ -886,7 +886,7 @@ def main():
         output_path = out_folder / "plots" / output_name
 
         plot_different_bins_means([w_brain_results[0], roi_results[0]], [w_brain_results[1], roi_results[1]], [w_brain_results[2], roi_results[2]],
-                   [w_brain_results[5], roi_results[5]], str(output_path), ["WB", "CC"], mt_poly=[mtr_poly_wb, mtr_poly_roi],
+                   [w_brain_results[5], roi_results[5]], str(output_path), ["WM", "CC"], mt_poly=[mtr_poly_wb, mtr_poly_roi],
                    ihmt_poly=[ihmtr_poly_wb, ihmtr_poly_roi], input_dtype="ratios", mt_cr_means=[w_brain_cr_results[1], w_brain_CC_cr_results[1]],
                    ihmt_cr_means=[w_brain_cr_results[2], w_brain_CC_cr_results[2]], ax1_legend=True)
         
