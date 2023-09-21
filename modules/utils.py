@@ -180,7 +180,7 @@ def analyse_delta_m_max(bins, mtr_diag, ihmtr_diag, bin_min, bin_max,
     mtr_delta_m_max = mtr_delta_m_max[~np.isnan(mtr_delta_m_max)]
     ihmtr_delta_m_max = ihmtr_delta_m_max[~np.isnan(ihmtr_delta_m_max)]
 
-    idx_to_fit = np.array([0, 1, 2, 4])
+    idx_to_fit = np.array([0, 1, 2, -1])
 
     mtr_to_fit = np.take(mtr_delta_m_max, idx_to_fit) - 1
     frac_thrs_to_fit = np.take(frac_thrs_mid, idx_to_fit) - 1
@@ -299,7 +299,7 @@ def extend_measure(bins, measure):
     new_measure = np.concatenate((np.flip(measure[1:first_measure_idx + 5]), measure, np.flip(measure[-(first_measure_idx + 5):-1])))
     return new_bins, new_measure
 
-
+ 
 def fit_single_fiber_results(bins, means, poly_order=8):
     new_bins, new_means = extend_measure(bins, means)
     mid_bins = (new_bins[:-1] + new_bins[1:]) / 2.
