@@ -56,12 +56,6 @@ def compute_single_fiber_averages(peaks, fa, wm_mask, affine,
                 mtsat_means[i] = np.mean(mtsat[mask_total])
             if ihmtsat is not None:
                 ihmtsat_means[i] = np.mean(ihmtsat[mask_total])
-        
-        #if bins[i] == 89 and bins[i+1] == 90:
-        # plt.figure()
-        # plt.hist(mtr[mask_total])
-        # plt.title(str(bins[i]) + " to " + str(bins[i+1]) + " and " + str(nb_voxels[i]) + " voxels")
-        # plt.show()
 
     return bins, mtr_means, ihmtr_means, mtsat_means, ihmtsat_means, nb_voxels
 
