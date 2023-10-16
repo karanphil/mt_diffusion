@@ -295,7 +295,7 @@ def extend_measure(bins, measure):
     new_measure = np.concatenate((np.flip(measure[1:10]), measure, np.flip(measure[-10:-1])))
     return new_bins, new_measure
 
- 
+
 def fit_single_fiber_results(bins, means, poly_order=8):
     new_bins, new_means = extend_measure(bins, means)
     mid_bins = (new_bins[:-1] + new_bins[1:]) / 2.
