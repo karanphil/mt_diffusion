@@ -221,7 +221,7 @@ for sub in $subs;
     # cd ${target_dir}/${sub}/preprocessing_t1;
 
     # cd ../../..;
-    # singularity exec -B /data/karp2601/stockage/mt-diff-mcgill/ ~/Research/containers/scilus_2.0.2_from_docker.sif bash code/t1_pipeline.sh $t1 $fa $b0 $mask $sub preprocessing_t1;
+    # singularity exec -B /data/karp2601/stockage/mt-diff-mcgill/ ~/Research/containers/scilus_2.0.2_from_docker.sif bash code/mt_diffusion/t1_pipeline.sh $t1 $fa $b0 $mask $sub preprocessing_t1;
     wm_mask="${target_dir}/${sub}/preprocessing_t1/register_natif/wm_mask.nii.gz";
 
     # cd ${target_dir}/${sub};
@@ -229,7 +229,7 @@ for sub in $subs;
     # cd ${target_dir}/${sub}/preprocessing_t1_for_tractography;
 
     # cd ../../..;
-    # singularity exec -B /data/karp2601/stockage/mt-diff-mcgill/ ~/Research/containers/scilus_2.0.2_from_docker.sif bash code/t1_pipeline.sh $t1 $fa_for_tractography $b0_for_tractography $mask_for_tractography $sub preprocessing_t1_for_tractography;
+    # singularity exec -B /data/karp2601/stockage/mt-diff-mcgill/ ~/Research/containers/scilus_2.0.2_from_docker.sif bash code/mt_diffusion/t1_pipeline.sh $t1 $fa_for_tractography $b0_for_tractography $mask_for_tractography $sub preprocessing_t1_for_tractography;
     wm_mask_for_tractography="${target_dir}/${sub}/preprocessing_t1_for_tractography/register_natif/wm_mask.nii.gz";
 
     # # Compute CSD
@@ -313,7 +313,7 @@ for sub in $subs;
     # cd ${target_dir}/${sub};
     # mkdir clean_crossing_mask;
     # cd ${target_dir}/${sub}/clean_crossing_mask;
-    # python ../../../code/compute_clean_crossing_mask.py ${target_dir}/${sub}/fodf_metrics_mt_off/nufo.nii.gz ${target_dir}/${sub}/fixel_analysis/nb_bundles_per_voxel_voxel-norm.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_voxel-norm.nii.gz clean_crossing_mask.nii.gz --thr 0.7;
+    # python ../../../code/mt_diffusion/compute_clean_crossing_mask.py ${target_dir}/${sub}/fodf_metrics_mt_off/nufo.nii.gz ${target_dir}/${sub}/fixel_analysis/nb_bundles_per_voxel_voxel-norm.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_voxel-norm.nii.gz clean_crossing_mask.nii.gz --thr 0.7;
 
     # cd ../..;
 
