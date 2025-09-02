@@ -76,6 +76,7 @@ def main():
     # fodf_diff = np.where(fodf_mt_off > 0, (fodf_mt_off - fodf_mt_on) / fodf_mt_off, 0)
 
     # fodf_ratio = np.where(fodf_mt_off > args.thr, (fodf_diff / fodf_mt_off), 0)
+    # fodf_ratio = np.where(fodf_mt_off * 0.2 > args.thr, (fodf_diff / fodf_mt_off), 0)
     fodf_ratio = np.where(fodf_mt_off * 0.2 > args.thr, (fodf_diff / fodf_mt_off), 0)
 
     if args.mask:
