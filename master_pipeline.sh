@@ -308,6 +308,7 @@ for sub in $subs;
     # rm voxel_density_mask_none-norm_*.nii.gz;
     # rm voxel_density_mask_voxel-norm_*.nii.gz;
 
+    # # !!!!!!!!!!!!!!!!!! A rerouler avec nufo.nii.gz from fodf_metrics_mtr!!!!!!!!!!!!!!!!!!
     # # Clean crossing mask
     # echo "Clean crossing mask";
     # cd ${target_dir}/${sub};
