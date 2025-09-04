@@ -286,27 +286,72 @@ for sub in $subs;
     # # scil_tractogram_remove_invalid pft_tracking.trk pft_tracking.trk --remove_single_point -f;
     # scil_tracking_local $fodf_for_tractography $wm_mask_for_tractography $wm_mask_for_tractography local_tracking.trk --use_gpu --npv 10 -f;
     # scil_tractogram_remove_invalid local_tracking.trk local_tracking.trk --remove_single_point -f;
+    tractogram="${target_dir}/${sub}/tractography/local_tracking.trk";
 
-    # Run rbx_flow on the side with nextflow.
+    # Compute SIFT2
+    echo "SIFT2";
+    cd ${target_dir}/${sub}/tractography;
+    fodf_tournier="${target_dir}/${sub}/fodf_tournier.nii.gz";
+    scil_sh_convert $fodf_for_tractography $fodf_tournier descoteaux07_legacy tournier07 -f;
+    tractogram_tck="${target_dir}/${sub}/local_tracking.tck";
+    scil_tractogram_convert $tractogram $tractogram_tck -f;
+    tcksift2 $tractogram_tck $fodf_tournier sift2_weights.txt -force;
+    scil_tractogram_add_dps $tractogram sift2_weights.txt sift2 $tractogram -f;
+    rm $tractogram_tck $fodf_tournier;
 
-    # # Fixel analysis
-    # echo "Fixel analysis";
-    # cd ${target_dir}/${sub};
-    # mkdir fixel_analysis;
-    # # cd ${target_dir}/${sub}/fixel_analysis;
-    # scil_bundle_fixel_analysis $peaks_mt_off --in_bundles ${target_dir}/${sub}/bundles/*.trk  --processes 8 --single_bundle --split_bundles --rel_thr 0.1 --abs_thr 30 --norm voxel none --out_dir fixel_analysis/ -f;
+    # # Run rbx_flow on the side with nextflow.
+    # # Copy output to bundles folder.
+    # !!!!! COPIED, NOT TESTED !!!!!!!!!!!
+    # cp -L ~/data/stockage/mt-diff-mcgill/rbx_flow/output/results_rbx/${sub}/Clean_Bundles/.trk ${target_dir}/${sub}/bundles/.;
+    # cd ${target_dir}/${sub}/bundles;
+    # bundles=$(ls);
+    # for b in $bundles;
+    #     do n=${b#"${sub}__"};
+    #     n=${n%"cleaned.trk"};
+    #     echo $n;
+    #     mv $b ${n}.trk;
+
+    # done;
+    # bundles=$(ls);
+    # for b in $bundles;
+    #     do echo $b;
+    #     n=${b%".trk"};
+    #     n=${n}.tck;
+    #     scil_tractogram_convert $b $n;
+    #     scil_tractogram_convert $n $b --reference ../dti/fa.nii.gz -f;
+    #     rm *.tck;
+
+    # done;
+    # mkdir removed_bundles;
+    # mv CR removed_bundles/;
+    # !!!!! COPIED, NOT TESTED !!!!!!!!!!!
+
+    # Apply sift2 weights on bundles
+    # NOT NEEDED IF RBX_FLOW WAS RUN WITH THE WEIGHTS
+    echo "Apply sift2 weights on bundles";
+    cd ${target_dir}/${sub}/bundles;
+    for bundle in ${target_dir}/${sub}/bundles/*.trk;
+        do scil_tractogram_math intersection $tractogram $bundle $bundle -p 3 -f; 
+    done;
+
+    # Fixel analysis
+    echo "Fixel analysis";
+    cd ${target_dir}/${sub};
+    mkdir fixel_analysis;
     # cd ${target_dir}/${sub}/fixel_analysis;
-    # cp single_bundle_mask_voxel-norm_WM.nii.gz tmp1.nii.gz;
-    # cp single_bundle_mask_none-norm_WM.nii.gz tmp2.nii.gz;
-    # rm single_bundle_*.nii.gz;
-    # mv tmp1.nii.gz single_bundle_mask_voxel-norm_WM.nii.gz;
-    # mv tmp2.nii.gz single_bundle_mask_none-norm_WM.nii.gz;
-    # rm fixel_density_map_none-norm_*.nii.gz;
-    # rm fixel_density_mask_none-norm_*.nii.gz;
-    # rm voxel_density_map_none-norm_*.nii.gz;
-    # rm voxel_density_map_voxel-norm_*.nii.gz;
-    # rm voxel_density_mask_none-norm_*.nii.gz;
-    # rm voxel_density_mask_voxel-norm_*.nii.gz;
+    scil_bundle_fixel_analysis $peaks_mt_off --in_bundles ${target_dir}/${sub}/bundles/*.trk  --processes 8 --single_bundle --split_bundles --rel_thr 0.1 --abs_thr 1.5 --norm voxel none --out_dir fixel_analysis/ -f --dps_key sift2;
+    cd ${target_dir}/${sub}/fixel_analysis;
+    cp single_bundle_mask_voxel-norm_WM.nii.gz tmp1.nii.gz;
+    cp single_bundle_mask_none-norm_WM.nii.gz tmp2.nii.gz;
+    rm single_bundle_*.nii.gz;
+    mv tmp1.nii.gz single_bundle_mask_voxel-norm_WM.nii.gz;
+    mv tmp2.nii.gz single_bundle_mask_none-norm_WM.nii.gz;
+    rm fixel_density_map_none-norm_*.nii.gz;
+    rm fixel_density_mask_none-norm_*.nii.gz;
+    rm voxel_density_map_none-norm_*.nii.gz;
+    rm voxel_density_map_voxel-norm_*.nii.gz;
+    rm voxel_density_mask_none-norm_*.nii.gz;
+    rm voxel_density_mask_voxel-norm_*.nii.gz;
 
     # # !!!!!!!!!!!!!!!!!! A rerouler avec nufo.nii.gz from fodf_metrics_mtr!!!!!!!!!!!!!!!!!!
     # # Clean crossing mask
