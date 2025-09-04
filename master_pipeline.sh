@@ -296,7 +296,7 @@ for sub in $subs;
     tractogram_tck="${target_dir}/${sub}/local_tracking.tck";
     scil_tractogram_convert $tractogram $tractogram_tck -f;
     tcksift2 $tractogram_tck $fodf_tournier sift2_weights.txt -force;
-    scil_tractogram_add_dps $tractogram sift2_weights.txt sift2 $tractogram -f;
+    scil_tractogram_dps_math $tractogram import "sift2" --in_dps_file sift2_weights.txt --out_tractogram $tractogram -f;
     rm $tractogram_tck $fodf_tournier;
 
     # # Run rbx_flow on the side with nextflow.
@@ -326,32 +326,33 @@ for sub in $subs;
     # mv CR removed_bundles/;
     # !!!!! COPIED, NOT TESTED !!!!!!!!!!!
 
-    # Apply sift2 weights on bundles
-    # NOT NEEDED IF RBX_FLOW WAS RUN WITH THE WEIGHTS
-    echo "Apply sift2 weights on bundles";
-    cd ${target_dir}/${sub}/bundles;
-    for bundle in ${target_dir}/${sub}/bundles/*.trk;
-        do scil_tractogram_math intersection $tractogram $bundle $bundle -p 3 -f; 
-    done;
+    # # Apply sift2 weights on bundles
+    # # NOT NEEDED IF RBX_FLOW WAS RUN WITH THE WEIGHTS
+    # echo "Apply sift2 weights on bundles";
+    # cd ${target_dir}/${sub}/bundles;
+    # for bundle in ${target_dir}/${sub}/bundles/*.trk;
+    #     do echo $bundle;
+    #     scil_tractogram_math intersection $tractogram $bundle $bundle -p 3 -f; 
+    # done;
 
-    # Fixel analysis
-    echo "Fixel analysis";
-    cd ${target_dir}/${sub};
-    mkdir fixel_analysis;
+    # # Fixel analysis
+    # echo "Fixel analysis";
+    # cd ${target_dir}/${sub};
+    # mkdir fixel_analysis;
+    # # cd ${target_dir}/${sub}/fixel_analysis;
+    # scil_bundle_fixel_analysis $peaks_mt_off --in_bundles ${target_dir}/${sub}/bundles/*.trk  --processes 8 --single_bundle --split_bundles --rel_thr 0.1 --abs_thr 1.5 --norm voxel none --out_dir fixel_analysis/ -f --dps_key sift2;
     # cd ${target_dir}/${sub}/fixel_analysis;
-    scil_bundle_fixel_analysis $peaks_mt_off --in_bundles ${target_dir}/${sub}/bundles/*.trk  --processes 8 --single_bundle --split_bundles --rel_thr 0.1 --abs_thr 1.5 --norm voxel none --out_dir fixel_analysis/ -f --dps_key sift2;
-    cd ${target_dir}/${sub}/fixel_analysis;
-    cp single_bundle_mask_voxel-norm_WM.nii.gz tmp1.nii.gz;
-    cp single_bundle_mask_none-norm_WM.nii.gz tmp2.nii.gz;
-    rm single_bundle_*.nii.gz;
-    mv tmp1.nii.gz single_bundle_mask_voxel-norm_WM.nii.gz;
-    mv tmp2.nii.gz single_bundle_mask_none-norm_WM.nii.gz;
-    rm fixel_density_map_none-norm_*.nii.gz;
-    rm fixel_density_mask_none-norm_*.nii.gz;
-    rm voxel_density_map_none-norm_*.nii.gz;
-    rm voxel_density_map_voxel-norm_*.nii.gz;
-    rm voxel_density_mask_none-norm_*.nii.gz;
-    rm voxel_density_mask_voxel-norm_*.nii.gz;
+    # cp single_bundle_mask_voxel-norm_WM.nii.gz tmp1.nii.gz;
+    # cp single_bundle_mask_none-norm_WM.nii.gz tmp2.nii.gz;
+    # rm single_bundle_*.nii.gz;
+    # mv tmp1.nii.gz single_bundle_mask_voxel-norm_WM.nii.gz;
+    # mv tmp2.nii.gz single_bundle_mask_none-norm_WM.nii.gz;
+    # rm fixel_density_map_none-norm_*.nii.gz;
+    # rm fixel_density_mask_none-norm_*.nii.gz;
+    # rm voxel_density_map_none-norm_*.nii.gz;
+    # rm voxel_density_map_voxel-norm_*.nii.gz;
+    # rm voxel_density_mask_none-norm_*.nii.gz;
+    # rm voxel_density_mask_voxel-norm_*.nii.gz;
 
     # # !!!!!!!!!!!!!!!!!! A rerouler avec nufo.nii.gz from fodf_metrics_mtr!!!!!!!!!!!!!!!!!!
     # # Clean crossing mask
