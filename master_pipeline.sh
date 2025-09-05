@@ -308,6 +308,7 @@ for sub in $subs;
     cd ${target_dir}/${sub};
     mkdir bundles;
     cd ${target_dir}/${sub}/bundles;
+    rm *.trk;
     cp -L ~/data/stockage/mt-diff-mcgill/rbx_flow/output/results_rbx/${sub}/Clean_Bundles/*.trk .;
     bundles=$(ls);
     for b in $bundles;
