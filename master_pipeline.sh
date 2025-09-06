@@ -299,11 +299,10 @@ for sub in $subs;
     # scil_tractogram_dps_math $tractogram import "sift2" --in_dps_file sift2_weights.txt --out_tractogram $tractogram -f;
     # rm $tractogram_tck $fodf_tournier;
 
-    # # Run rbx_flow on the side with nextflow.
-    # # In ~/data/stockage/mt-diff-mcgill/rbx_flow
-    # # nextflow run ~/Research/source/rbx_flow/main.nf --input ../input --atlas_directory ~/data/stockage/atlas_old -with-singularity /home/local/USHERBROOKE/karp2601/Research/containers/scilus_2.1.0.sif --register_processes 8  --rbx_processes  8
-    # # Copy output to bundles folder.
-    # !!!!! COPIED, NOT TESTED !!!!!!!!!!!
+    # Run rbx_flow on the side with nextflow.
+    # In ~/data/stockage/mt-diff-mcgill/rbx_flow
+    # nextflow run ~/Research/source/rbx_flow/main.nf --input ../input --atlas_directory ~/data/stockage/atlas_old -with-singularity /home/local/USHERBROOKE/karp2601/Research/containers/scilus_2.1.0.sif --register_processes 8  --rbx_processes  8
+    # Copy output to bundles folder.
     echo "Copy bundles from rbx_flow output";
     cd ${target_dir}/${sub};
     mkdir bundles;
@@ -316,6 +315,8 @@ for sub in $subs;
         n=${n%"_cleaned.trk"};
         echo $n;
         mv $b ${n}.trk;
+
+        scil_tractogram_math intersection $tractogram ${n}.trk ${n}.trk -p 3 -f; 
 
     done;
     bundles=$(ls);
@@ -330,16 +331,6 @@ for sub in $subs;
     done;
     mkdir removed_bundles;
     mv CR_* removed_bundles/;
-    # !!!!! COPIED, NOT TESTED !!!!!!!!!!!
-
-    # # Apply sift2 weights on bundles
-    # # NOT NEEDED IF RBX_FLOW WAS RUN WITH THE WEIGHTS
-    # echo "Apply sift2 weights on bundles";
-    # cd ${target_dir}/${sub}/bundles;
-    # for bundle in ${target_dir}/${sub}/bundles/*.trk;
-    #     do echo $bundle;
-    #     scil_tractogram_math intersection $tractogram $bundle $bundle -p 3 -f; 
-    # done;
 
     # # Fixel analysis
     # echo "Fixel analysis";
