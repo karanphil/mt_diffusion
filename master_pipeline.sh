@@ -308,15 +308,16 @@ for sub in $subs;
     mkdir bundles;
     cd ${target_dir}/${sub}/bundles;
     rm -r *;
-    cp -L ~/data/stockage/mt-diff-mcgill/rbx_flow/output/results_rbx/${sub}/Clean_Bundles/*.trk .;
+    cp -L ~/data/stockage/mt-diff-mcgill/rbx_flow/output/results_rbx/${sub}/Recognize_Bundles/*.trk .;
     bundles=$(ls);
+    python ../../../code/mt_diffusion/add_dps_to_bundle.py $tractogram ~/data/stockage/mt-diff-mcgill/rbx_flow/output/results_rbx/${sub}/Recognize_Bundles/results.json . --in_bundles $bundles -v -f;
     for b in $bundles;
-        do n=${b#"${sub}__"};
-        n=${n%"_cleaned.trk"};
-        echo $n;
-        mv $b ${n}.trk;
-
-        scil_tractogram_math intersection $tractogram ${n}.trk ${n}.trk -p 3 -f; 
+        do 
+        # n=${b#"${sub}__"};
+        # n=${n%"_cleaned.trk"};
+        # echo $n;
+        # mv $b ${n}.trk;
+        scil_bundle_reject_outliers $b $b --alpha 0.5;
 
     done;
     bundles=$(ls);
