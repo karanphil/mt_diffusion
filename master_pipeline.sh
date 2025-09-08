@@ -303,7 +303,7 @@ for sub in $subs;
     # In ~/data/stockage/mt-diff-mcgill/rbx_flow
     # nextflow run ~/Research/source/rbx_flow/main.nf --input ../input --atlas_directory ~/data/stockage/atlas_old -with-singularity /home/local/USHERBROOKE/karp2601/Research/containers/scilus_2.1.0.sif --register_processes 8  --rbx_processes  8
     # Copy output to bundles folder.
-    echo "Copy bundles from rbx_flow output";
+    echo "Copy recognize bundles from rbx_flow output";
     cd ${target_dir}/${sub};
     mkdir bundles;
     cd ${target_dir}/${sub}/bundles;
@@ -312,22 +312,24 @@ for sub in $subs;
     bundles=$(ls);
     python ../../../code/mt_diffusion/add_dps_to_bundle.py $tractogram ~/data/stockage/mt-diff-mcgill/rbx_flow/output/results_rbx/${sub}/Recognize_Bundles/results.json . --in_bundles $bundles -v -f;
     for b in $bundles;
-        do 
-        # n=${b#"${sub}__"};
-        # n=${n%"_cleaned.trk"};
-        # echo $n;
-        # mv $b ${n}.trk;
-        scil_bundle_reject_outliers $b $b --alpha 0.5;
-
-    done;
-    bundles=$(ls);
-    for b in $bundles;
-        do echo $b;
-        n=${b%".trk"};
-        n=${n}.tck;
+        do bundle_name=${b%".trk"};
+        echo $bundle_name;
+        # echo "Copy cleaned bundles";
+        # rm -r $b;
+        # cp -L ~/data/stockage/mt-diff-mcgill/rbx_flow/output/results_rbx/${sub}/Clean_Bundles/${sub}__${bundle_name}_cleaned.trk ${bundle_name}.trk;
+        # scil_tractogram_math intersection $b ~/data/stockage/mt-diff-mcgill/rbx_flow/output/results_rbx/${sub}/Clean_Bundles/${sub}__${bundle_name}_cleaned.trk $b -p 3 -f -v;
+        echo "Compute outliers rejection";
+        scil_bundle_reject_outliers $b $b --alpha 0.5 -f;
+        echo "Export dps files";
+        scil_tractogram_dps_math $b export sift2 --out_dps_file ${bundle_name}_sift2_weights.txt -f;
+        echo "Resave bundles with reference";
+        n=${bundle_name}.tck;
         scil_tractogram_convert $b $n;
         scil_tractogram_convert $n $b --reference $fa -f;
         rm *.tck;
+        echo "Add SIFT2 weights";
+        scil_tractogram_dps_math $b import sift2 --out_tractogram $b --in_dps_file ${bundle_name}_sift2_weights.txt -f;
+        rm ${bundle_name}_sift2_weights.txt;
 
     done;
     mkdir removed_bundles;
