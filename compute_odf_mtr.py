@@ -38,13 +38,13 @@ def _build_arg_parser():
 
     p.add_argument('out_fodf')
     
-    p.add_argument('out_peaks')
+    p.add_argument('out_peak_values')
 
     p.add_argument('--mask')
 
     p.add_argument('--rel_thr', default=0.1, type=float)
 
-    p.add_argument('--abs_thr', default=100, type=float)
+    p.add_argument('--abs_thr', default=1.5, type=float)
 
     p.add_argument('--sphere', default='repulsion724',
                    choices=['symmetric362', 'symmetric642', 'symmetric724',
@@ -64,6 +64,7 @@ def main():
         logging.basicConfig(level=logging.INFO)
 
     assert_inputs_exist(parser, [args.in_fodf_mt_off, args.in_fodf_mt_on])
+    assert_outputs_exist(parser, args, [args.out_fodf, args.out_peak_values])
 
     img_mt_off = nib.load(args.in_fodf_mt_off)
     img_mt_on = nib.load(args.in_fodf_mt_on)
@@ -103,10 +104,13 @@ def main():
         for j in range(mtr_sphere.shape[1]):
             for k in range(mtr_sphere.shape[2]):
                 for l in range(nb_peaks):
-                    if fd_voxel[i,j,k,l] >= args.rel_thr and fd_none[i,j,k,l] >= args.abs_thr:
+                    if fd_voxel[i,j,k,l] > args.rel_thr and fd_none[i,j,k,l] > args.abs_thr:
                         vector = sphere.find_closest(peaks[i,j,k, 3*l:3*(l+1)])
                         mtr_sphere[i,j,k,vector] = (fodf_mt_off[i,j,k,vector] - fodf_mt_on[i,j,k,vector]) / fodf_mt_off[i,j,k,vector]
                         mtr_peaks[i,j,k,l] = (fodf_mt_off[i,j,k,vector] - fodf_mt_on[i,j,k,vector]) / fodf_mt_off[i,j,k,vector]
+
+    mtr_sphere = np.clip(mtr_sphere, a_min=0, a_max=None)
+    mtr_peaks = np.clip(mtr_peaks, a_min=0, a_max=None)
 
     if args.mask:
         mask = get_data_as_mask(nib.load(args.mask), dtype=bool)
@@ -118,7 +122,7 @@ def main():
     mtr_sh = sf_to_sh(mtr_sphere, sphere, sh_order_max=6, smooth=0.1)
 
     nib.save(nib.Nifti1Image(mtr_sh, img_mt_off.affine), args.out_fodf)
-    nib.save(nib.Nifti1Image(mtr_peaks, img_mt_off.affine), args.out_peaks)
+    nib.save(nib.Nifti1Image(mtr_peaks, img_mt_off.affine), args.out_peak_values)
 
     # fodf_diff = np.where(fodf_mt_off >= 0, (fodf_mt_off - fodf_mt_on), 0)
     # # fodf_diff = np.where(fodf_mt_off > 0, (fodf_mt_off - fodf_mt_on) / fodf_mt_off, 0)
