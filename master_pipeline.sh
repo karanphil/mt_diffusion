@@ -3,7 +3,8 @@
 
 target_dir="/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing";
 cd $target_dir;
-subs=$(ls);
+subs=$(ls -d hc*);
+echo $subs;
 
 # ----------------------------DIFFUSION PREPROCESSING--------------------------
 b0_thr_extract_b0=10;
