@@ -46,6 +46,8 @@ def _build_arg_parser():
 
     p.add_argument('--mask')
 
+    p.add_argument('--min_angle', default=10, type=float)
+
     p.add_argument('--rel_thr', default=0.1, type=float)
 
     p.add_argument('--abs_thr', default=1.5, type=float)
@@ -109,6 +111,7 @@ def main():
     mtr_sphere = np.zeros(peaks_mt_off.shape[0:3] + (nb_vertices,))
     mtr_peaks = np.zeros(peaks_mt_off.shape[0:3] + (nb_peaks,))
     new_peaks = np.zeros(peaks_mt_off.shape)
+    missed = 0
     for i in range(mtr_sphere.shape[0]):
         for j in range(mtr_sphere.shape[1]):
             for k in range(mtr_sphere.shape[2]):
@@ -135,8 +138,9 @@ def main():
                                 mtr_sphere[i,j,k,vector] = (fodf_mt_off[i,j,k,vector_mt_off] - fodf_mt_on[i,j,k,vector_mt_on]) / fodf_mt_off[i,j,k,vector_mt_off]
                                 mtr_peaks[i,j,k,l] = (fodf_mt_off[i,j,k,vector_mt_off] - fodf_mt_on[i,j,k,vector_mt_on]) / fodf_mt_off[i,j,k,vector_mt_off]
                         if not found_peak:
+                            missed += 1
                             logging.warning(f'No matching peak found for voxel {i},{j},{k} peak {l}')
-
+    logging.warning(f'Total missed peaks: {missed}')
     mtr_sphere = np.clip(mtr_sphere, a_min=0, a_max=None)
     mtr_peaks = np.clip(mtr_peaks, a_min=0, a_max=None)
 
@@ -151,7 +155,7 @@ def main():
 
     nib.save(nib.Nifti1Image(mtr_sh, img_mt_off.affine), args.out_fodf)
     nib.save(nib.Nifti1Image(mtr_peaks, img_mt_off.affine), args.out_peak_values)
-    nib.save(nib.Nifti1Image(new_peaks, img_mt_off.affine), args.out_peaks)
+    nib.save(nib.Nifti1Image(new_peaks.astype(np.float32), img_mt_off.affine), args.out_peaks)
 
     # fodf_diff = np.where(fodf_mt_off >= 0, (fodf_mt_off - fodf_mt_on), 0)
     # # fodf_diff = np.where(fodf_mt_off > 0, (fodf_mt_off - fodf_mt_on) / fodf_mt_off, 0)

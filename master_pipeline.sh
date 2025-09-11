@@ -256,6 +256,11 @@ for sub in $subs;
     peaks_mt_off="${target_dir}/${sub}/fodf_metrics_mt_off/peaks.nii.gz";
 
     # Compute FODF metrics of mt_on
+    # # Exclude subject hc20r and hc26
+    # if [ $sub == "hc20r" ] || [ $sub == "hc26" ]; then
+    #     echo "Skip FODF metrics of mt_on for $sub";
+    #     continue;
+    # fi
     echo "FODF metrics of mt_on";
     cd ${target_dir}/${sub};
     mkdir fodf_metrics_mt_on;
@@ -365,12 +370,12 @@ for sub in $subs;
     # rm voxel_density_mask_none-norm_*.nii.gz;
     # rm voxel_density_mask_voxel-norm_*.nii.gz;
 
-    # Compute FODF MTR
+    # # Compute FODF MTR
     # echo "Compute FODF MTR";
     # cd ${target_dir}/${sub};
     # mkdir mtr;
     # cd ${target_dir}/${sub}/mtr;
-    # python ../../../code/mt_diffusion/compute_odf_mtr.py $fodf_mt_off $fodf_mt_on $peaks_mt_off $peaks_mt_on ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_voxel-norm.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_none-norm.nii.gz mtr_fodf.nii.gz mtr_peak_values.nii.gz --mask $mask --rel_thr 0.1 --abs_thr 1.5 -f;
+    # python ../../../code/mt_diffusion/compute_odf_mtr.py $fodf_mt_off $fodf_mt_on $peaks_mt_off $peaks_mt_on ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_voxel-norm.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_none-norm.nii.gz mtr_fodf.nii.gz mtr_peak_values.nii.gz mtr_peaks.nii.gz --mask $mask --rel_thr 0.1 --abs_thr 1.5 --min_angle 10 -f -v;
 
     # # Compute bundle MTR
     # echo "Compute bundle MTR";
