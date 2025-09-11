@@ -30,7 +30,9 @@ def _build_arg_parser():
     p.add_argument('in_fodf_mt_on',
                    help='The DW image file to split.')
 
-    p.add_argument('in_peaks')
+    p.add_argument('in_peaks_mt_off')
+
+    p.add_argument('in_peaks_mt_on')
 
     p.add_argument('in_fixel_density_voxel_norm')
 
@@ -39,6 +41,8 @@ def _build_arg_parser():
     p.add_argument('out_fodf')
     
     p.add_argument('out_peak_values')
+
+    p.add_argument('out_peaks')
 
     p.add_argument('--mask')
 
@@ -64,7 +68,8 @@ def main():
         logging.basicConfig(level=logging.INFO)
 
     assert_inputs_exist(parser, [args.in_fodf_mt_off, args.in_fodf_mt_on])
-    assert_outputs_exist(parser, args, [args.out_fodf, args.out_peak_values])
+    assert_outputs_exist(parser, args, [args.out_fodf, args.out_peak_values,
+                                        args.out_peaks])
 
     img_mt_off = nib.load(args.in_fodf_mt_off)
     img_mt_on = nib.load(args.in_fodf_mt_on)
@@ -80,8 +85,11 @@ def main():
     fd_none = vol.get_fdata()
     fd_none = np.sum(fd_none, axis=-1)
 
-    img_peaks = nib.load(args.in_peaks)
-    peaks = img_peaks.get_fdata()
+    img_peaks_mt_off = nib.load(args.in_peaks_mt_off)
+    peaks_mt_off = img_peaks_mt_off.get_fdata()
+
+    img_peaks_mt_on = nib.load(args.in_peaks_mt_on)
+    peaks_mt_on = img_peaks_mt_on.get_fdata()
 
     sphere = get_sphere(args.sphere)
     # subdivise?
@@ -98,16 +106,36 @@ def main():
     nb_peaks = 5
     nb_vertices = len(sphere.vertices)
 
-    mtr_sphere = np.zeros(peaks.shape[0:3] + (nb_vertices,))
-    mtr_peaks = np.zeros(peaks.shape[0:3] + (nb_peaks,))
+    mtr_sphere = np.zeros(peaks_mt_off.shape[0:3] + (nb_vertices,))
+    mtr_peaks = np.zeros(peaks_mt_off.shape[0:3] + (nb_peaks,))
+    new_peaks = np.zeros(peaks_mt_off.shape)
     for i in range(mtr_sphere.shape[0]):
         for j in range(mtr_sphere.shape[1]):
             for k in range(mtr_sphere.shape[2]):
+                peak_indices = [0, 1, 2, 3, 4]
                 for l in range(nb_peaks):
                     if fd_voxel[i,j,k,l] > args.rel_thr and fd_none[i,j,k,l] > args.abs_thr:
-                        vector = sphere.find_closest(peaks[i,j,k, 3*l:3*(l+1)])
-                        mtr_sphere[i,j,k,vector] = (fodf_mt_off[i,j,k,vector] - fodf_mt_on[i,j,k,vector]) / fodf_mt_off[i,j,k,vector]
-                        mtr_peaks[i,j,k,l] = (fodf_mt_off[i,j,k,vector] - fodf_mt_on[i,j,k,vector]) / fodf_mt_off[i,j,k,vector]
+                        found_peak = False
+                        for m in peak_indices:
+                            flip = 1
+                            # Compute angle between peaks
+                            angle_between = np.rad2deg(np.arccos(np.clip(np.dot(peaks_mt_off[i,j,k, 3*l:3*(l+1)],peaks_mt_on[i,j,k, 3*m:3*(m+1)]), -1.0, 1.0)))
+                            angle_between_flip = np.rad2deg(np.arccos(np.clip(np.dot(peaks_mt_off[i,j,k, 3*l:3*(l+1)],-1*peaks_mt_on[i,j,k, 3*m:3*(m+1)]), -1.0, 1.0)))
+                            if angle_between_flip < angle_between:
+                                angle_between = angle_between_flip
+                                flip = -1
+                            if angle_between <= args.min_angle:
+                                peak_indices.remove(m)
+                                found_peak = True
+                                mean_peak = (peaks_mt_off[i,j,k, 3*l:3*(l+1)] + flip * peaks_mt_on[i,j,k, 3*m:3*(m+1)]) / 2
+                                new_peaks[i,j,k, 3*l:3*(l+1)] = mean_peak / np.linalg.norm(mean_peak)
+                                vector_mt_off = sphere.find_closest(peaks_mt_off[i,j,k, 3*l:3*(l+1)])
+                                vector_mt_on = sphere.find_closest(peaks_mt_on[i,j,k, 3*m:3*(m+1)])
+                                vector = sphere.find_closest(mean_peak)
+                                mtr_sphere[i,j,k,vector] = (fodf_mt_off[i,j,k,vector_mt_off] - fodf_mt_on[i,j,k,vector_mt_on]) / fodf_mt_off[i,j,k,vector_mt_off]
+                                mtr_peaks[i,j,k,l] = (fodf_mt_off[i,j,k,vector_mt_off] - fodf_mt_on[i,j,k,vector_mt_on]) / fodf_mt_off[i,j,k,vector_mt_off]
+                        if not found_peak:
+                            logging.warning(f'No matching peak found for voxel {i},{j},{k} peak {l}')
 
     mtr_sphere = np.clip(mtr_sphere, a_min=0, a_max=None)
     mtr_peaks = np.clip(mtr_peaks, a_min=0, a_max=None)
@@ -123,6 +151,7 @@ def main():
 
     nib.save(nib.Nifti1Image(mtr_sh, img_mt_off.affine), args.out_fodf)
     nib.save(nib.Nifti1Image(mtr_peaks, img_mt_off.affine), args.out_peak_values)
+    nib.save(nib.Nifti1Image(new_peaks, img_mt_off.affine), args.out_peaks)
 
     # fodf_diff = np.where(fodf_mt_off >= 0, (fodf_mt_off - fodf_mt_on), 0)
     # # fodf_diff = np.where(fodf_mt_off > 0, (fodf_mt_off - fodf_mt_on) / fodf_mt_off, 0)
