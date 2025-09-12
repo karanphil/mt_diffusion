@@ -38,7 +38,9 @@ def _build_arg_parser():
 
     p.add_argument('in_fixel_density_none_norm')
 
-    p.add_argument('out_fodf')
+    p.add_argument('out_fodf',
+                   help='Output FODF MTR. IMPORTANT: The amplitudes of the '
+                        'fODFs have no meaning.')
     
     p.add_argument('out_peak_values')
 
@@ -48,9 +50,9 @@ def _build_arg_parser():
 
     p.add_argument('--min_angle', default=10, type=float)
 
-    p.add_argument('--rel_thr', default=0.1, type=float)
+    p.add_argument('--rel_thr', default=0.01, type=float)
 
-    p.add_argument('--abs_thr', default=1.5, type=float)
+    p.add_argument('--abs_thr', default=0.0, type=float)
 
     p.add_argument('--sphere', default='repulsion724',
                    choices=['symmetric362', 'symmetric642', 'symmetric724',
@@ -93,6 +95,11 @@ def main():
     img_peaks_mt_on = nib.load(args.in_peaks_mt_on)
     peaks_mt_on = img_peaks_mt_on.get_fdata()
 
+    if args.mask:
+        mask = get_data_as_mask(nib.load(args.mask), dtype=bool)
+    else:
+        mask = np.ones(sh_mt_off.shape[0:3], dtype=bool)
+
     sphere = get_sphere(args.sphere)
     # subdivise?
 
@@ -117,7 +124,7 @@ def main():
             for k in range(mtr_sphere.shape[2]):
                 peak_indices = [0, 1, 2, 3, 4]
                 for l in range(nb_peaks):
-                    if fd_voxel[i,j,k,l] > args.rel_thr and fd_none[i,j,k,l] > args.abs_thr:
+                    if fd_voxel[i,j,k,l] > args.rel_thr and fd_none[i,j,k,l] > args.abs_thr and mask[i,j,k]:
                         found_peak = False
                         for m in peak_indices:
                             flip = 1
@@ -139,39 +146,16 @@ def main():
                                 mtr_peaks[i,j,k,l] = (fodf_mt_off[i,j,k,vector_mt_off] - fodf_mt_on[i,j,k,vector_mt_on]) / fodf_mt_off[i,j,k,vector_mt_off]
                         if not found_peak:
                             missed += 1
-                            logging.warning(f'No matching peak found for voxel {i},{j},{k} peak {l}')
+                            logging.debug(f'No matching peak found for voxel {i},{j},{k} peak {l}')
     logging.warning(f'Total missed peaks: {missed}')
-    mtr_sphere = np.clip(mtr_sphere, a_min=0, a_max=None)
-    mtr_peaks = np.clip(mtr_peaks, a_min=0, a_max=None)
+    mtr_sphere = np.clip(mtr_sphere, a_min=0, a_max=1)
+    mtr_peaks = np.clip(mtr_peaks, a_min=0, a_max=1)
 
-    if args.mask:
-        mask = get_data_as_mask(nib.load(args.mask), dtype=bool)
-        reshaped_mask = np.repeat(mask, mtr_sphere.shape[-1]).reshape(mtr_sphere.shape)
-        mtr_sphere = np.where(np.squeeze(reshaped_mask), np.squeeze(mtr_sphere), 0)
-        reshaped_mask = np.repeat(mask, mtr_peaks.shape[-1]).reshape(mtr_peaks.shape)
-        mtr_peaks = np.where(np.squeeze(reshaped_mask), np.squeeze(mtr_peaks), 0)
-
-    mtr_sh = sf_to_sh(mtr_sphere, sphere, sh_order_max=6, smooth=0.1)
+    mtr_sh = sf_to_sh(mtr_sphere * 50, sphere, sh_order_max=6, smooth=0.1)
 
     nib.save(nib.Nifti1Image(mtr_sh, img_mt_off.affine), args.out_fodf)
     nib.save(nib.Nifti1Image(mtr_peaks, img_mt_off.affine), args.out_peak_values)
     nib.save(nib.Nifti1Image(new_peaks.astype(np.float32), img_mt_off.affine), args.out_peaks)
-
-    # fodf_diff = np.where(fodf_mt_off >= 0, (fodf_mt_off - fodf_mt_on), 0)
-    # # fodf_diff = np.where(fodf_mt_off > 0, (fodf_mt_off - fodf_mt_on) / fodf_mt_off, 0)
-
-    # # fodf_ratio = np.where(fodf_mt_off > args.thr, (fodf_diff / fodf_mt_off), 0)
-    # # fodf_ratio = np.where(fodf_mt_off * 0.2 > args.thr, (fodf_diff / fodf_mt_off), 0)
-    # fodf_ratio = np.where(fodf_mt_off * 0.2 > args.thr, (fodf_diff / fodf_mt_off), 0)
-
-    # if args.mask:
-    #     mask = get_data_as_mask(nib.load(args.mask), dtype=bool)
-    #     reshaped_mask = np.repeat(mask, fodf_ratio.shape[-1]).reshape(fodf_ratio.shape)
-    #     fodf_ratio = np.where(np.squeeze(reshaped_mask), np.squeeze(fodf_ratio), 0)
-
-    # sh_ratio = np.dot(fodf_ratio, invB)
-
-    # nib.save(nib.Nifti1Image(sh_ratio, img_mt_off.affine), args.out_fodf2)
 
 
 if __name__ == "__main__":

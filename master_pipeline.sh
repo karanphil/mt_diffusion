@@ -4,7 +4,6 @@
 target_dir="/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing";
 cd $target_dir;
 subs=$(ls -d hc*);
-echo $subs;
 
 # ----------------------------DIFFUSION PREPROCESSING--------------------------
 b0_thr_extract_b0=10;
@@ -255,20 +254,16 @@ for sub in $subs;
     # scil_fodf_metrics $fodf_mt_off --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
     peaks_mt_off="${target_dir}/${sub}/fodf_metrics_mt_off/peaks.nii.gz";
 
-    # Compute FODF metrics of mt_on
-    # # Exclude subject hc20r and hc26
-    # if [ $sub == "hc20r" ] || [ $sub == "hc26" ]; then
-    #     echo "Skip FODF metrics of mt_on for $sub";
-    #     continue;
-    # fi
-    echo "FODF metrics of mt_on";
-    cd ${target_dir}/${sub};
-    mkdir fodf_metrics_mt_on;
-    cd ${target_dir}/${sub}/fodf_metrics_mt_on;
-    scil_fodf_max_in_ventricles $fodf_mt_on $fa $md --md_threshold 0.0025 --max_value_output max_fodf_in_ventricles.txt --in_mask ${target_dir}/${sub}/preprocessing_t1/register_natif/csf_mask.nii.gz --use_median -f;
-    max_value=$(cat max_fodf_in_ventricles.txt);    
-    a_threshold=$(echo 2*${max_value}|bc);
-    scil_fodf_metrics $fodf_mt_on --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
+    # # Compute FODF metrics of mt_on
+    # echo "FODF metrics of mt_on";
+    # cd ${target_dir}/${sub};
+    # mkdir fodf_metrics_mt_on;
+    # cd ${target_dir}/${sub}/fodf_metrics_mt_on;
+    # scil_fodf_max_in_ventricles $fodf_mt_on $fa $md --md_threshold 0.0025 --max_value_output max_fodf_in_ventricles.txt --in_mask ${target_dir}/${sub}/preprocessing_t1/register_natif/csf_mask.nii.gz --use_median -f;
+    # max_value=$(cat max_fodf_in_ventricles.txt);    
+    # a_threshold=$(echo 2*${max_value}|bc);
+    # # !!! Needed to add a check for nans in scil_fodf_metrics.py because some images have nans in the fodf.
+    # scil_fodf_metrics $fodf_mt_on --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
     peaks_mt_on="${target_dir}/${sub}/fodf_metrics_mt_on/peaks.nii.gz";
 
     # # Compute CSD for tractography
@@ -370,24 +365,28 @@ for sub in $subs;
     # rm voxel_density_mask_none-norm_*.nii.gz;
     # rm voxel_density_mask_voxel-norm_*.nii.gz;
 
-    # # Compute FODF MTR
-    # echo "Compute FODF MTR";
-    # cd ${target_dir}/${sub};
-    # mkdir mtr;
-    # cd ${target_dir}/${sub}/mtr;
-    # python ../../../code/mt_diffusion/compute_odf_mtr.py $fodf_mt_off $fodf_mt_on $peaks_mt_off $peaks_mt_on ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_voxel-norm.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_none-norm.nii.gz mtr_fodf.nii.gz mtr_peak_values.nii.gz mtr_peaks.nii.gz --mask $mask --rel_thr 0.1 --abs_thr 1.5 --min_angle 10 -f -v;
+    # Compute FODF MTR
+    echo "Compute FODF MTR";
+    cd ${target_dir}/${sub};
+    mkdir mtr;
+    cd ${target_dir}/${sub}/mtr;
+    # rel_thr=0.1;
+    # abs_thr=1.5;
+    rel_thr=0.01;
+    abs_thr=0.0;
+    python ../../../code/mt_diffusion/compute_odf_mtr.py $fodf_mt_off $fodf_mt_on $peaks_mt_off $peaks_mt_on ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_voxel-norm.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_none-norm.nii.gz mtr_fodf.nii.gz mtr_peak_values.nii.gz mtr_peaks.nii.gz --mask $mask --rel_thr $rel_thr --abs_thr $abs_thr --min_angle 10 -f;
 
-    # # Compute bundle MTR
-    # echo "Compute bundle MTR";
-    # cd ${target_dir}/${sub}/bundles;
-    # bundles=$(ls *.trk);
-    # cd ${target_dir}/${sub}/mtr;
-    # for b in $bundles;
-    #     do bundle_name=${b%".trk"};
-    #     echo $bundle_name;
-    #     python ../../../code/mt_diffusion/compute_bundle_mtr.py mtr_peak_values.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_mask_voxel-norm_${bundle_name}.nii.gz mtr_${bundle_name}.nii.gz;
+    # Compute bundle MTR
+    echo "Compute bundle MTR";
+    cd ${target_dir}/${sub}/bundles;
+    bundles=$(ls *.trk);
+    cd ${target_dir}/${sub}/mtr;
+    for b in $bundles;
+        do bundle_name=${b%".trk"};
+        echo $bundle_name;
+        python ../../../code/mt_diffusion/compute_bundle_mtr.py mtr_peak_values.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_mask_voxel-norm_${bundle_name}.nii.gz mtr_${bundle_name}.nii.gz;
 
-    # done;
+    done;
 
     # # !!!!!!!!!!!!!!!!!! A rerouler avec nufo.nii.gz from fodf_metrics_mtr!!!!!!!!!!!!!!!!!!
     # # Clean crossing mask
