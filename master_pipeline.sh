@@ -222,6 +222,7 @@ for sub in $subs;
 
     # cd ../../..;
     # singularity exec -B /data/karp2601/stockage/mt-diff-mcgill/ ~/Research/containers/scilus_2.0.2_from_docker.sif bash code/mt_diffusion/t1_pipeline.sh $t1 $fa $b0 $mask $sub preprocessing_t1;
+    t1="${target_dir}/${sub}/preprocessing_t1/register_natif/outputWarped.nii.gz";
     wm_mask="${target_dir}/${sub}/preprocessing_t1/register_natif/wm_mask.nii.gz";
 
     # cd ${target_dir}/${sub};
