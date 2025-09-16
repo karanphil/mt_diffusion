@@ -41,6 +41,7 @@ def main():
         logging.basicConfig(level=logging.INFO)
 
     assert_inputs_exist(parser, [args.in_peak_values, args.in_fixel_density_mask])
+    assert_outputs_exist(parser, args, [args.out_bundle_mtr])
 
     peak_values_img = nib.load(args.in_peak_values)
     peak_values = peak_values_img.get_fdata().astype(np.float32)

@@ -385,7 +385,7 @@ for sub in $subs;
     for b in $bundles;
         do bundle_name=${b%".trk"};
         echo $bundle_name;
-        python ../../../code/mt_diffusion/compute_bundle_mtr.py mtr_peak_values.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_mask_voxel-norm_${bundle_name}.nii.gz mtr_${bundle_name}.nii.gz;
+        python ../../../code/mt_diffusion/compute_bundle_fixel_mtr.py mtr_peak_values.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_mask_voxel-norm_${bundle_name}.nii.gz fixel_mtr_${bundle_name}.nii.gz;
 
     done;
 
