@@ -11,10 +11,6 @@ import logging
 import nibabel as nib
 import numpy as np
 
-from dipy.data import get_sphere
-from dipy.reconst.shm import sh_to_sf_matrix, order_from_ncoef
-
-from scilpy.io.image import get_data_as_mask
 from scilpy.io.utils import (add_overwrite_arg, add_verbose_arg,
                              assert_inputs_exist, assert_outputs_exist)
 
