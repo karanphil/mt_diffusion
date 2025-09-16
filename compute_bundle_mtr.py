@@ -41,13 +41,13 @@ def main():
     if args.verbose:
         logging.basicConfig(level=logging.INFO)
 
-    assert_inputs_exist(parser, [args.in_peak_values, args.in_fixel_density_mask])
+    assert_inputs_exist(parser, [args.in_mtr, args.in_voxel_density_masks])
     assert_outputs_exist(parser, args, [args.out_dir])
 
-    mtr_img = nib.load(args.in_peak_values)
+    mtr_img = nib.load(args.in_mtr)
     mtr = mtr_img.get_fdata().astype(np.float32)
 
-    voxel_density_img = nib.load(args.in_fixel_density_mask)
+    voxel_density_img = nib.load(args.in_voxel_density_masks)
     bundles_mask = voxel_density_img.get_fdata().astype(bool)
 
     lut = np.loadtxt(args.in_LUT, dtype=str)

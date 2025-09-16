@@ -366,28 +366,33 @@ for sub in $subs;
     # rm voxel_density_mask_none-norm_*.nii.gz;
     # rm voxel_density_mask_voxel-norm_*.nii.gz;
 
-    # Compute FODF MTR
-    echo "Compute FODF MTR";
-    cd ${target_dir}/${sub};
-    mkdir mtr;
-    cd ${target_dir}/${sub}/mtr;
-    # rel_thr=0.1;
-    # abs_thr=1.5;
-    rel_thr=0.01;
-    abs_thr=0.0;
-    python ../../../code/mt_diffusion/compute_odf_mtr.py $fodf_mt_off $fodf_mt_on $peaks_mt_off $peaks_mt_on ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_voxel-norm.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_none-norm.nii.gz mtr_fodf.nii.gz mtr_peak_values.nii.gz mtr_peaks.nii.gz --mask $mask --rel_thr $rel_thr --abs_thr $abs_thr --min_angle 10 -f;
+    # # Compute FODF MTR
+    # echo "Compute FODF MTR";
+    # cd ${target_dir}/${sub};
+    # mkdir mtr;
+    # cd ${target_dir}/${sub}/mtr;
+    # # rel_thr=0.1;
+    # # abs_thr=1.5;
+    # rel_thr=0.01;
+    # abs_thr=0.0;
+    # python ../../../code/mt_diffusion/compute_odf_mtr.py $fodf_mt_off $fodf_mt_on $peaks_mt_off $peaks_mt_on ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_voxel-norm.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_none-norm.nii.gz mtr_fodf.nii.gz mtr_peak_values.nii.gz mtr_peaks.nii.gz --mask $mask --rel_thr $rel_thr --abs_thr $abs_thr --min_angle 10 -f;
+
+    # # Compute bundle fixel MTR
+    # echo "Compute bundle fixel MTR";
+    # cd ${target_dir}/${sub}/bundles;
+    # bundles=$(ls *.trk);
+    # cd ${target_dir}/${sub}/mtr;
+    # for b in $bundles;
+    #     do bundle_name=${b%".trk"};
+    #     echo $bundle_name;
+    #     python ../../../code/mt_diffusion/compute_bundle_fixel_mtr.py mtr_peak_values.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_mask_voxel-norm_${bundle_name}.nii.gz fixel_mtr_${bundle_name}.nii.gz;
+
+    # done;
 
     # Compute bundle MTR
     echo "Compute bundle MTR";
-    cd ${target_dir}/${sub}/bundles;
-    bundles=$(ls *.trk);
     cd ${target_dir}/${sub}/mtr;
-    for b in $bundles;
-        do bundle_name=${b%".trk"};
-        echo $bundle_name;
-        python ../../../code/mt_diffusion/compute_bundle_fixel_mtr.py mtr_peak_values.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_mask_voxel-norm_${bundle_name}.nii.gz fixel_mtr_${bundle_name}.nii.gz;
-
-    done;
+    python ../../../code/mt_diffusion/compute_bundle_mtr.py ../powder_average/powder_averaged_mtr.nii.gz ../fixel_analysis/voxel_density_masks_voxel-norm.nii.gz ../fixel_analysis/bundles_LUT.txt . -f;
 
     # # !!!!!!!!!!!!!!!!!! A rerouler avec nufo.nii.gz from fodf_metrics_mtr!!!!!!!!!!!!!!!!!!
     # # Clean crossing mask
