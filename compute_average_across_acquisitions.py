@@ -46,13 +46,18 @@ def main():
         data = img.get_fdata(dtype=np.float32)
 
         if idx == 0:
-            avg_data = np.zeros(data.shape, dtype=np.float32)
+            all_data = np.zeros(data.shape + (len(args.in_images),), dtype=np.float32)
 
-        avg_data += data 
-        
-    avg_data /= len(args.in_images)
+        all_data[..., idx] = data
 
-    nib.save(nib.Nifti1Image(avg_data, img.affine), args.out_average)
+    avg_data = np.mean(all_data, axis=-1)
+    med_data = np.median(all_data, axis=-1)
+    # Excluse zeros for the average
+    avg_data = np.divide(np.sum(all_data, axis=-1), np.count_nonzero(all_data, axis=-1),
+                         out=np.zeros_like(avg_data), where=np.count_nonzero(all_data, axis=-1) != 0)
+
+
+    nib.save(nib.Nifti1Image(med_data, img.affine), args.out_average)
 
 
 if __name__ == "__main__":
