@@ -60,6 +60,7 @@ def main():
         out_data = np.median(all_data, axis=-1)
     else:
         if args.exclude_zeros:
+            # This option works weird, it produces noise on the sides of bundles where few subjects have data
             out_data = np.divide(np.sum(all_data, axis=-1),
                                  np.count_nonzero(all_data, axis=-1),
                                  out=np.zeros_like(all_data[..., 0]),
