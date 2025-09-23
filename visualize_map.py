@@ -23,8 +23,10 @@ def _build_arg_parser():
     p.add_argument('reference',
                    help='Reference image.')
     
-    p.add_argument('--wm_mask', default=[],
-                   help='WM mask image.')
+    p.add_argument('--mask', default=[],
+                   help='Mask image.')
+    
+    p.add_argument('--thr', type=float, default=0.75)
     
     p.add_argument('--axis', default='axial', 
                    choices=['axial', 'sagittal', 'coronal'],
@@ -50,9 +52,9 @@ def main():
     fixel_mtr_img = nib.load(args.in_fixel_mtr)
     fixel_mtr = fixel_mtr_img.get_fdata().astype(np.float32)
 
-    if args.wm_mask:
-        mask = nib.load(args.wm_mask).get_fdata()
-        mask = (mask >= 0.9)
+    if args.mask:
+        mask = nib.load(args.mask).get_fdata()
+        mask = (mask >= args.thr)
     else:
         mask = np.ones((data_shape))
 

@@ -25,6 +25,12 @@ def _build_arg_parser():
 
     p.add_argument('out_average')
 
+    p.add_argument('--median', action='store_true',
+                   help='Compute the median instead of the mean.')
+    
+    p.add_argument('--exclude_zeros', action='store_true',
+                   help='Exclude zeros from the average computation.')
+
     add_verbose_arg(p)
     add_overwrite_arg(p)
 
@@ -50,14 +56,18 @@ def main():
 
         all_data[..., idx] = data
 
-    avg_data = np.mean(all_data, axis=-1)
-    med_data = np.median(all_data, axis=-1)
-    # Excluse zeros for the average
-    avg_data = np.divide(np.sum(all_data, axis=-1), np.count_nonzero(all_data, axis=-1),
-                         out=np.zeros_like(avg_data), where=np.count_nonzero(all_data, axis=-1) != 0)
+    if args.median:
+        out_data = np.median(all_data, axis=-1)
+    else:
+        if args.exclude_zeros:
+            out_data = np.divide(np.sum(all_data, axis=-1),
+                                 np.count_nonzero(all_data, axis=-1),
+                                 out=np.zeros_like(all_data[..., 0]),
+                                 where=np.count_nonzero(all_data, axis=-1) != 0)
+        else:
+            out_data = np.mean(all_data, axis=-1)
 
-
-    nib.save(nib.Nifti1Image(med_data, img.affine), args.out_average)
+    nib.save(nib.Nifti1Image(out_data, img.affine), args.out_average)
 
 
 if __name__ == "__main__":
