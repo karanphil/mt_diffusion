@@ -352,7 +352,7 @@ for sub in $subs;
     cd ${target_dir}/${sub};
     mkdir fixel_analysis;
     # cd ${target_dir}/${sub}/fixel_analysis;
-    scil_bundle_fixel_analysis $peaks_mt_off --in_bundles ${target_dir}/${sub}/bundles/*.trk  --processes 8 --single_bundle --split_bundles --rel_thr 0.2 --abs_thr 1.5 --norm voxel none --out_dir fixel_analysis/ -f --dps_key sift2;
+    scil_bundle_fixel_analysis $peaks_mt_off --in_bundles ${target_dir}/${sub}/bundles/*.trk  --processes 8 --single_bundle --split_bundles --rel_thr 0.1 --abs_thr 1.5 --norm voxel none --out_dir fixel_analysis/ -f --dps_key sift2;
     cd ${target_dir}/${sub}/fixel_analysis;
     cp single_bundle_mask_voxel-norm_WM.nii.gz tmp1.nii.gz;
     cp single_bundle_mask_none-norm_WM.nii.gz tmp2.nii.gz;
