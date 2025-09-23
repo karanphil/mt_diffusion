@@ -364,7 +364,7 @@ for sub in $subs;
     rm voxel_density_map_none-norm_*.nii.gz;
     rm voxel_density_map_voxel-norm_*.nii.gz;
     rm voxel_density_mask_none-norm_*.nii.gz;
-    rm voxel_density_mask_voxel-norm_*.nii.gz;
+    # rm voxel_density_mask_voxel-norm_*.nii.gz;
 
     # Compute FODF MTR
     echo "Compute FODF MTR";
