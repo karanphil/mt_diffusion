@@ -28,6 +28,8 @@ def _build_arg_parser():
 
     p.add_argument('out_no_diff_mask')
 
+    p.add_argument('out_crossing_mask')
+
     p.add_argument('--min_mtr', type=float, default=0.2,
                    help='Minimum MTR value to consider a peak valid.')
     
@@ -50,14 +52,15 @@ def main():
     assert_inputs_exist(parser, [args.in_peak_values])
     assert_outputs_exist(parser, args, [args.out_diffs,
                                         args.out_diff_mask,
-                                        args.out_no_diff_mask])
+                                        args.out_no_diff_mask,
+                                        args.out_crossing_mask])
 
     peak_values_img = nib.load(args.in_peak_values)
     peak_values = peak_values_img.get_fdata().astype(np.float32)
 
-    peak_diff = np.where((peak_values[..., 0] >= args.min_mtr) & (peak_values[..., 1] >= args.min_mtr),
-                         peak_values[..., 0] - peak_values[..., 1], 0)
-    
+    mask = (peak_values[..., 0] >= args.min_mtr) & (peak_values[..., 1] >= args.min_mtr)
+
+    peak_diff = np.where(mask, peak_values[..., 0] - peak_values[..., 1], 0)
     peak_diff = abs(peak_diff)
 
     diff_mask = peak_diff >= args.min_diff
@@ -71,6 +74,9 @@ def main():
     nib.save(nib.Nifti1Image(no_diff_mask.astype(np.uint8),
                              peak_values_img.affine),
              args.out_no_diff_mask)
+    nib.save(nib.Nifti1Image(mask.astype(np.uint8),
+                             peak_values_img.affine),
+             args.out_crossing_mask)
 
 
 if __name__ == "__main__":
