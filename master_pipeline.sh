@@ -397,7 +397,7 @@ for sub in $subs;
     # Compute peak difference
     echo "Compute peak difference";
     cd ${target_dir}/${sub}/mtr;
-    python ../../../code/mt_diffusion/compare_mtr_peaks.py mtr_peak_values.nii.gz mtr_peak_diffs.nii.gz  mtr_peak_diff_mask.nii.gz mtr_peak_no_diff_mask.nii.gz --min_diff 0.02 --min_mtr 0.2 -f;
+    python ../../../code/mt_diffusion/compare_mtr_peaks.py mtr_peak_values.nii.gz mtr_peak_diffs.nii.gz  mtr_peak_diff_mask.nii.gz mtr_peak_no_diff_mask.nii.gz mtr_peak_crossing_mask.nii.gz --min_diff 0.02 --min_mtr 0.2 -f;
 
     # # Clean crossing mask
     # echo "Clean crossing mask";
