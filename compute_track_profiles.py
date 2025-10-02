@@ -32,6 +32,8 @@ def _build_arg_parser():
 
     p.add_argument('--in_bundle_map')
 
+    p.add_argument('--bundle_name')
+
     p.add_argument('--map_threshold', type=float, default=0.75,
                    help='Threshold to apply to the bundle map to create a '
                         'mask. Default is 0.1.')
@@ -97,9 +99,14 @@ def main():
         plt.ylabel('Median MTR')
     else:
         plt.ylabel('Mean MTR')
-    plt.title('Track-profile of MTR and fixel-wise MTR')
+    bundle_name = ' for the {} bundle'.format(args.bundle_name)
+    plt.title('Track-profile of MTR and fixel-wise MTR' + bundle_name)
     plt.legend()
+    plt.ylim(0.33, 0.45)
+    plt.xlim(4, 16)
     plt.show()
+    # plt.savefig(args.out_dir + '/track_profile_{}.png'.format(args.bundle_name),
+    #             dpi=300)
 
 
 if __name__ == "__main__":
