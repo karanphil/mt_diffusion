@@ -9,6 +9,7 @@ fixel-wise MTR.
 import argparse
 import logging
 
+from cmcrameri import cm
 from matplotlib import pyplot as plt
 import nibabel as nib
 import numpy as np
@@ -41,6 +42,11 @@ def _build_arg_parser():
     p.add_argument('--median', action='store_true',
                    help='Use the median instead of the mean to compute the '
                         'track-profile. Default is False.')
+    
+    p.add_argument('--variance', action='store_true',
+                   help='Compute and display the variance of the MTR and '
+                        'fixel-wise MTR for each bundle section. Default is '
+                        'False.')
 
     add_verbose_arg(p)
     add_overwrite_arg(p)
@@ -77,23 +83,49 @@ def main():
 
     unique_labels = np.unique(labels[mask])
     unique_labels = unique_labels[unique_labels != 0]
+    unique_labels = unique_labels[unique_labels > 3]
+    unique_labels = unique_labels[unique_labels < 18]
+
+    # cmap = ['orange', 'blue', 'red', 'green']
+    cmap = cm.naviaS
+    cmap_idx = np.arange(3, 1000, 1)
 
     fixel_mtr_profile = np.zeros((len(unique_labels),))
     mtr_profile = np.zeros((len(unique_labels),))
     for i, label in enumerate(unique_labels):
         label_mask = (labels == label) & mask
+        print(label, np.sum(label_mask))
         if args.median:
             fixel_mtr_profile[i] = np.median(fixel_mtr[label_mask])
             mtr_profile[i] = np.median(mtr[label_mask])
         else:
             fixel_mtr_profile[i] = np.mean(fixel_mtr[label_mask])
             mtr_profile[i] = np.mean(mtr[label_mask])
-        
 
     plt.plot(unique_labels, mtr_profile, label='MTR', marker='o',
-             color='orange')
+            color=cmap(cmap_idx[0]))
     plt.plot(unique_labels, fixel_mtr_profile, label='Fixel-wise MTR',
-             marker='^', color='blue')
+            marker='o', color=cmap(cmap_idx[1]))
+
+    if args.variance:
+        mtr_var = np.zeros((len(unique_labels),))
+        fixel_mtr_var = np.zeros((len(unique_labels),))
+        for i, label in enumerate(unique_labels):
+            label_mask = (labels == label) & mask
+            mtr_var[i] = np.var(mtr[label_mask])
+            fixel_mtr_var[i] = np.var(fixel_mtr[label_mask])
+            if args.median:
+                fixel_mtr_profile[i] = np.mean(fixel_mtr[label_mask])
+                mtr_profile[i] = np.mean(mtr[label_mask])
+        plt.fill_between(unique_labels,
+                         mtr_profile - np.sqrt(mtr_var),
+                         mtr_profile + np.sqrt(mtr_var),
+                         color=cmap(cmap_idx[0]), alpha=0.2)
+        plt.fill_between(unique_labels,
+                         fixel_mtr_profile - np.sqrt(fixel_mtr_var),
+                         fixel_mtr_profile + np.sqrt(fixel_mtr_var),
+                         color=cmap(cmap_idx[1]), alpha=0.2)
+
     plt.xlabel('Bundle section')
     if args.median:
         plt.ylabel('Median MTR')
@@ -103,10 +135,10 @@ def main():
     plt.title('Track-profile of MTR and fixel-wise MTR' + bundle_name)
     plt.legend()
     plt.ylim(0.33, 0.45)
-    plt.xlim(4, 16)
-    plt.show()
-    # plt.savefig(args.out_dir + '/track_profile_{}.png'.format(args.bundle_name),
-    #             dpi=300)
+    plt.xlim(3, 18)
+    # plt.show()
+    plt.savefig(args.out_dir + '/track_profile_{}.png'.format(args.bundle_name),
+                dpi=300)
 
 
 if __name__ == "__main__":
