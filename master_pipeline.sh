@@ -394,10 +394,24 @@ for sub in $subs;
     # cd ${target_dir}/${sub}/mtr;
     # python ../../../code/mt_diffusion/compute_bundle_mtr.py ../powder_average/powder_averaged_mtr.nii.gz ../fixel_analysis/voxel_density_masks_voxel-norm.nii.gz ../fixel_analysis/bundles_LUT.txt . -f;
 
-    # Compute peak difference
-    echo "Compute peak difference";
-    cd ${target_dir}/${sub}/mtr;
-    python ../../../code/mt_diffusion/compare_mtr_peaks.py mtr_peak_values.nii.gz mtr_peak_diffs.nii.gz  mtr_peak_diff_mask.nii.gz mtr_peak_no_diff_mask.nii.gz mtr_peak_crossing_mask.nii.gz --min_diff 0.02 --min_mtr 0.2 -f;
+    # # Compute peak difference
+    # echo "Compute peak difference";
+    # cd ${target_dir}/${sub}/mtr;
+    # python ../../../code/mt_diffusion/compare_mtr_peaks.py mtr_peak_values.nii.gz mtr_peak_diffs.nii.gz  mtr_peak_diff_mask.nii.gz mtr_peak_no_diff_mask.nii.gz mtr_peak_crossing_mask.nii.gz --min_diff 0.02 --min_mtr 0.2 -f;
+
+    # Compute AFD fixel per bundle
+    echo "Compute AFD fixel per bundle";
+    cd ${target_dir}/${sub}/bundles;
+    bundles=$(ls *.trk);
+    cd ${target_dir}/${sub};
+    mkdir afd_fixel;
+    cd ${target_dir}/${sub}/afd_fixel;
+    for b in $bundles;
+        do bundle_name=${b%".trk"};
+        echo $bundle_name;
+        scil_bundle_mean_fixel_afd ../bundles/${b} $fodf_mt_off afd_fixel_${bundle_name}.nii.gz -f;
+
+    done;
 
     # # Clean crossing mask
     # echo "Clean crossing mask";
