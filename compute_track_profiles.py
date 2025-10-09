@@ -29,6 +29,8 @@ def _build_arg_parser():
 
     p.add_argument('in_bundle_labels')
 
+    p.add_argument('in_afd_fixel')
+
     p.add_argument('out_dir')
 
     p.add_argument('--in_bundle_map')
@@ -62,7 +64,7 @@ def main():
         logging.basicConfig(level=logging.INFO)
 
     assert_inputs_exist(parser, [args.in_bundle_mtr, args.in_bundle_fixel_mtr,
-                                 args.in_bundle_labels])
+                                 args.in_bundle_labels, args.in_afd_fixel])
     assert_outputs_exist(parser, args, [args.out_dir])
 
     mtr_img = nib.load(args.in_bundle_mtr)
@@ -73,6 +75,9 @@ def main():
 
     labels_img = nib.load(args.in_bundle_labels)
     labels = labels_img.get_fdata().astype(np.uint8)
+
+    afd_fixel_img = nib.load(args.in_afd_fixel)
+    afd_fixel = afd_fixel_img.get_fdata().astype(np.float32)
 
     if args.in_bundle_map:
         map_img = nib.load(args.in_bundle_map)
@@ -99,8 +104,10 @@ def main():
             fixel_mtr_profile[i] = np.median(fixel_mtr[label_mask])
             mtr_profile[i] = np.median(mtr[label_mask])
         else:
-            fixel_mtr_profile[i] = np.mean(fixel_mtr[label_mask])
-            mtr_profile[i] = np.mean(mtr[label_mask])
+            fixel_mtr_profile[i] = np.average(fixel_mtr[label_mask],
+                                              weights=afd_fixel[label_mask])
+            mtr_profile[i] = np.average(mtr[label_mask],
+                                        weights=afd_fixel[label_mask])
 
     plt.plot(unique_labels, mtr_profile, label='MTR', marker='o',
             color=cmap(cmap_idx[0]))
@@ -112,11 +119,15 @@ def main():
         fixel_mtr_var = np.zeros((len(unique_labels),))
         for i, label in enumerate(unique_labels):
             label_mask = (labels == label) & mask
-            mtr_var[i] = np.var(mtr[label_mask])
-            fixel_mtr_var[i] = np.var(fixel_mtr[label_mask])
             if args.median:
-                fixel_mtr_profile[i] = np.mean(fixel_mtr[label_mask])
-                mtr_profile[i] = np.mean(mtr[label_mask])
+                fixel_mtr_profile[i] = np.average(fixel_mtr[label_mask],
+                                                  weights=afd_fixel[label_mask])
+                mtr_profile[i] = np.average(mtr[label_mask],
+                                            weights=afd_fixel[label_mask])
+            mtr_var[i] = np.average((mtr[label_mask]-mtr_profile[i])**2, 
+                                    weights=afd_fixel[label_mask])
+            fixel_mtr_var[i] = np.average((fixel_mtr[label_mask]-fixel_mtr_profile[i])**2,
+                                          weights=afd_fixel[label_mask])
         plt.fill_between(unique_labels,
                          mtr_profile - np.sqrt(mtr_var),
                          mtr_profile + np.sqrt(mtr_var),
