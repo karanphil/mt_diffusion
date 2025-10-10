@@ -40,7 +40,11 @@ def _build_arg_parser():
     p.add_argument('--map_threshold', type=float, default=0.75,
                    help='Threshold to apply to the bundle map to create a '
                         'mask. Default is 0.1.')
-    
+
+    p.add_argument('--afd_threshold', type=float, default=0.2,
+                   help='Threshold to apply to the AFD fixel map to discard '
+                        'voxels with low AFD. Default is 0.2.')
+
     p.add_argument('--median', action='store_true',
                    help='Use the median instead of the mean to compute the '
                         'track-profile. Default is False.')
@@ -98,7 +102,7 @@ def main():
     fixel_mtr_profile = np.zeros((len(unique_labels),))
     mtr_profile = np.zeros((len(unique_labels),))
     for i, label in enumerate(unique_labels):
-        label_mask = (labels == label) & mask
+        label_mask = (labels == label) & mask & (afd_fixel > args.afd_threshold)
         print(label, np.sum(label_mask))
         if args.median:
             fixel_mtr_profile[i] = np.median(fixel_mtr[label_mask])
@@ -118,7 +122,7 @@ def main():
         mtr_var = np.zeros((len(unique_labels),))
         fixel_mtr_var = np.zeros((len(unique_labels),))
         for i, label in enumerate(unique_labels):
-            label_mask = (labels == label) & mask
+            label_mask = (labels == label) & mask & (afd_fixel > args.afd_threshold)
             if args.median:
                 fixel_mtr_profile[i] = np.average(fixel_mtr[label_mask],
                                                   weights=afd_fixel[label_mask])
