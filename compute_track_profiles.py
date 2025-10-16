@@ -45,6 +45,10 @@ def _build_arg_parser():
                    help='Threshold to apply to the AFD fixel map to discard '
                         'voxels with low AFD. Default is 0.2.')
 
+    p.add_argument('--min_nvox', type=int, default=100,
+                   help='Minimum number of voxels per bundle section to '
+                        'consider it valid. Default is 100.')
+
     p.add_argument('--median', action='store_true',
                    help='Use the median instead of the mean to compute the '
                         'track-profile. Default is False.')
@@ -92,8 +96,8 @@ def main():
 
     unique_labels = np.unique(labels[mask])
     unique_labels = unique_labels[unique_labels != 0]
-    unique_labels = unique_labels[unique_labels > 3]
-    unique_labels = unique_labels[unique_labels < 18]
+    # unique_labels = unique_labels[unique_labels > 3]
+    # unique_labels = unique_labels[unique_labels < 18]
 
     # cmap = ['orange', 'blue', 'red', 'green']
     cmap = cm.naviaS
@@ -107,38 +111,40 @@ def main():
         if args.median:
             fixel_mtr_profile[i] = np.median(fixel_mtr[label_mask])
             mtr_profile[i] = np.median(mtr[label_mask])
-        else:
+        elif np.sum(afd_fixel[label_mask]) != 0 and np.sum(label_mask) >= args.min_nvox:
             fixel_mtr_profile[i] = np.average(fixel_mtr[label_mask],
                                               weights=afd_fixel[label_mask])
             mtr_profile[i] = np.average(mtr[label_mask],
                                         weights=afd_fixel[label_mask])
 
-    plt.plot(unique_labels, mtr_profile, label='MTR', marker='o',
-            color=cmap(cmap_idx[0]))
-    plt.plot(unique_labels, fixel_mtr_profile, label='Fixel-wise MTR',
-            marker='o', color=cmap(cmap_idx[1]))
+    plt.plot(unique_labels[mtr_profile != 0], mtr_profile[mtr_profile != 0],
+             label='MTR', marker='o', color=cmap(cmap_idx[0]))
+    plt.plot(unique_labels[fixel_mtr_profile != 0],
+             fixel_mtr_profile[fixel_mtr_profile != 0], label='Fixel-wise MTR',
+             marker='o', color=cmap(cmap_idx[1]))
 
     if args.variance:
         mtr_var = np.zeros((len(unique_labels),))
         fixel_mtr_var = np.zeros((len(unique_labels),))
         for i, label in enumerate(unique_labels):
             label_mask = (labels == label) & mask & (afd_fixel > args.afd_threshold)
-            if args.median:
-                fixel_mtr_profile[i] = np.average(fixel_mtr[label_mask],
-                                                  weights=afd_fixel[label_mask])
-                mtr_profile[i] = np.average(mtr[label_mask],
+            if np.sum(afd_fixel[label_mask]) != 0 and np.sum(label_mask) >= args.min_nvox:
+                if args.median:
+                    fixel_mtr_profile[i] = np.average(fixel_mtr[label_mask],
+                                                    weights=afd_fixel[label_mask])
+                    mtr_profile[i] = np.average(mtr[label_mask],
+                                                weights=afd_fixel[label_mask])
+                mtr_var[i] = np.average((mtr[label_mask]-mtr_profile[i])**2, 
+                                        weights=afd_fixel[label_mask])
+                fixel_mtr_var[i] = np.average((fixel_mtr[label_mask]-fixel_mtr_profile[i])**2,
                                             weights=afd_fixel[label_mask])
-            mtr_var[i] = np.average((mtr[label_mask]-mtr_profile[i])**2, 
-                                    weights=afd_fixel[label_mask])
-            fixel_mtr_var[i] = np.average((fixel_mtr[label_mask]-fixel_mtr_profile[i])**2,
-                                          weights=afd_fixel[label_mask])
-        plt.fill_between(unique_labels,
-                         mtr_profile - np.sqrt(mtr_var),
-                         mtr_profile + np.sqrt(mtr_var),
+        plt.fill_between(unique_labels[mtr_profile != 0],
+                         mtr_profile[mtr_profile != 0] - np.sqrt(mtr_var[mtr_profile != 0]),
+                         mtr_profile[mtr_profile != 0] + np.sqrt(mtr_var[mtr_profile != 0]),
                          color=cmap(cmap_idx[0]), alpha=0.2)
-        plt.fill_between(unique_labels,
-                         fixel_mtr_profile - np.sqrt(fixel_mtr_var),
-                         fixel_mtr_profile + np.sqrt(fixel_mtr_var),
+        plt.fill_between(unique_labels[fixel_mtr_profile != 0],
+                         fixel_mtr_profile[fixel_mtr_profile != 0] - np.sqrt(fixel_mtr_var[fixel_mtr_profile != 0]),
+                         fixel_mtr_profile[fixel_mtr_profile != 0] + np.sqrt(fixel_mtr_var[fixel_mtr_profile != 0]),
                          color=cmap(cmap_idx[1]), alpha=0.2)
 
     plt.xlabel('Bundle section')
@@ -150,7 +156,9 @@ def main():
     plt.title('Track-profile of MTR and fixel-wise MTR' + bundle_name)
     plt.legend()
     plt.ylim(0.33, 0.45)
-    plt.xlim(3, 18)
+    # plt.xlim(3, 18)
+    plt.xlim(0, 21)
+    plt.xticks(np.arange(1, 21, 1))
     # plt.show()
     plt.savefig(args.out_dir + '/track_profile_{}.png'.format(args.bundle_name),
                 dpi=300)
