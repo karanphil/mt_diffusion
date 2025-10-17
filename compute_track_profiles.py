@@ -10,6 +10,8 @@ import argparse
 import logging
 
 from cmcrameri import cm
+from matplotlib.lines import Line2D 
+import matplotlib as mpl
 from matplotlib import pyplot as plt
 import nibabel as nib
 import numpy as np
@@ -108,10 +110,12 @@ def main():
     # cmap = ['orange', 'blue', 'red', 'green']
     cmap = cm.naviaS
     cmap_idx = np.arange(3, 1000, 1)
+    norm = mpl.colors.Normalize(vmin=0.3, vmax=0.7)
 
     fixel_mtr_profile = np.zeros((len(unique_labels),))
     mtr_profile = np.zeros((len(unique_labels),))
     nufo_profile = np.zeros((len(unique_labels),))
+    afd_profile = np.zeros((len(unique_labels),))
     for i, label in enumerate(unique_labels):
         label_mask = (labels == label) & mask & (afd_fixel > args.afd_threshold)
         print(label, np.sum(label_mask))
@@ -119,6 +123,7 @@ def main():
             fixel_mtr_profile[i] = np.median(fixel_mtr[label_mask])
             mtr_profile[i] = np.median(mtr[label_mask])
             nufo_profile[i] = np.median(nufo[label_mask])
+            afd_profile[i] = np.median(afd_fixel[label_mask])
         elif np.sum(afd_fixel[label_mask]) != 0 and np.sum(label_mask) >= args.min_nvox:
             fixel_mtr_profile[i] = np.average(fixel_mtr[label_mask],
                                               weights=afd_fixel[label_mask])
@@ -126,6 +131,7 @@ def main():
                                         weights=afd_fixel[label_mask])
             nufo_profile[i] = np.average(nufo[label_mask],
                                          weights=afd_fixel[label_mask])
+            afd_profile[i] = np.average(afd_fixel[label_mask])
 
     fig, ax1 = plt.subplots(figsize=(8, 5))
 
@@ -163,9 +169,28 @@ def main():
     ax2 = ax1.twinx()
     ax2.plot(unique_labels[nufo_profile != 0],
              nufo_profile[nufo_profile != 0],
-             label='Complexity', linestyle='--', color="darkgrey")
+             linestyle='--', color="darkgrey", zorder=3)
+    ax2.scatter(unique_labels[nufo_profile != 0],
+                nufo_profile[nufo_profile != 0],
+                c=afd_profile[nufo_profile != 0],
+                cmap='Greys', norm=norm, edgecolors='darkgrey', zorder=4)
+    complexity_handle = Line2D([0], [0],
+                           color='darkgrey', linestyle='--',
+                           marker='o', markerfacecolor='white',
+                           markeredgecolor='darkgrey',
+                           label='Complexity')
     ax2.set_ylabel('Mean NuFO', color="darkgrey")
     ax2.tick_params(axis='y', labelcolor="darkgrey")
+
+    # Add AFD colorbar
+    sm = plt.cm.ScalarMappable(cmap='Greys',
+                               norm=norm)
+    sm.set_array([])
+    cbar = fig.colorbar(sm, ax=ax2, pad=0.08)
+    cbar.set_label('Mean AFD', color="darkgrey")
+    cbar.ax.tick_params(color='darkgrey', labelcolor='darkgrey')
+    cbar.outline.set_edgecolor('darkgrey')
+    # cbar.tick_params(axis='y', labelcolor="darkgrey")
 
     # Axis labels and legend
     ax1.set_xlabel('Bundle section')
@@ -176,7 +201,7 @@ def main():
     # Combine legends from both axes
     lines_1, labels_1 = ax1.get_legend_handles_labels()
     lines_2, labels_2 = ax2.get_legend_handles_labels()
-    ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='best')
+    ax1.legend(lines_1 + lines_2 + [complexity_handle], labels_1 + labels_2 + ["Complexity"], loc='best')
 
     ax1.set_ylim(0.33, 0.45)
     ax1.set_xlim(0, 21)

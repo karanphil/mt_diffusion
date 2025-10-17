@@ -33,8 +33,6 @@ def _build_arg_parser():
 
     p.add_argument('in_afd_fixel', nargs=2)
 
-    p.add_argument('in_nufo', nargs=2)
-
     p.add_argument('out_dir')
 
     p.add_argument('--in_bundle_map', nargs=2)
@@ -71,13 +69,11 @@ def main():
         logging.basicConfig(level=logging.INFO)
 
     assert_inputs_exist(parser, [args.in_bundle_mtr, args.in_bundle_fixel_mtr,
-                                 args.in_bundle_labels, args.in_afd_fixel,
-                                 args.in_nufo])
+                                 args.in_bundle_labels, args.in_afd_fixel])
     assert_outputs_exist(parser, args, [args.out_dir])
 
     fixel_mtr_profile = np.zeros((2, 20))
     mtr_profile = np.zeros((2, 20))
-    nufo_profile = np.zeros((2, 20))
     for j in range(2):
         mtr_img = nib.load(args.in_bundle_mtr[j])
         mtr = mtr_img.get_fdata().astype(np.float32)
@@ -90,9 +86,6 @@ def main():
 
         afd_fixel_img = nib.load(args.in_afd_fixel[j])
         afd_fixel = afd_fixel_img.get_fdata().astype(np.float32)
-
-        nufo_img = nib.load(args.in_nufo[j])
-        nufo = nufo_img.get_fdata().astype(np.float32)
 
         if args.in_bundle_map:
             map_img = nib.load(args.in_bundle_map[j])
@@ -113,20 +106,16 @@ def main():
             if args.median:
                 fixel_mtr_profile[j, label - 1] = np.median(fixel_mtr[label_mask])
                 mtr_profile[j, label - 1] = np.median(mtr[label_mask])
-                nufo_profile[j, label - 1] = np.median(nufo[label_mask])
             elif np.sum(afd_fixel[label_mask]) != 0 and np.sum(label_mask) >= args.min_nvox:
                 fixel_mtr_profile[j, label - 1] = np.average(fixel_mtr[label_mask],
                                                 weights=afd_fixel[label_mask])
                 mtr_profile[j, label - 1] = np.average(mtr[label_mask],
                                             weights=afd_fixel[label_mask])
-                nufo_profile[j, label - 1] = np.average(nufo[label_mask],
-                                            weights=afd_fixel[label_mask])
                 
     diff_mtr_profile = np.abs(mtr_profile[0] - mtr_profile[1]) / mtr_profile[0] * 100
     diff_fixel_mtr_profile = np.abs(fixel_mtr_profile[0] - fixel_mtr_profile[1]) / fixel_mtr_profile[0] * 100
-    mean_nufo_profile = (nufo_profile[0] + nufo_profile[1]) / 2
 
-    fig, ax1 = plt.subplots(figsize=(8, 5))
+    fig, ax1 = plt.subplots(figsize=(8, 2))
 
     ax1.scatter(unique_labels[diff_mtr_profile > 0], diff_mtr_profile[diff_mtr_profile > 0],
              label='MTR', marker='o', color=cmap(cmap_idx[0]))
@@ -134,30 +123,20 @@ def main():
              diff_fixel_mtr_profile[diff_fixel_mtr_profile > 0], label='Fixel-wise MTR',
              marker='o', color=cmap(cmap_idx[1]))
 
-    # Add secondary axis for NuFO
-    ax2 = ax1.twinx()
-    ax2.plot(unique_labels[mean_nufo_profile != 0],
-             mean_nufo_profile[mean_nufo_profile != 0],
-             label='Complexity', linestyle='--', color="darkgrey")
-    ax2.set_ylabel('Mean NuFO', color="darkgrey")
-    ax2.tick_params(axis='y', labelcolor="darkgrey")
-
     # Axis labels and legend
     ax1.set_xlabel('Bundle section')
-    ax1.set_ylabel('Absolute % difference scan-rescan')
+    ax1.set_ylabel('|%diff| scan-rescan')
     bundle_name = f' for the {args.bundle_name} bundle' if args.bundle_name else ''
     ax1.set_title(f'Track-profile repeatability {bundle_name}')
 
     # Combine legends from both axes
-    lines_1, labels_1 = ax1.get_legend_handles_labels()
-    lines_2, labels_2 = ax2.get_legend_handles_labels()
-    ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='best')
+    # lines_1, labels_1 = ax1.get_legend_handles_labels()
+    # ax1.legend(lines_1, labels_1, loc='best')
 
-    ax1.set_ylim(0, 20)
+    ax1.set_ylim(0, 5)
+    ax1.set_yticks(np.arange(1, 6, 1))
     ax1.set_xlim(0, 21)
     ax1.set_xticks(np.arange(1, 21, 1))
-    ax2.set_ylim(1, 5)
-    ax2.set_yticks(np.arange(1, 6, 1))
 
     plt.tight_layout()
     # plt.show()
