@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Script to compute the track-profile of a bundle for both the MTR and the
+Script to plot the track-profile of a bundle for both the MTR and the
 fixel-wise MTR.
 """
 
@@ -32,6 +32,8 @@ def _build_arg_parser():
     p.add_argument('in_bundle_labels')
 
     p.add_argument('in_afd_fixel')
+
+    p.add_argument('in_nufo')
 
     p.add_argument('out_dir')
 
