@@ -96,9 +96,10 @@ def main():
     mtr_profile = np.zeros((len(unique_labels),))
     nufo_profile = np.zeros((len(unique_labels),))
     afd_profile = np.zeros((len(unique_labels),))
+    nb_voxels_profile = np.zeros((len(unique_labels),))
     for i, label in enumerate(unique_labels):
         label_mask = (labels == label) & mask & (afd_fixel > args.afd_threshold)
-        print(label, np.sum(label_mask))
+        nb_voxels_profile[i] = np.sum(label_mask)
         if np.sum(afd_fixel[label_mask]) != 0 and np.sum(label_mask) >= args.min_nvox:
             fixel_mtr_profile[i] = np.average(fixel_mtr[label_mask],
                                               weights=afd_fixel[label_mask])
@@ -112,6 +113,7 @@ def main():
     np.savetxt(f"{args.out_dir}/fixel_mtr_profile_{args.bundle_name}.txt", fixel_mtr_profile)
     np.savetxt(f"{args.out_dir}/nufo_profile_{args.bundle_name}.txt", nufo_profile)
     np.savetxt(f"{args.out_dir}/afd_profile_{args.bundle_name}.txt", afd_profile)
+    np.savetxt(f"{args.out_dir}/nb_voxels_profile_{args.bundle_name}.txt", nb_voxels_profile)
 
 
 if __name__ == "__main__":

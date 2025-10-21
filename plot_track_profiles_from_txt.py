@@ -25,19 +25,19 @@ def _build_arg_parser():
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter)
 
-    p.add_argument('in_mtr_profiles', nargs='+',
+    p.add_argument('out_dir')
+
+    p.add_argument('--in_mtr_profiles', nargs='+', required=True,
                    help='Input MTR profile text files.')
     
-    p.add_argument('in_fixel_mtr_profiles', nargs='+',
+    p.add_argument('--in_fixel_mtr_profiles', nargs='+', required=True,
                    help='Input fixel-wise MTR profile text files.')
     
-    p.add_argument('in_nufo_profiles', nargs='+',
+    p.add_argument('--in_nufo_profiles', nargs='+', required=True,
                    help='Input NuFO profile text files.')
     
-    p.add_argument('in_afd_profiles', nargs='+',
+    p.add_argument('--in_afd_profiles', nargs='+', required=True,
                    help='Input AFD profile text files.')
-
-    p.add_argument('out_dir')
 
     p.add_argument('--bundle_name')
 
@@ -69,7 +69,7 @@ def main():
     fixel_mtr_profiles = [np.loadtxt(f) for f in args.in_fixel_mtr_profiles]
     nufo_profiles = [np.loadtxt(f) for f in args.in_nufo_profiles]
     afd_profiles = [np.loadtxt(f) for f in args.in_afd_profiles]
-    labels = len(mtr_profiles[0])
+    labels = np.arange(1, len(mtr_profiles[0]) + 1, 1)
 
     mtr_profile = np.mean(np.array(mtr_profiles), axis=0)
     fixel_mtr_profile = np.mean(np.array(fixel_mtr_profiles), axis=0)
@@ -130,7 +130,7 @@ def main():
 
     # Axis labels and legend
     ax1.set_xlabel('Bundle section')
-    ax1.set_ylabel('Mean MTR' if not args.median else 'Median MTR')
+    ax1.set_ylabel('Mean MTR')
     bundle_name = f' for the {args.bundle_name} bundle' if args.bundle_name else ''
     ax1.set_title(f'Track-profile of MTR and fixel-wise MTR {bundle_name}')
 
