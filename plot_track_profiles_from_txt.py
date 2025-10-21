@@ -65,6 +65,8 @@ def main():
     assert_outputs_exist(parser, args, [args.out_dir])
 
     # Load profiles
+    for f in args.in_mtr_profiles:
+        print(np.loadtxt(f))
     mtr_profiles = np.array([np.loadtxt(f) for f in args.in_mtr_profiles])
     fixel_mtr_profiles = np.array([np.loadtxt(f) for f in args.in_fixel_mtr_profiles])
     nufo_profiles = np.array([np.loadtxt(f) for f in args.in_nufo_profiles])

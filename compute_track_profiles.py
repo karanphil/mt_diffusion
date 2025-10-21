@@ -89,15 +89,14 @@ def main():
     else:
         mask = np.ones(mtr.shape, dtype=bool)
 
-    unique_labels = np.unique(labels[mask])
-    unique_labels = unique_labels[unique_labels != 0]
+    labels = np.arange(1, 20 + 1, 1)
 
-    fixel_mtr_profile = np.zeros((len(unique_labels),))
-    mtr_profile = np.zeros((len(unique_labels),))
-    nufo_profile = np.zeros((len(unique_labels),))
-    afd_profile = np.zeros((len(unique_labels),))
-    nb_voxels_profile = np.zeros((len(unique_labels),))
-    for i, label in enumerate(unique_labels):
+    fixel_mtr_profile = np.zeros((len(labels),))
+    mtr_profile = np.zeros((len(labels),))
+    nufo_profile = np.zeros((len(labels),))
+    afd_profile = np.zeros((len(labels),))
+    nb_voxels_profile = np.zeros((len(labels),))
+    for i, label in enumerate(labels):
         label_mask = (labels == label) & mask & (afd_fixel > args.afd_threshold)
         nb_voxels_profile[i] = np.sum(label_mask)
         if np.sum(afd_fixel[label_mask]) != 0 and np.sum(label_mask) >= args.min_nvox:
