@@ -65,18 +65,24 @@ def main():
     assert_outputs_exist(parser, args, [args.out_dir])
 
     # Load profiles
-    mtr_profiles = [np.loadtxt(f) for f in args.in_mtr_profiles]
-    fixel_mtr_profiles = [np.loadtxt(f) for f in args.in_fixel_mtr_profiles]
-    nufo_profiles = [np.loadtxt(f) for f in args.in_nufo_profiles]
-    afd_profiles = [np.loadtxt(f) for f in args.in_afd_profiles]
+    mtr_profiles = np.array([np.loadtxt(f) for f in args.in_mtr_profiles])
+    fixel_mtr_profiles = np.array([np.loadtxt(f) for f in args.in_fixel_mtr_profiles])
+    nufo_profiles = np.array([np.loadtxt(f) for f in args.in_nufo_profiles])
+    afd_profiles = np.array([np.loadtxt(f) for f in args.in_afd_profiles])
     labels = np.arange(1, len(mtr_profiles[0]) + 1, 1)
 
-    mtr_profile = np.mean(np.array(mtr_profiles), axis=0)
-    fixel_mtr_profile = np.mean(np.array(fixel_mtr_profiles), axis=0)
-    nufo_profile = np.mean(np.array(nufo_profiles), axis=0)
-    afd_profile = np.mean(np.array(afd_profiles), axis=0)
-    mtr_profile_std = np.std(np.array(mtr_profiles), axis=0)
-    fixel_mtr_profile_std = np.std(np.array(fixel_mtr_profiles), axis=0)
+    mtr_profiles = np.where(mtr_profiles > 0, mtr_profiles, np.nan)
+    fixel_mtr_profiles = np.where(fixel_mtr_profiles > 0, fixel_mtr_profiles,
+                                  np.nan)
+    nufo_profiles = np.where(nufo_profiles > 0, nufo_profiles, 0)
+    afd_profiles = np.where(afd_profiles > 0, afd_profiles, 0)
+
+    mtr_profile = np.nanmean(mtr_profiles, axis=0)
+    fixel_mtr_profile = np.nanmean(fixel_mtr_profiles, axis=0)
+    nufo_profile = np.nanmean(nufo_profiles, axis=0)
+    afd_profile = np.nanmean(afd_profiles, axis=0)
+    mtr_profile_std = np.nanstd(mtr_profiles, axis=0)
+    fixel_mtr_profile_std = np.nanstd(fixel_mtr_profiles, axis=0)
 
     # Plot profiles
     cmap = cm.naviaS
