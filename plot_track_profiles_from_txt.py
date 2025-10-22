@@ -8,6 +8,7 @@ fixel-wise MTR.
 
 import argparse
 import logging
+import warnings
 
 from cmcrameri import cm
 from matplotlib.lines import Line2D 
@@ -59,6 +60,8 @@ def main():
     if args.verbose:
         logging.basicConfig(level=logging.INFO)
 
+    warnings.filterwarnings('ignore')
+
     assert_inputs_exist(parser, [args.in_mtr_profiles,
                                  args.in_fixel_mtr_profiles,
                                  args.in_nufo_profiles, args.in_afd_profiles])
@@ -74,8 +77,8 @@ def main():
     mtr_profiles = np.where(mtr_profiles > 0, mtr_profiles, np.nan)
     fixel_mtr_profiles = np.where(fixel_mtr_profiles > 0, fixel_mtr_profiles,
                                   np.nan)
-    nufo_profiles = np.where(nufo_profiles > 0, nufo_profiles, 0)
-    afd_profiles = np.where(afd_profiles > 0, afd_profiles, 0)
+    nufo_profiles = np.where(nufo_profiles > 0, nufo_profiles, np.nan)
+    afd_profiles = np.where(afd_profiles > 0, afd_profiles, np.nan)
 
     mtr_profile = np.nanmean(mtr_profiles, axis=0)
     fixel_mtr_profile = np.nanmean(fixel_mtr_profiles, axis=0)
@@ -83,6 +86,11 @@ def main():
     afd_profile = np.nanmean(afd_profiles, axis=0)
     mtr_profile_std = np.nanstd(mtr_profiles, axis=0)
     fixel_mtr_profile_std = np.nanstd(fixel_mtr_profiles, axis=0)
+
+    mtr_profile = np.where(np.isnan(mtr_profile), 0, mtr_profile)
+    fixel_mtr_profile = np.where(np.isnan(fixel_mtr_profile), 0, fixel_mtr_profile)
+    nufo_profile = np.where(np.isnan(nufo_profile), 0, nufo_profile)
+    afd_profile = np.where(np.isnan(afd_profile), 0, afd_profile)
 
     # Plot profiles
     cmap = cm.naviaS
@@ -96,6 +104,13 @@ def main():
     ax1.plot(labels[fixel_mtr_profile != 0],
              fixel_mtr_profile[fixel_mtr_profile != 0], label='Fixel-wise MTR',
              marker='o', color=cmap(cmap_idx[1]))
+
+    # import matplotlib.colors as mcolors
+    # colors = mcolors.TABLEAU_COLORS
+    # for i in range(fixel_mtr_profiles.shape[0]):
+    #     ax1.scatter(labels[fixel_mtr_profiles[i] != 0],
+    #                 fixel_mtr_profiles[i][fixel_mtr_profiles[i] != 0],
+    #                 zorder=1)
 
     if args.variance:
         ax1.fill_between(labels[mtr_profile != 0],
