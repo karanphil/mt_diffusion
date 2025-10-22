@@ -107,10 +107,10 @@ def main():
 
     # import matplotlib.colors as mcolors
     # colors = mcolors.TABLEAU_COLORS
-    # for i in range(fixel_mtr_profiles.shape[0]):
-    #     ax1.scatter(labels[fixel_mtr_profiles[i] != 0],
-    #                 fixel_mtr_profiles[i][fixel_mtr_profiles[i] != 0],
-    #                 zorder=1)
+    for i in range(fixel_mtr_profiles.shape[0]):
+        ax1.scatter(labels[fixel_mtr_profiles[i] != 0],
+                    fixel_mtr_profiles[i][fixel_mtr_profiles[i] != 0],
+                    zorder=1)
 
     if args.variance:
         ax1.fill_between(labels[mtr_profile != 0],
