@@ -37,11 +37,11 @@ for sub in $subs;
     dwi_mt_on="mt_on_dwi_dn.nii.gz";
 
     echo "Extract b0";
-    scil_dwi_extract_b0.py $dwi_mt_off $bval $bvec mt_off_b0.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
+    scil_dwi_extract_b0 $dwi_mt_off $bval $bvec mt_off_b0.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
     b0_mt_off="mt_off_b0.nii.gz";
 
     # Add b0 MT-off to MT-on DWI
-    scil_volume_math.py concatenate $b0_mt_off $dwi_mt_on mt_on_dwi_extended.nii.gz  -f;
+    scil_volume_math concatenate $b0_mt_off $dwi_mt_on mt_on_dwi_extended.nii.gz  -f;
     sed -e 's/^/0 /' $bvec > mt_on_dwi_expended.bvec;
     sed -e 's/^/0 /' $bval > mt_on_dwi_expended.bval;
     dwi_mt_on_ext="mt_on_dwi_extended.nii.gz";
@@ -54,12 +54,12 @@ for sub in $subs;
 
     # For the moment, the images seem very well aligned, so skip registration.
     echo "Topup";
-    scil_dwi_prepare_topup_command.py $b0_mt_off $rev_b0 --out_script --out_prefix topup -f;
+    scil_dwi_prepare_topup_command $b0_mt_off $rev_b0 --out_script --out_prefix topup -f;
     sh topup.sh;
 
     # Run eddy on MT-off
     echo "Eddy";
-    scil_dwi_prepare_eddy_command.py $dwi_mt_off $bval $bvec $brain_mask_mt_off --eddy_cmd eddy_cpu\
+    scil_dwi_prepare_eddy_command $dwi_mt_off $bval $bvec $brain_mask_mt_off --eddy_cmd eddy_cpu\
                 --b0_thr $b0_thr_extract_b0\
                 --out_script --fix_seed\
                 --lsr_resampling --slice_drop_correction\
@@ -72,7 +72,7 @@ for sub in $subs;
     dwi_mt_off="dwi_mt_off.nii.gz";
 
     echo "Extract b0";
-    scil_dwi_extract_b0.py $dwi_mt_off dwi_mt_off.bval dwi_mt_off.bvec mt_off_b0.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
+    scil_dwi_extract_b0 $dwi_mt_off dwi_mt_off.bval dwi_mt_off.bvec mt_off_b0.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
     b0_mt_off="mt_off_b0.nii.gz";
 
     echo "Bet b0";
@@ -81,7 +81,7 @@ for sub in $subs;
 
     # Run eddy on MT-on
     echo "Eddy";
-    scil_dwi_prepare_eddy_command.py $dwi_mt_on_ext $bval_ext $bvec_ext $brain_mask_mt_off --eddy_cmd eddy_cpu\
+    scil_dwi_prepare_eddy_command $dwi_mt_on_ext $bval_ext $bvec_ext $brain_mask_mt_off --eddy_cmd eddy_cpu\
                 --b0_thr $b0_thr_extract_b0\
                 --out_script --fix_seed\
                 --lsr_resampling --slice_drop_correction\
@@ -94,22 +94,22 @@ for sub in $subs;
     mrconvert -coord 3 1:31 dwi_mt_on.nii.gz dwi_mt_on.nii.gz -force;
 
     # Resampling sphere of DWI MT-on to the MT-off bvecs to take Eddy into acount and allow for substraction.
-    scil_dwi_extract_b0.py dwi_mt_on.nii.gz dwi_mt_on.bval dwi_mt_on.bvec mt_on_b0.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
-    scil_dwi_to_sh.py dwi_mt_on.nii.gz dwi_mt_on.bval dwi_mt_on.bvec dwi_mt_on_sh.nii.gz --sh_order 6 --smooth 0 --mask b0_mt_off_brain_mask.nii.gz -f;
-    scil_sh_to_sf.py dwi_mt_on_sh.nii.gz dwi_mt_on_resample.nii.gz --in_bvec dwi_mt_off.bvec --in_bval dwi_mt_off.bval --out_bval toto.bval --in_b0 mt_on_b0.nii.gz --processes 8 -f;
+    scil_dwi_extract_b0 dwi_mt_on.nii.gz dwi_mt_on.bval dwi_mt_on.bvec mt_on_b0.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
+    scil_dwi_to_sh dwi_mt_on.nii.gz dwi_mt_on.bval dwi_mt_on.bvec dwi_mt_on_sh.nii.gz --sh_order 6 --smooth 0 --mask b0_mt_off_brain_mask.nii.gz -f;
+    scil_sh_to_sf dwi_mt_on_sh.nii.gz dwi_mt_on_resample.nii.gz --in_bvec dwi_mt_off.bvec --in_bval dwi_mt_off.bval --out_bval toto.bval --in_b0 mt_on_b0.nii.gz --processes 8 -f;
     rm toto.bval;
     rm dwi_mt_on_sh.nii.gz;
     rm mt_on_b0.nii.gz;
 
     echo "Resample";
     # Resample dwi-mt-off
-    scil_volume_resample.py $dwi_mt_off dwi_mt_off_upsample.nii.gz --voxel_size 2 -f;
+    scil_volume_resample $dwi_mt_off dwi_mt_off_upsample.nii.gz --voxel_size 2 -f;
     # Resample dwi-mt-on
-    scil_volume_resample.py dwi_mt_on_resample.nii.gz dwi_mt_on_upsample.nii.gz --voxel_size 2 -f;
+    scil_volume_resample dwi_mt_on_resample.nii.gz dwi_mt_on_upsample.nii.gz --voxel_size 2 -f;
 
     # MT-OFF
     echo "Extract b0";
-    scil_dwi_extract_b0.py dwi_mt_off_upsample.nii.gz dwi_mt_off.bval dwi_mt_off.bvec mt_off_b0.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
+    scil_dwi_extract_b0 dwi_mt_off_upsample.nii.gz dwi_mt_off.bval dwi_mt_off.bvec mt_off_b0.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
     b0_mt_off="mt_off_b0.nii.gz";
     echo "Bet b0";
     bet $b0_mt_off b0_mt_off_brain -m;
@@ -118,14 +118,14 @@ for sub in $subs;
     # Normalizing DWI MT-off
     mrcalc dwi_mt_off_upsample.nii.gz b0_mt_off_brain.nii.gz -div dwi_mt_off_norm.nii.gz -force;
     mrcalc dwi_mt_off_norm.nii.gz b0_mt_off_brain_mask.nii.gz -mult dwi_mt_off_norm.nii.gz -force;
-    scil_volume_math.py upper_clip dwi_mt_off_norm.nii.gz 1 dwi_mt_off_norm.nii.gz -f;
-    scil_volume_math.py lower_clip dwi_mt_off_norm.nii.gz 0 dwi_mt_off_norm.nii.gz -f;
+    scil_volume_math upper_clip dwi_mt_off_norm.nii.gz 1 dwi_mt_off_norm.nii.gz -f;
+    scil_volume_math lower_clip dwi_mt_off_norm.nii.gz 0 dwi_mt_off_norm.nii.gz -f;
 
     # Normalizing DWI MT-on
     mrcalc dwi_mt_on_upsample.nii.gz b0_mt_off_brain.nii.gz -div dwi_mt_on_norm.nii.gz -force;
     mrcalc dwi_mt_on_norm.nii.gz b0_mt_off_brain_mask.nii.gz -mult dwi_mt_on_norm.nii.gz -force;
-    scil_volume_math.py upper_clip dwi_mt_on_norm.nii.gz 1 dwi_mt_on_norm.nii.gz -f;
-    scil_volume_math.py lower_clip dwi_mt_on_norm.nii.gz 0 dwi_mt_on_norm.nii.gz -f;
+    scil_volume_math upper_clip dwi_mt_on_norm.nii.gz 1 dwi_mt_on_norm.nii.gz -f;
+    scil_volume_math lower_clip dwi_mt_on_norm.nii.gz 0 dwi_mt_on_norm.nii.gz -f;
 
     # Re-striding data
     cd ${target_dir}/${sub};
@@ -140,7 +140,7 @@ for sub in $subs;
     mrconvert -strides 1,2,3,4 $dwi_off dwi_mt_off.nii.gz;
     mrconvert -strides 1,2,3 $mask_off b0_brain_mask.nii.gz;
     mrconvert -strides 1,2,3 $b0 b0.nii.gz;
-    scil_gradients_modify_axes.py $bvec_off dwi.bvec -1 2 3; # in case of -1 2 3 4 strides
+    scil_gradients_modify_axes $bvec_off dwi.bvec -1 2 3; # in case of -1 2 3 4 strides
     cp $bval_off dwi.bval;
     # MT-on
     dwi_on="../preprocessing_dwi/dwi_mt_on_norm.nii.gz";
@@ -157,15 +157,15 @@ for sub in $subs;
     cd ${target_dir}/${sub};
     mkdir powder_average;
     cd ${target_dir}/${sub}/powder_average;
-    scil_volume_math.py subtraction $dwi_mt_off $dwi_mt_on powder_averaged_mtr.nii.gz --data_type float32 -f;
+    scil_volume_math subtraction $dwi_mt_off $dwi_mt_on powder_averaged_mtr.nii.gz --data_type float32 -f;
     mrcalc powder_averaged_mtr.nii.gz $dwi_mt_off -div powder_averaged_mtr.nii.gz -force;
     mrcalc powder_averaged_mtr.nii.gz $mask -mult powder_averaged_mtr.nii.gz -force;
-    scil_dwi_extract_b0.py powder_averaged_mtr.nii.gz $bval $bvec b0_mtr.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
-    scil_volume_math.py lower_clip b0_mtr.nii.gz 0 b0_mtr.nii.gz -f;
-    scil_volume_math.py upper_clip b0_mtr.nii.gz 1 b0_mtr.nii.gz -f;
-    scil_dwi_powder_average.py powder_averaged_mtr.nii.gz $bval powder_averaged_mtr.nii.gz --mask $mask -f;
-    scil_volume_math.py lower_clip powder_averaged_mtr.nii.gz 0 powder_averaged_mtr.nii.gz -f;
-    scil_volume_math.py upper_clip powder_averaged_mtr.nii.gz 1 powder_averaged_mtr.nii.gz -f;
+    scil_dwi_extract_b0 powder_averaged_mtr.nii.gz $bval $bvec b0_mtr.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
+    scil_volume_math lower_clip b0_mtr.nii.gz 0 b0_mtr.nii.gz -f;
+    scil_volume_math upper_clip b0_mtr.nii.gz 1 b0_mtr.nii.gz -f;
+    scil_dwi_powder_average powder_averaged_mtr.nii.gz $bval powder_averaged_mtr.nii.gz --mask $mask -f;
+    scil_volume_math lower_clip powder_averaged_mtr.nii.gz 0 powder_averaged_mtr.nii.gz -f;
+    scil_volume_math upper_clip powder_averaged_mtr.nii.gz 1 powder_averaged_mtr.nii.gz -f;
 
     # Resample DWI mt-off to 1mm iso for tractography
     echo "Resample";
@@ -174,9 +174,9 @@ for sub in $subs;
     cd ${target_dir}/${sub}/dwi_for_tractography;
     # Resample dwi-mt-off
     mrconvert -strides 1,2,3,4 ../preprocessing_dwi/dwi_mt_off.nii.gz dwi_mt_off.nii.gz;
-    scil_volume_resample.py dwi_mt_off.nii.gz dwi_mt_off_upsample_for_tractography.nii.gz --voxel_size 1 -f;
+    scil_volume_resample dwi_mt_off.nii.gz dwi_mt_off_upsample_for_tractography.nii.gz --voxel_size 1 -f;
     echo "Extract b0";
-    scil_dwi_extract_b0.py dwi_mt_off_upsample_for_tractography.nii.gz $bval $bvec mt_off_b0_for_tractography.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
+    scil_dwi_extract_b0 dwi_mt_off_upsample_for_tractography.nii.gz $bval $bvec mt_off_b0_for_tractography.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
     b0_mt_off="mt_off_b0_for_tractography.nii.gz";
     echo "Bet b0";
     bet $b0_mt_off b0_mt_off_for_tractography_brain -m;
