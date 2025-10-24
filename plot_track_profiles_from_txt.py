@@ -46,6 +46,11 @@ def _build_arg_parser():
                    help='Compute and display the variance between profiles of '
                         'the MTR and fixel-wise MTR for each bundle section. '
                         'Default is False.')
+    
+    p.add_argument('--min_nb_subjects', type=int, default=5,
+                   help='Minimum number of subjects required to compute the '
+                        'mean profile value at each bundle section. '
+                        'Default is 5.')
 
     add_verbose_arg(p)
     add_overwrite_arg(p)
@@ -80,6 +85,9 @@ def main():
     nufo_profiles = np.where(nufo_profiles > 0, nufo_profiles, np.nan)
     afd_profiles = np.where(afd_profiles > 0, afd_profiles, np.nan)
 
+    nb_subjects = np.sum(~np.isnan(fixel_mtr_profiles), axis=0)
+    min_nb_subjects_mask = nb_subjects >= args.min_nb_subjects
+
     mtr_profile = np.nanmean(mtr_profiles, axis=0)
     fixel_mtr_profile = np.nanmean(fixel_mtr_profiles, axis=0)
     nufo_profile = np.nanmean(nufo_profiles, axis=0)
@@ -99,10 +107,10 @@ def main():
 
     fig, ax1 = plt.subplots(figsize=(8, 5))
 
-    ax1.plot(labels[mtr_profile != 0], mtr_profile[mtr_profile != 0],
+    ax1.plot(labels[min_nb_subjects_mask], mtr_profile[min_nb_subjects_mask],
              label='MTR', marker='o', color=cmap(cmap_idx[0]))
-    ax1.plot(labels[fixel_mtr_profile != 0],
-             fixel_mtr_profile[fixel_mtr_profile != 0], label='Fixel-wise MTR',
+    ax1.plot(labels[min_nb_subjects_mask],
+             fixel_mtr_profile[min_nb_subjects_mask], label='Fixel-wise MTR',
              marker='o', color=cmap(cmap_idx[1]))
 
     # import matplotlib.colors as mcolors
@@ -113,23 +121,23 @@ def main():
     #                 zorder=1)
 
     if args.variance:
-        ax1.fill_between(labels[mtr_profile != 0],
-                            mtr_profile[mtr_profile != 0] - mtr_profile_std[mtr_profile != 0],
-                            mtr_profile[mtr_profile != 0] + mtr_profile_std[mtr_profile != 0],
+        ax1.fill_between(labels[min_nb_subjects_mask],
+                            mtr_profile[min_nb_subjects_mask] - mtr_profile_std[min_nb_subjects_mask],
+                            mtr_profile[min_nb_subjects_mask] + mtr_profile_std[min_nb_subjects_mask],
                             color=cmap(cmap_idx[0]), alpha=0.2)
-        ax1.fill_between(labels[fixel_mtr_profile != 0],
-                            fixel_mtr_profile[fixel_mtr_profile != 0] - fixel_mtr_profile_std[fixel_mtr_profile != 0],
-                            fixel_mtr_profile[fixel_mtr_profile != 0] + fixel_mtr_profile_std[fixel_mtr_profile != 0],
+        ax1.fill_between(labels[min_nb_subjects_mask],
+                            fixel_mtr_profile[min_nb_subjects_mask] - fixel_mtr_profile_std[min_nb_subjects_mask],
+                            fixel_mtr_profile[min_nb_subjects_mask] + fixel_mtr_profile_std[min_nb_subjects_mask],
                             color=cmap(cmap_idx[1]), alpha=0.2)
 
     # Add secondary axis for NuFO
     ax2 = ax1.twinx()
-    ax2.plot(labels[nufo_profile != 0],
-             nufo_profile[nufo_profile != 0],
+    ax2.plot(labels[min_nb_subjects_mask],
+             nufo_profile[min_nb_subjects_mask],
              linestyle='--', color="darkgrey", zorder=3)
-    ax2.scatter(labels[nufo_profile != 0],
-                nufo_profile[nufo_profile != 0],
-                c=afd_profile[nufo_profile != 0],
+    ax2.scatter(labels[min_nb_subjects_mask],
+                nufo_profile[min_nb_subjects_mask],
+                c=afd_profile[min_nb_subjects_mask],
                 cmap='Greys', norm=norm, edgecolors='darkgrey', zorder=4)
     complexity_handle = Line2D([0], [0],
                            color='darkgrey', linestyle='--',
