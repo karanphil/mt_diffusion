@@ -1,12 +1,13 @@
 #!/bin/bash
 
 cd /data/karp2601/stockage/mt-diff-mcgill/for-philippe/mt-diff-10peeps/;
-subs=$(ls);
+#subs=$(ls);
+subs="hc17 hc23 hc23r hc28";
 target_dir="/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing";
 
 for sub in $subs; 
     do echo $sub;
-    # mkdir -p ${target_dir}/${sub}/renamed_data;
+    mkdir -p ${target_dir}/${sub}/renamed_data;
     cp ${sub}/dicom/dicom_64_MPRAGE*6.nii ${target_dir}/${sub}/renamed_data/t1.nii;
     gzip ${target_dir}/${sub}/renamed_data/t1.nii;
     cp ${sub}/dicom/dicom_irl_ep2d_mt_diff*.bval ${target_dir}/${sub}/renamed_data/mt_on_dwi.bval;
