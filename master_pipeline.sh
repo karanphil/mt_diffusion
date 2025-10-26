@@ -202,7 +202,7 @@ for sub in $subs;
     cd ${target_dir}/${sub};
     mkdir dti;
     cd ${target_dir}/${sub}/dti;
-    scil_dti_metrics.py $dwi_mt_off $bval $bvec --mask $mask -f --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz;
+    scil_dti_metrics $dwi_mt_off $bval $bvec --mask $mask -f --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz;
     fa="${target_dir}/${sub}/dti/fa.nii.gz";
     md="${target_dir}/${sub}/dti/md.nii.gz";
 
@@ -210,7 +210,7 @@ for sub in $subs;
     # cd ${target_dir}/${sub};
     # mkdir dti_for_tractography;
     # cd ${target_dir}/${sub}/dti_for_tractography;
-    # scil_dti_metrics.py $dwi_for_tracto $bval $bvec --mask $mask_for_tracto -f --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz;
+    # scil_dti_metrics $dwi_for_tracto $bval $bvec --mask $mask_for_tracto -f --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz;
     fa_for_tractography="${target_dir}/${sub}/dti_for_tractography/fa.nii.gz";
     md_for_tractography="${target_dir}/${sub}/dti_for_tractography/md.nii.gz";
 
@@ -239,9 +239,9 @@ for sub in $subs;
     # cd ${target_dir}/${sub};
     # mkdir fodf;
     # cd ${target_dir}/${sub}/fodf;
-    # scil_frf_ssst.py $dwi_mt_off $bval $bvec frf.txt --mask $mask --mask_wm $wm_mask --roi_radii 15 15 10 -f;
-    # scil_fodf_ssst.py $dwi_mt_off $bval $bvec frf.txt fodf_mt_off.nii.gz --mask $mask --processes 8 --sh_order 6 -f;
-    # scil_fodf_ssst.py $dwi_mt_on $bval $bvec frf.txt fodf_mt_on.nii.gz --mask $mask --processes 8 --sh_order 6 -f;
+    # scil_frf_ssst $dwi_mt_off $bval $bvec frf.txt --mask $mask --mask_wm $wm_mask --roi_radii 15 15 10 -f;
+    # scil_fodf_ssst $dwi_mt_off $bval $bvec frf.txt fodf_mt_off.nii.gz --mask $mask --processes 8 --sh_order 6 -f;
+    # scil_fodf_ssst $dwi_mt_on $bval $bvec frf.txt fodf_mt_on.nii.gz --mask $mask --processes 8 --sh_order 6 -f;
     fodf_mt_off="${target_dir}/${sub}/fodf/fodf_mt_off.nii.gz";
     fodf_mt_on="${target_dir}/${sub}/fodf/fodf_mt_on.nii.gz";
 
@@ -264,7 +264,7 @@ for sub in $subs;
     # scil_fodf_max_in_ventricles $fodf_mt_on $fa $md --md_threshold 0.0025 --max_value_output max_fodf_in_ventricles.txt --in_mask ${target_dir}/${sub}/preprocessing_t1/register_natif/csf_mask.nii.gz --use_median -f;
     # max_value=$(cat max_fodf_in_ventricles.txt);    
     # a_threshold=$(echo 2*${max_value}|bc);
-    # # !!! Needed to add a check for nans in scil_fodf_metrics.py because some images have nans in the fodf.
+    # # !!! Needed to add a check for nans in scil_fodf_metrics because some images have nans in the fodf.
     # scil_fodf_metrics $fodf_mt_on --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
     peaks_mt_on="${target_dir}/${sub}/fodf_metrics_mt_on/peaks.nii.gz";
 
@@ -273,8 +273,8 @@ for sub in $subs;
     # cd ${target_dir}/${sub};
     # mkdir fodf_for_tractography;
     # cd ${target_dir}/${sub}/fodf_for_tractography;
-    # scil_frf_ssst.py $dwi_for_tractography $bval $bvec frf.txt --mask $mask_for_tractography --mask_wm $wm_mask_for_tractography --roi_radii 30 30 20 -f;
-    # scil_fodf_ssst.py $dwi_for_tractography $bval $bvec frf.txt fodf.nii.gz --mask $mask_for_tractography --processes 8 --sh_order 6 -f;
+    # scil_frf_ssst $dwi_for_tractography $bval $bvec frf.txt --mask $mask_for_tractography --mask_wm $wm_mask_for_tractography --roi_radii 30 30 20 -f;
+    # scil_fodf_ssst $dwi_for_tractography $bval $bvec frf.txt fodf.nii.gz --mask $mask_for_tractography --processes 8 --sh_order 6 -f;
     fodf_for_tractography="${target_dir}/${sub}/fodf_for_tractography/fodf.nii.gz";
 
     # # Compute FODF metrics for tractography
