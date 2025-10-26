@@ -210,7 +210,7 @@ for sub in $subs;
     cd ${target_dir}/${sub};
     mkdir dti_for_tractography;
     cd ${target_dir}/${sub}/dti_for_tractography;
-    scil_dti_metrics $dwi_for_tracto $bval $bvec --mask $mask_for_tracto -f --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz;
+    scil_dti_metrics $dwi_for_tractography $bval $bvec --mask $mask_for_tractography -f --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz;
     fa_for_tractography="${target_dir}/${sub}/dti_for_tractography/fa.nii.gz";
     md_for_tractography="${target_dir}/${sub}/dti_for_tractography/md.nii.gz";
 
