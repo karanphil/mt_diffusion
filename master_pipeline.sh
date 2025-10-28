@@ -4,7 +4,8 @@
 target_dir="/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing";
 cd $target_dir;
 # subs=$(ls -d hc*);
-subs="hc17 hc23 hc23r hc28";
+# subs="hc17 hc23 hc23r hc28";
+subs="hc23r hc28";
 
 # ----------------------------DIFFUSION PREPROCESSING--------------------------
 b0_thr_extract_b0=10;
@@ -264,6 +265,7 @@ for sub in $subs;
     max_value=$(cat max_fodf_in_ventricles.txt);    
     a_threshold=$(echo 2*${max_value}|bc);
     # !!! Needed to add a check for nans in scil_fodf_metrics because some images have nans in the fodf.
+    # !!! Perhaps the little python code to remove nans in dwi should be added before computing fodf on MT-on.
     scil_fodf_metrics $fodf_mt_on --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
     peaks_mt_on="${target_dir}/${sub}/fodf_metrics_mt_on/peaks.nii.gz";
 
