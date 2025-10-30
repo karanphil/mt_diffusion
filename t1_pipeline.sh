@@ -10,7 +10,7 @@ type=$6;
 processed_data_dir="full_processing/${sub}/${type}";
 cd $processed_data_dir;
 
-mrconvert -strides 1,2,3 $t1 t1.nii.gz;
+mrconvert -strides 1,2,3 $t1 t1.nii.gz -force;
 
 ###############################################################
 # T1 processing (can be done in || to diffusion processing)
