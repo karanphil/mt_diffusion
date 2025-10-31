@@ -2,7 +2,7 @@
 
 # The script assumes that preprocessing_dwi_pipeline.sh,
 # preprocessing_t1_pipeline.sh, processing_fodf.sh, processing_tractogram.sh
-# processing_rbx_pipeline.sh have already been run.
+# and processing_rbx_pipeline.sh have already been run.
 
 # The first argument of the script is the target directory (full path)
 target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing"

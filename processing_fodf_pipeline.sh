@@ -26,19 +26,6 @@ for sub in $subs;
     wm_mask="${target_dir}/${sub}/preprocessing_t1/register_natif/wm_mask.nii.gz";
     csf_mask="${target_dir}/${sub}/preprocessing_t1/register_natif/csf_mask.nii.gz";
 
-    # ----------------------Powder Average MTR Calculation---------------------
-    cd ${target_dir}/${sub};
-    mkdir -p powder_average;
-    cd ${target_dir}/${sub}/powder_average;
-    if [ ! -f "powder_averaged_mtr.nii.gz" ]; then
-        echo "Powder Average MTR Calculation";
-        scil_dwi_powder_average $dwi_mt_off $bval_mt_off dwi_mt_off_pa.nii.gz --mask $mask -f;
-        scil_dwi_powder_average $dwi_mt_on $bval_mt_on dwi_mt_on_pa.nii.gz --mask $mask -f;
-        scil_volume_math subtraction dwi_mt_off_pa.nii.gz dwi_mt_on_pa.nii.gz powder_averaged_mtr.nii.gz --data_type float32 -f;
-        mrcalc powder_averaged_mtr.nii.gz dwi_mt_off_pa.nii.gz -div powder_averaged_mtr.nii.gz -force;
-        mrcalc powder_averaged_mtr.nii.gz $mask -mult powder_averaged_mtr.nii.gz -force;
-    fi
-
 	# ----------------------DTI Computation---------------------
     cd ${target_dir}/${sub};
     mkdir -p dti;
@@ -76,7 +63,6 @@ for sub in $subs;
         a_threshold=$(echo 2*${max_value}|bc);
         scil_fodf_metrics $fodf_mt_off --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
     fi
-    peaks_mt_off="${target_dir}/${sub}/fodf_metrics_mt_off/peaks.nii.gz";
     # MT-on
     cd ${target_dir}/${sub};
     mkdir fodf_metrics_mt_on;
@@ -87,7 +73,6 @@ for sub in $subs;
         a_threshold=$(echo 2*${max_value}|bc);
         scil_fodf_metrics $fodf_mt_on --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
     fi
-    peaks_mt_on="${target_dir}/${sub}/fodf_metrics_mt_on/peaks.nii.gz";
 
 done;
 

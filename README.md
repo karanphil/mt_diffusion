@@ -1,5 +1,7 @@
 These are the instructions for running the whole MT-diffusion pipeline.
 
+Important note: If you ever want to comment out a section of a pipeline, always comment stuff inside IF statements, never outside.
+
 First, you should create a repository to host the project: 
 
 ```
@@ -91,4 +93,10 @@ After computing the bundles with rbx_flow, it is time to bring the SIFT2 weights
 
 ```
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_bundles_pipeline.sh ${main_dir}/${working_dir} ${code_dir} $rbx_data_dir;
+```
+
+Next, compute the fixel-MTR, PA-MTR and project them to the bundles:
+
+```
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_fixel_mtr_pipeline.sh ${main_dir}/${working_dir} ${code_dir};
 ```
