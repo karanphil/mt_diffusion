@@ -83,7 +83,7 @@ rbx_code_dir="${main_dir}/${code_name}/rbx_flow";
 Second, a bundles atlas is needed. Add the path to this atlas and run the rbx pipeline:
 
 ```
-rbx_data_dir="${main_dir}/rbx_flow"; # Put any name you like
+rbx_data_dir="${main_dir}/rbx_flow";
 rbx_atlas_dir="${main_dir}/rbx_atlas"; # Put the right path to the atlas
 cd ${main_dir};
 bash ${code_dir}/processing_rbx_pipeline.sh ${main_dir}/${working_dir} $rbx_code_dir $rbx_data_dir $rbx_atlas_dir $singularity_path;
@@ -99,4 +99,21 @@ Next, compute the fixel-MTR, PA-MTR and project them to the bundles:
 
 ```
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_fixel_mtr_pipeline.sh ${main_dir}/${working_dir} ${code_dir};
+```
+
+Now that everything is computed per subject, it is time to register them all to the MNI template. You will need to first clone the register_flow repository:
+
+```
+cd ${main_dir}/${code_name};
+git clone git@github.com:scilus/register_flow.git;
+register_code_dir="${main_dir}/${code_name}/register_flow";
+```
+
+Then, run the register_flow pipeline:
+
+```
+register_data_dir="${main_dir}/register_flow";
+template_path="${main_dir}/mni_atlas/t1_template_bet.nii.gz"; # Put the right path to the template
+cd ${main_dir};
+bash ${code_dir}/processing_register_pipeline.sh ${main_dir}/${working_dir} $register_code_dir $register_data_dir $template_path $singularity_path;
 ```

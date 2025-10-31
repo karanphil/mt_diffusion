@@ -72,7 +72,6 @@ for sub in $subs;
         rm fixel_density_map_none-norm_*.nii.gz;
         rm fixel_density_mask_none-norm_*.nii.gz;
         rm voxel_density_map_none-norm_*.nii.gz;
-        rm voxel_density_map_voxel-norm_*.nii.gz;
         rm voxel_density_mask_none-norm_*.nii.gz;
     fi
 

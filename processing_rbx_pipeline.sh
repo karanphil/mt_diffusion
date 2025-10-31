@@ -18,7 +18,7 @@ cd $target_dir;
 subs=$(ls -d hc*);
 
 # ----------------------------Bundles PROCESSING-------------------------
-echo "RBX-Flow PROCESSING";
+echo "RBX-flow PROCESSING";
 for sub in $subs; 
     do echo $sub;
 
