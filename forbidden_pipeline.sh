@@ -63,3 +63,14 @@ singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_bund
 # Step 13
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_fixel_mtr_pipeline.sh ${main_dir}/${working_dir} ${code_dir};
 
+# Step 14
+cd ${main_dir}/${code_name};
+git clone git@github.com:scilus/register_flow.git;
+register_code_dir="${main_dir}/${code_name}/register_flow";
+
+# Step 15
+register_data_dir="${main_dir}/register_flow";
+template_path="${main_dir}/mni_atlas/t1_template_bet.nii.gz"; # Put the right path to the template
+cd ${main_dir};
+bash ${code_dir}/processing_register_pipeline.sh ${main_dir}/${working_dir} $register_code_dir $register_data_dir $template_path $singularity_path;
+
