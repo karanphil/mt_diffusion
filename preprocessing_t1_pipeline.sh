@@ -10,7 +10,7 @@ cd $target_dir;
 subs=$(ls -d hc*);
 
 # ----------------------------T1 PRE-PROCESSING----------------------------
-echo "DIFFUSION PRE-PROCESSING";
+echo "T1 PRE-PROCESSING";
 for sub in $subs;
     do echo $sub;
 	t1="${target_dir}/${sub}/renamed_data/t1.nii.gz";

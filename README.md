@@ -36,15 +36,23 @@ original_data_dir="mt-diff-10peeps"; # IMPORTANT: Replace this with the actual p
 bash ${main_dir}/${code_dir}/rename_files.sh $original_data_dir ${main_dir}/${working_dir};
 ```
 
+For the next steps, it is suggested to use a singularity. It can be downloaded from Docker Hub (https://hub.docker.com/r/scilus/scilus), as the scilus 2.2.0, or simply using the follow command lines:
+
+```
+container_dir="container"; # Put any name you like
+singularity_path="${main_dir}/${container_dir}/scilus_2.2.0.sif";
+singularity build $singularity_path docker://scilus/scilpy:2.2.0;
+```
+
 Now, compute the pre-processing of DWI data:
 
 ```
-bash ${main_dir}/${code_dir}/preprocessing_dwi_pipeline.sh ${main_dir}/${working_dir} ${main_dir}/${code_dir};
+singularity exec -B $main_dir$ $singularity_path bash ${main_dir}/${code_dir}/preprocessing_dwi_pipeline.sh ${main_dir}/${working_dir} ${main_dir}/${code_dir};
 ```
 
 When this is finished (after many hours), compute the pre-processing of T1 data. You will need a T1 atlas (named t1_template.nii.gz) with a brain probability map (named t1_brain_probability_map.nii.gz). Put them in the $main_dir directory in a folder named "mni_atlas". Then:
 
 ```
 atlas_dir="${main_dir}/mni_atlas"; 
-bash ${main_dir}/${code_dir}/preprocessing_t1_pipeline.sh ${main_dir}/${working_dir} ${main_dir}/${atlas_dir};
+singularity exec -B $main_dir $singularity_path bash ${main_dir}/${code_dir}/preprocessing_t1_pipeline.sh ${main_dir}/${working_dir} ${main_dir}/${atlas_dir};
 ```

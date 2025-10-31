@@ -69,7 +69,7 @@ for sub in $subs;
     if [ ! -f "dwi_mt_off.eddy_rotated_bvecs" ]; then
         echo "Eddy";
         # MT-off
-        scil_dwi_prepare_eddy_command $dwi_mt_off $bval $bvec $brain_mask_mt_off --eddy_cmd eddy_cpu\
+        scil_dwi_prepare_eddy_command $dwi_mt_off $bval $bvec $brain_mask_mt_off --eddy_cmd eddy\
                     --b0_thr $b0_thr_extract_b0\
                     --out_script --fix_seed\
                     --lsr_resampling --slice_drop_correction\
@@ -79,19 +79,23 @@ for sub in $subs;
         cp $bval dwi_mt_off.bval;
         cp dwi_mt_off.eddy_rotated_bvecs dwi_mt_off.bvec;
         # MT-on
-        scil_dwi_prepare_eddy_command $dwi_mt_on_ext $bval_ext $bvec_ext $brain_mask_mt_off --eddy_cmd eddy_cpu\
+        scil_dwi_prepare_eddy_command $dwi_mt_on_ext $bval_ext $bvec_ext $brain_mask_mt_off --eddy_cmd eddy\
                     --b0_thr $b0_thr_extract_b0\
                     --out_script --fix_seed\
                     --lsr_resampling --slice_drop_correction\
                     --topup topup\
                     --out_prefix dwi_mt_on -f;
         sh eddy.sh;
-        cp dwi_mt_on.eddy_rotated_bvecs $bvec_ext;
+        # Remove the first volume from MT-on (b0 added for eddy and bias correction)
+        sed -E 's/^[[:space:]]*[-+]?[0-9]+(\.[0-9]*)?[eE][-+]?[0-9]+[[:space:]]*//' dwi_mt_on.eddy_rotated_bvecs > dwi_mt_on.bvec;
+        mrconvert -coord 3 1:31 dwi_mt_on.nii.gz dwi_mt_on.nii.gz -force;
     fi
+    dwi_mt_off="dwi_mt_off.nii.gz";
     bval_mt_off="dwi_mt_off.bval";
     bvec_mt_off="dwi_mt_off.bvec";
-    dwi_mt_off="dwi_mt_off.nii.gz";
     dwi_mt_on="dwi_mt_on.nii.gz";
+    bval_mt_on=$bval_mt_off;
+    bvec_mt_on="dwi_mt_on.bvec";
 
     # ---------------------Bet-----------------------
     if [ ! -f "b0_mt_off_brain.nii.gz" ]; then
@@ -108,14 +112,9 @@ for sub in $subs;
         echo "Bias correction";
         # MT-off
         dwibiascorrect ants $dwi_mt_off $dwi_mt_off -fslgrad $bvec_mt_off $bval_mt_off -mask $brain_mask_mt_off -bias bias_field_mt_off.nii.gz -force;
-        # MT-on
-        dwibiascorrect ants $dwi_mt_on $dwi_mt_on -fslgrad $bvec_ext $bval_ext -mask $brain_mask_mt_off -bias bias_field_mt_on.nii.gz -force;
-        # Remove the first volume from MT-on (b0 added for eddy and bias correction)
-        sed -E 's/^[[:space:]]*[-+]?[0-9]+(\.[0-9]*)?[eE][-+]?[0-9]+[[:space:]]*//' $bvec_ext > dwi_mt_on.bvec;
-        mrconvert -coord 3 1:31 dwi_mt_on.nii.gz dwi_mt_on.nii.gz -force;
+        # MT-on, apply the same bias field as MT-off
+        mrcalc $dwi_mt_on bias_field_mt_off.nii.gz -mult $dwi_mt_on -force;
     fi
-    bval_mt_on="dwi_mt_off.bval";
-    bvec_mt_on="dwi_mt_on.bvec";
 
     # ---------------------Bet-----------------------
     if [ ! -f "b0_mt_off_brain.nii.gz" ]; then
@@ -218,41 +217,6 @@ for sub in $subs;
     #     bet b0_for_tractography.nii.gz b0_for_tractography_brain -m;
     # fi
 
-    # Computing PA stuff
-    cd ${target_dir}/${sub};
-    mkdir powder_average;
-    cd ${target_dir}/${sub}/powder_average;
-    scil_volume_math subtraction $dwi_mt_off $dwi_mt_on powder_averaged_mtr.nii.gz --data_type float32 -f;
-    mrcalc powder_averaged_mtr.nii.gz $dwi_mt_off -div powder_averaged_mtr.nii.gz -force;
-    mrcalc powder_averaged_mtr.nii.gz $mask -mult powder_averaged_mtr.nii.gz -force;
-    scil_dwi_extract_b0 powder_averaged_mtr.nii.gz $bval $bvec b0_mtr.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
-    scil_volume_math lower_clip b0_mtr.nii.gz 0 b0_mtr.nii.gz -f;
-    scil_volume_math upper_clip b0_mtr.nii.gz 1 b0_mtr.nii.gz -f;
-    scil_dwi_powder_average powder_averaged_mtr.nii.gz $bval powder_averaged_mtr.nii.gz --mask $mask -f;
-    scil_volume_math lower_clip powder_averaged_mtr.nii.gz 0 powder_averaged_mtr.nii.gz -f;
-    scil_volume_math upper_clip powder_averaged_mtr.nii.gz 1 powder_averaged_mtr.nii.gz -f;
-
-    # !!! Some DTI will crash because of NaNs inside the mask. !!!
-    # This is then needed in python in the dwi folder:
-    # '
-    # import nibabel as nib
-    # import numpy as np
-    # vol = nib.load("dwi_mt_off.nii.gz")
-    # dwi = vol.get_fdata()
-    # # mask_vol = nib.load("b0_mt_off_brain_mask.nii.gz")
-    # # mask = mask_vol.get_fdata().astype(bool)
-    # new_dwi = np.where(np.isnan(dwi), 0, dwi)
-    # nib.save(nib.Nifti1Image(new_dwi, vol.affine), "dwi_mt_off.nii.gz")
-    # '
-
-    # Compute DTI
-    cd ${target_dir}/${sub};
-    mkdir dti;
-    cd ${target_dir}/${sub}/dti;
-    scil_dti_metrics $dwi_mt_off $bval $bvec --mask $mask -f --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz;
-    fa="${target_dir}/${sub}/dti/fa.nii.gz";
-    md="${target_dir}/${sub}/dti/md.nii.gz";
-
     # Compute DTI for tractography
     cd ${target_dir}/${sub};
     mkdir dti_for_tractography;
@@ -342,6 +306,8 @@ for sub in $subs;
     # scil_volume_math union pft_seeding_mask.nii.gz interface.nii.gz pft_seeding_mask.nii.gz --data_type uint8 -f;
     # scil_tracking_pft $fodf_for_tractography pft_seeding_mask.nii.gz map_include.nii.gz map_exclude.nii.gz pft_tracking.trk --algo prob --npv 10 --seed 0 --step 0.5 --theta 20 --min_length 20 --max_length 200 --particles 15 --back 2 --forward 1 --compress 0.2 --sh_basis descoteaux07 -f;
     # scil_tractogram_remove_invalid pft_tracking.trk pft_tracking.trk --remove_single_point -f;
+
+    # ADD OPTION FOR CPU OR GPU (not everybody has gpu)
     scil_tracking_local $fodf_for_tractography $wm_mask_for_tractography $wm_mask_for_tractography local_tracking.trk --use_gpu --npv 10 -f;
     scil_tractogram_remove_invalid local_tracking.trk local_tracking.trk --remove_single_point -f;
     tractogram="${target_dir}/${sub}/tractography/local_tracking.trk";
