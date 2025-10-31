@@ -43,7 +43,7 @@ For the next steps, it is suggested to use a singularity. It can be downloaded f
 ```
 container_dir="containers"; # Put any name you like
 singularity_path="${main_dir}/${container_dir}/scilus_2.2.0.sif";
-singularity build $singularity_path docker://scilus/scilpy:2.2.0;
+singularity build $singularity_path docker://scilus/scilus:2.2.0;
 ```
 
 Now, compute the pre-processing of DWI data:

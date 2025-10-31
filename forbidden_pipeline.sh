@@ -30,7 +30,7 @@ bash ${code_dir}/rename_files.sh $original_data_dir ${main_dir}/${working_dir};
 # Step 5
 container_dir="containers"; # Put any name you like
 singularity_path="${main_dir}/${container_dir}/scilus_2.2.0.sif";
-singularity build $singularity_path docker://scilus/scilpy:2.2.0;
+singularity build $singularity_path docker://scilus/scilus:2.2.0;
 
 # Step 6
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/preprocessing_dwi_pipeline.sh ${main_dir}/${working_dir} ${code_dir};
