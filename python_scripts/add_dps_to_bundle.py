@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-
+Script to add the data_per_streamline (dps) information from a JSON file to
+specific bundles in a tractogram and save them in a specified output directory.
 """
 
 import argparse
@@ -25,7 +26,10 @@ def _build_arg_parser():
 
     p.add_argument('in_tractogram')
 
-    p.add_argument('in_json')
+    p.add_argument('in_json',
+                   help='Path to the JSON file containing the '
+                        'data_per_streamline information. Should come from '
+                        'rbx_flow, in Recognize_Bundles/results.json.')
 
     p.add_argument('out_directory')
 
@@ -63,7 +67,6 @@ def main():
         bundle.to_vox()
         bundle.to_corner()
         bundle_name = b.split('/')[-1].split('.trk')[0]
-        print(bundle_name)
         indices = np.array(dps_data[bundle_name]['indices'])
         new_bundle = sft[indices]
         save_tractogram(new_bundle, 

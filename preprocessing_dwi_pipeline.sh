@@ -202,64 +202,6 @@ for sub in $subs;
 
     # THE END
 
-    # Run rbx_flow on the side with nextflow.
-    # In ~/data/stockage/mt-diff-mcgill/rbx_flow/output
-    # mkdir ~/data/stockage/mt-diff-mcgill/rbx_flow/input/${sub};
-    # ln -s $fa_for_tractography ~/data/stockage/mt-diff-mcgill/rbx_flow/input/${sub}/fa.nii.gz;
-    # ln -s $tractogram ~/data/stockage/mt-diff-mcgill/rbx_flow/input/${sub}/local_tracking.trk;
-    # nextflow run ~/Research/source/rbx_flow/main.nf --input ../input --atlas_directory ~/data/stockage/atlas_old -with-singularity /home/local/USHERBROOKE/karp2601/Research/containers/scilus_2.1.0.sif --register_processes 8 --rbx_processes 8 -resume
-    # Copy output to bundles folder.
-    # echo "Copy recognize bundles from rbx_flow output";
-    # cd ${target_dir}/${sub};
-    # mkdir bundles;
-    # cd ${target_dir}/${sub}/bundles;
-    # rm -r *;
-    # cp -L ~/data/stockage/mt-diff-mcgill/rbx_flow/output/results_rbx/${sub}/Recognize_Bundles/*.trk .;
-    # bundles=$(ls);
-    # python ../../../code/mt_diffusion/add_dps_to_bundle.py $tractogram ~/data/stockage/mt-diff-mcgill/rbx_flow/output/results_rbx/${sub}/Recognize_Bundles/results.json . --in_bundles $bundles -v -f;
-    # for b in $bundles;
-    #     do bundle_name=${b%".trk"};
-    #     echo $bundle_name;
-    #     # echo "Copy cleaned bundles";
-    #     # rm -r $b;
-    #     # cp -L ~/data/stockage/mt-diff-mcgill/rbx_flow/output/results_rbx/${sub}/Clean_Bundles/${sub}__${bundle_name}_cleaned.trk ${bundle_name}.trk;
-    #     # scil_tractogram_math intersection $b ~/data/stockage/mt-diff-mcgill/rbx_flow/output/results_rbx/${sub}/Clean_Bundles/${sub}__${bundle_name}_cleaned.trk $b -p 3 -f -v;
-    #     echo "Compute outliers rejection";
-    #     scil_bundle_reject_outliers $b $b --alpha 0.5 -f;
-    #     echo "Export dps files";
-    #     scil_tractogram_dps_math $b export sift2 --out_dps_file ${bundle_name}_sift2_weights.txt -f;
-    #     echo "Resave bundles with reference";
-    #     n=${bundle_name}.tck;
-    #     scil_tractogram_convert $b $n;
-    #     scil_tractogram_convert $n $b --reference $fa -f;
-    #     rm *.tck;
-    #     echo "Add SIFT2 weights";
-    #     scil_tractogram_dps_math $b import sift2 --out_tractogram $b --in_dps_file ${bundle_name}_sift2_weights.txt -f;
-    #     rm ${bundle_name}_sift2_weights.txt;
-
-    # done;
-    # mkdir removed_bundles;
-    # mv CR_* removed_bundles/;
-
-    # # Fixel analysis
-    # echo "Fixel analysis";
-    # cd ${target_dir}/${sub};
-    # mkdir fixel_analysis;
-    # # cd ${target_dir}/${sub}/fixel_analysis;
-    # scil_bundle_fixel_analysis $peaks_mt_off --in_bundles ${target_dir}/${sub}/bundles/*.trk  --processes 8 --single_bundle --split_bundles --rel_thr 0.1 --abs_thr 1.5 --norm voxel none --out_dir fixel_analysis/ -f --dps_key sift2;
-    # cd ${target_dir}/${sub}/fixel_analysis;
-    # cp single_bundle_mask_voxel-norm_WM.nii.gz tmp1.nii.gz;
-    # cp single_bundle_mask_none-norm_WM.nii.gz tmp2.nii.gz;
-    # rm single_bundle_*.nii.gz;
-    # mv tmp1.nii.gz single_bundle_mask_voxel-norm_WM.nii.gz;
-    # mv tmp2.nii.gz single_bundle_mask_none-norm_WM.nii.gz;
-    # rm fixel_density_map_none-norm_*.nii.gz;
-    # rm fixel_density_mask_none-norm_*.nii.gz;
-    # rm voxel_density_map_none-norm_*.nii.gz;
-    # rm voxel_density_map_voxel-norm_*.nii.gz;
-    # rm voxel_density_mask_none-norm_*.nii.gz;
-    # # rm voxel_density_mask_voxel-norm_*.nii.gz;
-
     # # Compute FODF MTR
     # echo "Compute FODF MTR";
     # cd ${target_dir}/${sub};

@@ -16,10 +16,10 @@ fi
 cd $target_dir;
 subs=$(ls -d hc*);
 
-# ----------------------------DIFFUSION PRE-PROCESSING-------------------------
+# ----------------------------Tractogram PROCESSING-------------------------
 b0_thr_extract_b0=10;
 
-echo "DIFFUSION PRE-PROCESSING";
+echo "Tractogram PROCESSING";
 for sub in $subs; 
     do echo $sub;
 

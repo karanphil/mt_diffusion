@@ -8,10 +8,10 @@ target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcg
 cd $target_dir;
 subs=$(ls -d hc*);
 
-# ----------------------------DIFFUSION PRE-PROCESSING-------------------------
+# ----------------------------FODF PROCESSING-------------------------
 b0_thr_extract_b0=10;
 
-echo "DIFFUSION PRE-PROCESSING";
+echo "FODF PROCESSING";
 for sub in $subs; 
     do echo $sub;
 
