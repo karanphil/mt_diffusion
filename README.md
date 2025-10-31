@@ -47,7 +47,7 @@ singularity build $singularity_path docker://scilus/scilpy:2.2.0;
 Now, compute the pre-processing of DWI data:
 
 ```
-singularity exec -B $main_dir$ $singularity_path bash ${main_dir}/${code_dir}/preprocessing_dwi_pipeline.sh ${main_dir}/${working_dir} ${main_dir}/${code_dir};
+singularity exec -B $main_dir $singularity_path bash ${main_dir}/${code_dir}/preprocessing_dwi_pipeline.sh ${main_dir}/${working_dir} ${main_dir}/${code_dir};
 ```
 
 When this is finished (after many hours), compute the pre-processing of T1 data. You will need a T1 atlas (named t1_template.nii.gz) with a brain probability map (named t1_brain_probability_map.nii.gz). Put them in the $main_dir directory in a folder named "mni_atlas". Then:
@@ -55,4 +55,17 @@ When this is finished (after many hours), compute the pre-processing of T1 data.
 ```
 atlas_dir="${main_dir}/mni_atlas"; 
 singularity exec -B $main_dir $singularity_path bash ${main_dir}/${code_dir}/preprocessing_t1_pipeline.sh ${main_dir}/${working_dir} ${main_dir}/${atlas_dir};
+```
+
+After that, compute the fODFs with:
+
+```
+singularity exec -B $main_dir $singularity_path bash ${main_dir}/${code_dir}/processing_fodf_pipeline.sh ${main_dir}/${working_dir};
+```
+
+Then, compute the tractogram with:
+
+```
+use_gpu="true"; # Set this to "false" if no gpu is available.
+singularity exec -B $main_dir $singularity_path bash ${main_dir}/${code_dir}/processing_tractogram_pipeline.sh ${main_dir}/${working_dir} $use_gpu;
 ```

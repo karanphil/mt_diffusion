@@ -94,7 +94,7 @@ for sub in $subs;
     bval_mt_off="dwi_mt_off.bval";
     bvec_mt_off="dwi_mt_off.bvec";
     dwi_mt_on="dwi_mt_on.nii.gz";
-    bval_mt_on=$bval_mt_off;
+    bval_mt_on="dwi_mt_off.bval";
     bvec_mt_on="dwi_mt_on.bvec";
 
     # ---------------------Bet-----------------------
@@ -113,7 +113,7 @@ for sub in $subs;
         # MT-off
         dwibiascorrect ants $dwi_mt_off $dwi_mt_off -fslgrad $bvec_mt_off $bval_mt_off -mask $brain_mask_mt_off -bias bias_field_mt_off.nii.gz -force;
         # MT-on, apply the same bias field as MT-off
-        mrcalc $dwi_mt_on bias_field_mt_off.nii.gz -mult $dwi_mt_on -force;
+        scil_dwi_apply_bias_field $dwi_mt_on bias_field_mt_off.nii.gz $dwi_mt_on --mask $brain_mask_mt_off -f;
     fi
 
     # ---------------------Bet-----------------------
@@ -201,127 +201,6 @@ for sub in $subs;
     fi
 
     # THE END
-
-    # # ---------------------Resample for tractography bloc----------------------
-    # cd ${target_dir}/${sub};
-    # mkdir -p dwi_for_tractography;
-    # cd ${target_dir}/${sub}/dwi_for_tractography;
-    # if [ ! -f "dwi_mt_off.nii.gz" ]; then
-    #     echo "Resample";
-    #     # Start from the not-normalized not-upsampled MT-off data
-    #     mrconvert -strides 1,2,3,4 ${target_dir}/${sub}/preprocessing_dwi/dwi_mt_off.nii.gz dwi_for_tractography.nii.gz;
-    #     scil_volume_resample dwi_for_tractography.nii.gz dwi_for_tractography.nii.gz --voxel_size 1 -f;
-    #     echo "Extract b0";
-    #     scil_dwi_extract_b0 dwi_for_tractography.nii.gz $bval_off $bvec_off b0_for_tractography.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
-    #     echo "Bet b0";
-    #     bet b0_for_tractography.nii.gz b0_for_tractography_brain -m;
-    # fi
-
-    # Compute DTI for tractography
-    cd ${target_dir}/${sub};
-    mkdir dti_for_tractography;
-    cd ${target_dir}/${sub}/dti_for_tractography;
-    scil_dti_metrics $dwi_for_tractography $bval $bvec --mask $mask_for_tractography -f --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz;
-    fa_for_tractography="${target_dir}/${sub}/dti_for_tractography/fa.nii.gz";
-    md_for_tractography="${target_dir}/${sub}/dti_for_tractography/md.nii.gz";
-
-    echo "T1";
-    t1_original="${target_dir}/${sub}/renamed_data/t1.nii.gz";
-    cd ${target_dir}/${sub};
-    mkdir preprocessing_t1;
-    cd ${target_dir}/${sub}/preprocessing_t1;
-    cd ../../..;
-    singularity exec -B /data/karp2601/stockage/mt-diff-mcgill/ ~/Research/containers/scilus_2.0.2_from_docker.sif bash code/mt_diffusion/t1_pipeline.sh $t1_original $fa $b0 $mask $sub preprocessing_t1;
-    t1="${target_dir}/${sub}/preprocessing_t1/register_natif/outputWarped.nii.gz";
-    wm_mask="${target_dir}/${sub}/preprocessing_t1/register_natif/wm_mask.nii.gz";
-
-    cd ${target_dir}/${sub};
-    mkdir preprocessing_t1_for_tractography;
-    cd ${target_dir}/${sub}/preprocessing_t1_for_tractography;
-    cd ../../..;
-    singularity exec -B /data/karp2601/stockage/mt-diff-mcgill/ ~/Research/containers/scilus_2.0.2_from_docker.sif bash code/mt_diffusion/t1_pipeline.sh $t1_original $fa_for_tractography $b0_for_tractography $mask_for_tractography $sub preprocessing_t1_for_tractography;
-    wm_mask_for_tractography="${target_dir}/${sub}/preprocessing_t1_for_tractography/register_natif/wm_mask.nii.gz";
-
-    # Compute CSD
-    echo "CSD";
-    cd ${target_dir}/${sub};
-    mkdir fodf;
-    cd ${target_dir}/${sub}/fodf;
-    scil_frf_ssst $dwi_mt_off $bval $bvec frf.txt --mask $mask --mask_wm $wm_mask --roi_radii 15 15 10 -f;
-    scil_fodf_ssst $dwi_mt_off $bval $bvec frf.txt fodf_mt_off.nii.gz --mask $mask --processes 8 --sh_order 6 -f;
-    scil_fodf_ssst $dwi_mt_on $bval $bvec frf.txt fodf_mt_on.nii.gz --mask $mask --processes 8 --sh_order 6 -f;
-    fodf_mt_off="${target_dir}/${sub}/fodf/fodf_mt_off.nii.gz";
-    fodf_mt_on="${target_dir}/${sub}/fodf/fodf_mt_on.nii.gz";
-
-    # Compute FODF metrics for fixel analysis
-    echo "FODF metrics for fixel analysis";
-    cd ${target_dir}/${sub};
-    mkdir fodf_metrics_mt_off;
-    cd ${target_dir}/${sub}/fodf_metrics_mt_off;
-    scil_fodf_max_in_ventricles $fodf_mt_off $fa $md --md_threshold 0.0025 --max_value_output max_fodf_in_ventricles.txt --in_mask ${target_dir}/${sub}/preprocessing_t1/register_natif/csf_mask.nii.gz --use_median -f;
-    max_value=$(cat max_fodf_in_ventricles.txt);    
-    a_threshold=$(echo 2*${max_value}|bc);
-    scil_fodf_metrics $fodf_mt_off --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
-    peaks_mt_off="${target_dir}/${sub}/fodf_metrics_mt_off/peaks.nii.gz";
-
-    # Compute FODF metrics of mt_on
-    echo "FODF metrics of mt_on";
-    cd ${target_dir}/${sub};
-    mkdir fodf_metrics_mt_on;
-    cd ${target_dir}/${sub}/fodf_metrics_mt_on;
-    scil_fodf_max_in_ventricles $fodf_mt_on $fa $md --md_threshold 0.0025 --max_value_output max_fodf_in_ventricles.txt --in_mask ${target_dir}/${sub}/preprocessing_t1/register_natif/csf_mask.nii.gz --use_median -f;
-    max_value=$(cat max_fodf_in_ventricles.txt);    
-    a_threshold=$(echo 2*${max_value}|bc);
-    # !!! Needed to add a check for nans in scil_fodf_metrics because some images have nans in the fodf.
-    # !!! Perhaps the little python code to remove nans in dwi should be added before computing fodf on MT-on.
-    scil_fodf_metrics $fodf_mt_on --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
-    peaks_mt_on="${target_dir}/${sub}/fodf_metrics_mt_on/peaks.nii.gz";
-
-    # Compute CSD for tractography
-    echo "CSD for tractography";
-    cd ${target_dir}/${sub};
-    mkdir fodf_for_tractography;
-    cd ${target_dir}/${sub}/fodf_for_tractography;
-    scil_frf_ssst $dwi_for_tractography $bval $bvec frf.txt --mask $mask_for_tractography --mask_wm $wm_mask_for_tractography --roi_radii 30 30 20 -f;
-    scil_fodf_ssst $dwi_for_tractography $bval $bvec frf.txt fodf.nii.gz --mask $mask_for_tractography --processes 8 --sh_order 6 -f;
-    fodf_for_tractography="${target_dir}/${sub}/fodf_for_tractography/fodf.nii.gz";
-
-    # Compute FODF metrics for tractography
-    echo "FODF metrics for tractography";
-    cd ${target_dir}/${sub};
-    mkdir fodf_metrics_for_tractography;
-    cd ${target_dir}/${sub}/fodf_metrics_for_tractography;
-    scil_fodf_max_in_ventricles $fodf_for_tractography $fa_for_tractography $md_for_tractography --md_threshold 0.0025 --max_value_output max_fodf_in_ventricles.txt --in_mask ${target_dir}/${sub}/preprocessing_t1_for_tractography/register_natif/csf_mask.nii.gz --use_median -f;
-    max_value=$(cat max_fodf_in_ventricles.txt);    
-    a_threshold=$(echo 2*${max_value}|bc);
-    scil_fodf_metrics $fodf_for_tractography --mask $mask_for_tractography --abs_peaks_and_values --at $a_threshold -f --processes 8;
-
-    # Tractography
-    echo "Tractography";
-    cd ${target_dir}/${sub};
-    mkdir tractography;
-    cd ${target_dir}/${sub}/tractography;
-    # scil_tracking_pft_maps $wm_mask_for_tractography ${target_dir}/${sub}/preprocessing_t1_for_tractography/register_natif/gm_mask.nii.gz ${target_dir}/${sub}/preprocessing_t1_for_tractography/register_natif/csf_mask.nii.gz --include map_include.nii.gz --exclude map_exclude.nii.gz --interface interface.nii.gz -f;
-    # scil_volume_math convert $wm_mask_for_tractography pft_seeding_mask.nii.gz --data_type uint8 -f;
-    # scil_volume_math union pft_seeding_mask.nii.gz interface.nii.gz pft_seeding_mask.nii.gz --data_type uint8 -f;
-    # scil_tracking_pft $fodf_for_tractography pft_seeding_mask.nii.gz map_include.nii.gz map_exclude.nii.gz pft_tracking.trk --algo prob --npv 10 --seed 0 --step 0.5 --theta 20 --min_length 20 --max_length 200 --particles 15 --back 2 --forward 1 --compress 0.2 --sh_basis descoteaux07 -f;
-    # scil_tractogram_remove_invalid pft_tracking.trk pft_tracking.trk --remove_single_point -f;
-
-    # ADD OPTION FOR CPU OR GPU (not everybody has gpu)
-    scil_tracking_local $fodf_for_tractography $wm_mask_for_tractography $wm_mask_for_tractography local_tracking.trk --use_gpu --npv 10 -f;
-    scil_tractogram_remove_invalid local_tracking.trk local_tracking.trk --remove_single_point -f;
-    tractogram="${target_dir}/${sub}/tractography/local_tracking.trk";
-
-    # Compute SIFT2
-    echo "SIFT2";
-    cd ${target_dir}/${sub}/tractography;
-    fodf_tournier="${target_dir}/${sub}/fodf_tournier.nii.gz";
-    scil_sh_convert $fodf_for_tractography $fodf_tournier descoteaux07_legacy tournier07 -f;
-    tractogram_tck="${target_dir}/${sub}/local_tracking.tck";
-    scil_tractogram_convert $tractogram $tractogram_tck -f;
-    tcksift2 $tractogram_tck $fodf_tournier sift2_weights.txt -force;
-    scil_tractogram_dps_math $tractogram import "sift2" --in_dps_file sift2_weights.txt --out_tractogram $tractogram -f;
-    rm $tractogram_tck $fodf_tournier;
 
     # Run rbx_flow on the side with nextflow.
     # In ~/data/stockage/mt-diff-mcgill/rbx_flow/output
