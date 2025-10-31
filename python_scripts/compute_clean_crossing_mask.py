@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-
+Script to compute a clean crossing mask based on the number of fibers,
+number of bundles and fixel density maps.
 """
 
 import argparse
@@ -20,13 +21,23 @@ def _build_arg_parser():
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter)
 
-    p.add_argument('in_nufo')
+    p.add_argument('in_nufo',
+                   help='Number of fiber orientations per voxel. This should '
+                        'be the result of scil_fodf_metrics, named as '
+                        'nufo.nii.gz')
 
-    p.add_argument('in_nb_bundles')
+    p.add_argument('in_nb_bundles',
+                   help='Number of bundles per voxel. This should be the '
+                        'result of scil_bundle_fixel_analysis, named as '
+                        'nb_bundles_per_voxel_voxel-norm.nii.gz')
 
-    p.add_argument('in_fixel_density')
+    p.add_argument('in_fixel_density',
+                   help='Fixel density map for each bundle. This should be '
+                        'the result of scil_bundle_fixel_analysis, named '
+                        'as fixel_density_maps_voxel-norm.nii.gz')
 
-    p.add_argument('out_mask')
+    p.add_argument('out_mask',
+                   help='Output clean crossing mask.')
 
     p.add_argument('--thr', default=0.7, type=float,
                    help='Threshold on the fixel density map to consider a '

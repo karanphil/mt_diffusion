@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-
+Script to compute the fixel MTR from MT-on and MT-off fODF amplitudes.
 """
 
 import argparse
@@ -25,34 +25,55 @@ def _build_arg_parser():
         formatter_class=argparse.RawTextHelpFormatter)
 
     p.add_argument('in_fodf_mt_off',
-                   help='The DW image file to split.')
+                   help='The input fODF MT-off file.')
 
     p.add_argument('in_fodf_mt_on',
-                   help='The DW image file to split.')
+                   help='The input fODF MT-on file.')
 
-    p.add_argument('in_peaks_mt_off')
+    p.add_argument('in_peaks_mt_off',
+                   help='The input peaks MT-off file.')
 
-    p.add_argument('in_peaks_mt_on')
+    p.add_argument('in_peaks_mt_on',
+                   help='The input peaks MT-on file.')
 
-    p.add_argument('in_fixel_density_voxel_norm')
+    p.add_argument('in_fixel_density_voxel_norm',
+                   help='Fixel density map normalized by voxel for each '
+                        'bundle. This should be the result of '
+                        'scil_bundle_fixel_analysis, named '
+                        'as fixel_density_maps_voxel-norm.nii.gz')
 
-    p.add_argument('in_fixel_density_none_norm')
+    p.add_argument('in_fixel_density_none_norm',
+                   help='Fixel density map not normalized for each '
+                        'bundle. This should be the result of '
+                        'scil_bundle_fixel_analysis, named '
+                        'as fixel_density_maps_none-norm.nii.gz')
 
     p.add_argument('out_fodf',
                    help='Output FODF MTR. IMPORTANT: The amplitudes of the '
                         'fODFs have no meaning.')
     
-    p.add_argument('out_peak_values')
+    p.add_argument('out_peak_values',
+                   help='Output fixel-MTR.')
 
-    p.add_argument('out_peaks')
+    p.add_argument('out_peaks',
+                   help='Output peaks with MT-on and MT-off averaged.')
 
-    p.add_argument('--mask')
+    p.add_argument('--mask',
+                   help='Optional mask to limit the computation.')
 
-    p.add_argument('--min_angle', default=10, type=float)
+    p.add_argument('--min_angle', default=10, type=float,
+                   help='Minimum angle (in degrees) to consider two peaks '
+                        'as being the same direction. Default is 10 degrees.')
 
-    p.add_argument('--rel_thr', default=0.01, type=float)
+    p.add_argument('--rel_thr', default=0.01, type=float,
+                   help='Relative threshold on the voxel-normalized fixel '
+                        'density map to consider a fixel for MTR '
+                        'computation. Default is 0.01 (1%% of max).')
 
-    p.add_argument('--abs_thr', default=0.0, type=float)
+    p.add_argument('--abs_thr', default=0.0, type=float,
+                   help='Absolute threshold on the non-normalized fixel '
+                        'density map to consider a fixel for MTR '
+                        'computation. Default is 0.')
 
     p.add_argument('--sphere', default='repulsion724',
                    choices=['symmetric362', 'symmetric642', 'symmetric724',
@@ -101,7 +122,6 @@ def main():
         mask = np.ones(sh_mt_off.shape[0:3], dtype=bool)
 
     sphere = get_sphere(args.sphere)
-    # subdivise?
 
     sh_order = order_from_ncoef(sh_mt_off.shape[-1])
     B, invB = sh_to_sf_matrix(sphere, sh_order)

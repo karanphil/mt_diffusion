@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-
+Script to compute the bundle-wise MTR for all bundles.
 """
 
 import argparse
@@ -20,13 +20,22 @@ def _build_arg_parser():
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter)
 
-    p.add_argument('in_mtr')
+    p.add_argument('in_mtr',
+                   help='Input MTR file.')
 
-    p.add_argument('in_voxel_density_masks')
+    p.add_argument('in_voxel_density_masks',
+                   help='Voxel density masks normalized by voxel for '
+                        'each bundle. This should be the result of '
+                        'scil_bundle_fixel_analysis, named '
+                        'as voxel_density_masks_voxel-norm.nii.gz')
 
-    p.add_argument('in_LUT')
+    p.add_argument('in_LUT',
+                   help='Look-Up Table (LUT) file outputed by '
+                        'scil_bundle_fixel_analysis, named '
+                        'as bundles_LUT.txt')
 
-    p.add_argument('out_dir')
+    p.add_argument('out_dir',
+                   help='Output directory to save the bundle-wise MTR files.')
 
     add_verbose_arg(p)
     add_overwrite_arg(p)
@@ -58,7 +67,8 @@ def main():
 
         bundle_name = lut[0][i]
 
-        nib.save(nib.Nifti1Image(bundle_mtr, mtr_img.affine), args.out_dir + f'/mtr_{bundle_name}.nii.gz')
+        nib.save(nib.Nifti1Image(bundle_mtr, mtr_img.affine),
+                 args.out_dir + f'/mtr_{bundle_name}.nii.gz')
 
 
 if __name__ == "__main__":

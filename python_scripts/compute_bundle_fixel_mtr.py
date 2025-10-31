@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-
+Script to compute the bundle-wise fixel-MTR for a single bundle.
 """
 
 import argparse
@@ -20,12 +20,17 @@ def _build_arg_parser():
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter)
 
-    p.add_argument('in_peak_values')
+    p.add_argument('in_fixel_mtr',
+                   help='Fixel-MTR file, obtained from compute_fixel_mtr.py.')
 
     p.add_argument('in_fixel_density_mask',
-                   help='For one bundle.')
+                   help='Fixel density mask normalized by voxel for the '
+                        'current bundle. This should be the result of '
+                        'scil_bundle_fixel_analysis, named '
+                        'as fixel_density_mask_voxel-norm_BUNDLE_NAME.nii.gz')
 
-    p.add_argument('out_bundle_mtr')
+    p.add_argument('out_bundle_mtr',
+                   help='Output bundle-wise fixel-MTR file.')
 
     add_verbose_arg(p)
     add_overwrite_arg(p)
@@ -40,10 +45,11 @@ def main():
     if args.verbose:
         logging.basicConfig(level=logging.INFO)
 
-    assert_inputs_exist(parser, [args.in_peak_values, args.in_fixel_density_mask])
+    assert_inputs_exist(parser, [args.in_fixel_mtr,
+                                 args.in_fixel_density_mask])
     assert_outputs_exist(parser, args, [args.out_bundle_mtr])
 
-    peak_values_img = nib.load(args.in_peak_values)
+    peak_values_img = nib.load(args.in_fixel_mtr)
     peak_values = peak_values_img.get_fdata().astype(np.float32)
 
     fixel_density_img = nib.load(args.in_fixel_density_mask)

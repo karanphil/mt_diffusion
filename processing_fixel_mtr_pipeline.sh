@@ -71,11 +71,11 @@ for sub in $subs;
         python ${code_dir}/python_scripts/compute_bundle_mtr.py $pa_mtr ${target_dir}/${sub}/fixel_analysis/voxel_density_masks_voxel-norm.nii.gz ${target_dir}/${sub}/fixel_analysis/bundles_LUT.txt . -f;
     fi
 
-    # ----------------------Compute peak difference-----------------------
+    # ----------------------Compute fixel-MTR difference-----------------------
     cd ${target_dir}/${sub}/fixel_mtr;
     if [ ! -f "mtr_peak_diffs.nii.gz" ]; then
-        echo "Compute peak difference";
-        python ${code_dir}/python_scripts/compare_mtr_peaks.py $mtr_peak_values mtr_peak_diffs.nii.gz  mtr_peak_diff_mask.nii.gz mtr_peak_no_diff_mask.nii.gz mtr_peak_crossing_mask.nii.gz --min_diff 0.02 --min_mtr 0.2 -f;
+        echo "Compute fixel-MTR difference for two first peaks";
+        python ${code_dir}/python_scripts/compare_fixel_mtr_in_voxel.py $mtr_peak_values mtr_peak_diffs.nii.gz  mtr_peak_diff_mask.nii.gz mtr_peak_no_diff_mask.nii.gz mtr_peak_crossing_mask.nii.gz --min_diff 0.02 --min_mtr 0.2 -f;
     fi
 
     # ----------------------AFD fixel-----------------------
