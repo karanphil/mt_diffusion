@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# The script assumes that preprocessing_pipeline.sh has already been run.
+# The script assumes that preprocessing_dwi_pipeline.sh and
+# preprocessing_t1_pipeline.sh have already been run.
 
 # The first argument of the script is the target directory (full path)
 target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing"

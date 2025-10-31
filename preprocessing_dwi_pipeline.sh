@@ -1,17 +1,16 @@
 #!/bin/bash
 
-# The first argument of the script is the target directory (full path)
-target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing"
-cd $target_dir;
-
 # The script assumes that all subjects folders have been created previously in the target directory
 # and that the renamed data is inside a folder named "renamed_data" in each subject folder,
 # as done in the rename_files.sh script (creates all folders and renames the data).
+
+# The first argument of the script is the target directory (full path)
+target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing"
+cd $target_dir;
 subs=$(ls -d hc*);
 
 # ----------------------------DIFFUSION PRE-PROCESSING-------------------------
 b0_thr_extract_b0=10;
-
 echo "DIFFUSION PRE-PROCESSING";
 for sub in $subs; 
     do echo $sub;
@@ -26,7 +25,7 @@ for sub in $subs;
     bvec="${renamed_data_dir}/mt_off_dwi.bvec";
     rev_b0="${renamed_data_dir}/mt_off_revb0.nii.gz";
 
-    # ---------------------Denoising bloc--------------------
+    # ---------------------Denoising--------------------
     if [ ! -f "mt_off_dwi_dn.nii.gz" ]; then
         echo "Denoising";
         # Merge mt_off and mt_on for denoising
@@ -40,7 +39,7 @@ for sub in $subs;
     dwi_mt_off="mt_off_dwi_dn.nii.gz";
     dwi_mt_on="mt_on_dwi_dn.nii.gz";
 
-    # --------------------MT-on extension bloc with b0--------------------
+    # --------------------MT-on extension with b0--------------------
     if [ ! -f "mt_on_dwi_extended.nii.gz" ]; then
         echo "Extract b0";
         scil_dwi_extract_b0 $dwi_mt_off $bval $bvec b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
@@ -54,7 +53,7 @@ for sub in $subs;
     bval_ext="mt_on_dwi_extended.bval";
     b0_mt_off="b0_mt_off.nii.gz";
 
-    # --------------------Topup bloc--------------------
+    # --------------------Topup--------------------
     if [ ! -f "topup_fieldcoef.nii.gz" ]; then
         echo "Topup";
         scil_dwi_prepare_topup_command $b0_mt_off $rev_b0 --out_script --out_prefix topup -f;
@@ -64,7 +63,7 @@ for sub in $subs;
     fi
     brain_mask_mt_off="b0_mt_off_brain_mask.nii.gz";
 
-    # --------------------Eddy bloc--------------------
+    # --------------------Eddy--------------------
     if [ ! -f "dwi_mt_off.eddy_rotated_bvecs" ]; then
         echo "Eddy";
         # MT-off
@@ -92,7 +91,7 @@ for sub in $subs;
     dwi_mt_off="dwi_mt_off.nii.gz";
     dwi_mt_on="dwi_mt_on.nii.gz";
 
-    # ---------------------Bet bloc-----------------------
+    # ---------------------Bet-----------------------
     if [ ! -f "b0_mt_off_brain.nii.gz" ]; then
         echo "Extract b0";
         scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
@@ -102,7 +101,7 @@ for sub in $subs;
     fi
     brain_mask_mt_off="b0_mt_off_brain_mask.nii.gz";
 
-    # ---------------------DWI bias correction bloc---------------------
+    # ---------------------DWI bias correction---------------------
     if [ ! -f "bias_field_mt_off.nii.gz" ]; then
         echo "Bias correction";
         # MT-off
@@ -116,7 +115,7 @@ for sub in $subs;
     bval_mt_on="dwi_mt_off.bval";
     bvec_mt_on="dwi_mt_on.bvec";
 
-    # ---------------------Bet bloc-----------------------
+    # ---------------------Bet-----------------------
     if [ ! -f "b0_mt_off_brain.nii.gz" ]; then
         echo "Extract b0";
         scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
@@ -128,7 +127,7 @@ for sub in $subs;
     brain_mt_off="b0_mt_off_brain.nii.gz";
     brain_mask_mt_off="b0_mt_off_brain_mask.nii.gz";
 
-    # ---------------------Normalization bloc-----------------------
+    # ---------------------Normalization-----------------------
     if [ ! -f "dwi_mt_off_norm.nii.gz" ]; then
         # MT-off
         mrcalc $dwi_mt_off $brain_mt_off -div dwi_mt_off_norm.nii.gz -force;
@@ -144,7 +143,7 @@ for sub in $subs;
     dwi_mt_off="dwi_mt_off_norm.nii.gz";
     dwi_mt_on="dwi_mt_on_norm.nii.gz";
 
-    # ---------------------Resample bloc-----------------------
+    # ---------------------Resample-----------------------
     if [ ! -f "dwi_mt_off_upsample.nii.gz" ]; then
         echo "Resample";
         # MT-off
@@ -159,7 +158,7 @@ for sub in $subs;
     bval_mt_on="${target_dir}/${sub}/preprocessing_dwi/dwi_mt_off.bval";
     bvec_mt_on="${target_dir}/${sub}/preprocessing_dwi/dwi_mt_on.bvec";
 
-    # ---------------------Bet bloc-----------------------
+    # ---------------------Bet-----------------------
     if [ ! -f "b0_mt_off_brain.nii.gz" ]; then
         echo "Extract b0";
         scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
@@ -170,7 +169,7 @@ for sub in $subs;
     b0_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_brain.nii.gz";
     brain_mask_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_brain_mask.nii.gz";
 
-    # --------------------Re-stride bloc-----------------------
+    # --------------------Re-stride-----------------------
     cd ${target_dir}/${sub};
     mkdir -p dwi;
     cd ${target_dir}/${sub}/dwi;
@@ -196,20 +195,22 @@ for sub in $subs;
         cp $bval_on dwi_mt_on.bval;
     fi
 
-    # ---------------------Resample for tractography bloc----------------------
-    cd ${target_dir}/${sub};
-    mkdir -p dwi_for_tractography;
-    cd ${target_dir}/${sub}/dwi_for_tractography;
-    if [ ! -f "dwi_mt_off.nii.gz" ]; then
-        echo "Resample";
-        # Start from the not-normalized not-upsampled MT-off data
-        mrconvert -strides 1,2,3,4 ${target_dir}/${sub}/preprocessing_dwi/dwi_mt_off.nii.gz dwi_for_tractography.nii.gz;
-        scil_volume_resample dwi_for_tractography.nii.gz dwi_for_tractography.nii.gz --voxel_size 1 -f;
-        echo "Extract b0";
-        scil_dwi_extract_b0 dwi_for_tractography.nii.gz $bval_off $bvec_off b0_for_tractography.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
-        echo "Bet b0";
-        bet b0_for_tractography.nii.gz b0_for_tractography_brain -m;
-    fi
+    # THE END
+
+    # # ---------------------Resample for tractography bloc----------------------
+    # cd ${target_dir}/${sub};
+    # mkdir -p dwi_for_tractography;
+    # cd ${target_dir}/${sub}/dwi_for_tractography;
+    # if [ ! -f "dwi_mt_off.nii.gz" ]; then
+    #     echo "Resample";
+    #     # Start from the not-normalized not-upsampled MT-off data
+    #     mrconvert -strides 1,2,3,4 ${target_dir}/${sub}/preprocessing_dwi/dwi_mt_off.nii.gz dwi_for_tractography.nii.gz;
+    #     scil_volume_resample dwi_for_tractography.nii.gz dwi_for_tractography.nii.gz --voxel_size 1 -f;
+    #     echo "Extract b0";
+    #     scil_dwi_extract_b0 dwi_for_tractography.nii.gz $bval_off $bvec_off b0_for_tractography.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
+    #     echo "Bet b0";
+    #     bet b0_for_tractography.nii.gz b0_for_tractography_brain -m;
+    # fi
 
     # Computing PA stuff
     cd ${target_dir}/${sub};
