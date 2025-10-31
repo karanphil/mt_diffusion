@@ -5,6 +5,7 @@
 original_dir=$1; # ex: /data/karp2601/stockage/mt-diff-mcgill/for-philippe/mt-diff-10peeps
 target_dir=$2; # ex: /home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing
 cd $original_dir;
+# The script assumes that all subjects are present in the original directory, with names starting with "hc"
 subs=$(ls -d hc*);
 
 for sub in $subs; 

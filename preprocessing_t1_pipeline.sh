@@ -2,8 +2,10 @@
 
 # The script assumes that preprocessing_dwi_pipeline.sh has already been run.
 
-# The first argument of the script is the target directory (full path)
+# The first argument of the script is the target directory (full path).
 target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing"
+# The second argument is the atlas directory (full path). In there should be the t1_template.nii.gz and t1_brain_probability_map.nii.gz files.
+atlas_dir=$2; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/mni_atlas"
 cd $target_dir;
 subs=$(ls -d hc*);
 
@@ -24,18 +26,6 @@ for sub in $subs;
     cd ${target_dir}/${sub}/dti;
 	if [ ! -f "fa.nii.gz" ]; then
 		echo "DTI computation";
-			# !!! Some DTI will crash because of NaNs inside the mask. !!!
-			# This is then needed in python in the dwi folder:
-			# '
-			# import nibabel as nib
-			# import numpy as np
-			# vol = nib.load("dwi_mt_off.nii.gz")
-			# dwi = vol.get_fdata()
-			# # mask_vol = nib.load("b0_mt_off_brain_mask.nii.gz")
-			# # mask = mask_vol.get_fdata().astype(bool)
-			# new_dwi = np.where(np.isnan(dwi), 0, dwi)
-			# nib.save(nib.Nifti1Image(new_dwi, vol.affine), "dwi_mt_off.nii.gz")
-			# '
 		scil_dti_metrics $dwi $bval $bvec --mask $mask --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz -f;
 	fi
 	fa="${target_dir}/${sub}/dti/fa.nii.gz";
@@ -52,7 +42,7 @@ for sub in $subs;
 	# ----------------------Bet---------------------------
 	if [ ! -f "t1_bet.nii.gz" ]; then
 		echo "Bet";
-		antsBrainExtraction.sh -d 3 -a t1.nii.gz -u 0 -e ../../../t1_template.nii.gz -m ../../../t1_brain_probability_map.nii.gz -o output;
+		antsBrainExtraction.sh -d 3 -a t1.nii.gz -u 0 -e $atlas_dir/t1_template.nii.gz -m $atlas_dir/t1_brain_probability_map.nii.gz -o output;
 		scil_volume_math convert outputBrainExtractionMask.nii.gz t1_bet_mask.nii.gz --data_type uint8 -f;
 		scil_volume_math multiplication t1.nii.gz t1_bet_mask.nii.gz t1_bet.nii.gz --data_type float32 -f;
 	fi

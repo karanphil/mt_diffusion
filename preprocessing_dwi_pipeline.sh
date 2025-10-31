@@ -4,8 +4,10 @@
 # and that the renamed data is inside a folder named "renamed_data" in each subject folder,
 # as done in the rename_files.sh script (creates all folders and renames the data).
 
-# The first argument of the script is the target directory (full path)
+# The first argument of the script is the target directory (full path).
 target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing"
+# The second argument is the code directory (full path).
+code_dir=$2; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/code/mt-diffusion"
 cd $target_dir;
 subs=$(ls -d hc*);
 
@@ -169,7 +171,7 @@ for sub in $subs;
     b0_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_brain.nii.gz";
     brain_mask_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_brain_mask.nii.gz";
 
-    # --------------------Re-stride-----------------------
+    # --------------------Re-stride and cleanup-----------------------
     cd ${target_dir}/${sub};
     mkdir -p dwi;
     cd ${target_dir}/${sub}/dwi;
@@ -186,6 +188,8 @@ for sub in $subs;
         mrconvert -strides 1,2,3 $b0 b0.nii.gz;
         scil_gradients_modify_axes $bvec_off dwi_mt_off.bvec -1 2 3; # in case of -1 2 3 4 strides
         cp $bval_off dwi_mt_off.bval;
+        # Some DWI in the dataset have NaN values that need to be removed
+		python $code_dir/python_scripts/remove_nans_from_dwi.py dwi_mt_off.nii.gz dwi_mt_off.nii.gz -f;
         # MT-on
         dwi_on=$dwi_mt_on;
         bval_on=$bval_mt_on;
@@ -193,6 +197,8 @@ for sub in $subs;
         mrconvert -strides 1,2,3,4 $dwi_on dwi_mt_on.nii.gz;
         scil_gradients_modify_axes $bvec_on dwi_mt_on.bvec -1 2 3; # in case of -1 2 3 4 strides
         cp $bval_on dwi_mt_on.bval;
+        # Some DWI in the dataset have NaN values that need to be removed
+		python $code_dir/python_scripts/remove_nans_from_dwi.py dwi_mt_on.nii.gz dwi_mt_on.nii.gz -f;
     fi
 
     # THE END
