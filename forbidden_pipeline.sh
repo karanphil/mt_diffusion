@@ -7,7 +7,7 @@
 # main_dir="mt-diff-mcgill"; # Put any name you like
 # mkdir $main_dir;
 # cd $main_dir;
-main_dir=$(pwd); # To get full paths for the future
+main_dir=$(pwd -P); # To get full paths for the future
 
 # Step 2
 code_name="code"; # Put any name you like

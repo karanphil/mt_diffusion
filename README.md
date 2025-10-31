@@ -8,7 +8,7 @@ First, you should create a repository to host the project:
 main_dir="mt-diff-mcgill"; # Put any name you like
 mkdir $main_dir;
 cd $main_dir;
-main_dir=$(pwd); # To get full paths for the future
+main_dir=$(pwd -P); # To get full paths for the future
 ```
 
 Next, create a folder for your code and clone the mt-diffusion code repository in it:
