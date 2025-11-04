@@ -98,13 +98,10 @@ for sub in $subs;
     bvec_mt_on="dwi_mt_on.bvec";
 
     # ---------------------Bet-----------------------
-    if [ ! -f "b0_mt_off_brain.nii.gz" ]; then
-        echo "Extract b0";
-        scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check -f;
-
-        echo "Bet b0";
-        bet b0_mt_off.nii.gz b0_mt_off_brain -m;
-    fi
+    echo "Extract b0";
+    scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check -f;
+    echo "Bet b0";
+    bet b0_mt_off.nii.gz b0_mt_off_brain -m;
     brain_mask_mt_off="b0_mt_off_brain_mask.nii.gz";
 
     # ---------------------DWI bias correction---------------------
@@ -113,17 +110,14 @@ for sub in $subs;
         # MT-off
         dwibiascorrect ants $dwi_mt_off $dwi_mt_off -fslgrad $bvec_mt_off $bval_mt_off -mask $brain_mask_mt_off -bias bias_field_mt_off.nii.gz -force;
         # MT-on, apply the same bias field as MT-off
-        scil_dwi_apply_bias_field $dwi_mt_on bias_field_mt_off.nii.gz $dwi_mt_on --mask $brain_mask_mt_off -f;
+        mrcalc $dwi_mt_on bias_field_mt_off.nii.gz -mult $dwi_mt_on -force;
     fi
 
     # ---------------------Bet-----------------------
-    if [ ! -f "b0_mt_off_brain.nii.gz" ]; then
-        echo "Extract b0";
-        scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check -f;
-
-        echo "Bet b0";
-        bet b0_mt_off.nii.gz b0_mt_off_brain -m;
-    fi
+    echo "Extract b0";
+    scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check -f;
+    echo "Bet b0";
+    bet b0_mt_off.nii.gz b0_mt_off_brain -m;
     b0_mt_off="b0_mt_off.nii.gz";
     brain_mt_off="b0_mt_off_brain.nii.gz";
     brain_mask_mt_off="b0_mt_off_brain_mask.nii.gz";
@@ -160,15 +154,12 @@ for sub in $subs;
     bvec_mt_on="${target_dir}/${sub}/preprocessing_dwi/dwi_mt_on.bvec";
 
     # ---------------------Bet-----------------------
-    if [ ! -f "b0_mt_off_brain.nii.gz" ]; then
-        echo "Extract b0";
-        scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check -f;
-
-        echo "Bet b0";
-        bet b0_mt_off.nii.gz b0_mt_off_brain -m;
-    fi
-    b0_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_brain.nii.gz";
-    brain_mask_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_brain_mask.nii.gz";
+    echo "Extract b0";
+    scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off_upsample.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check -f;
+    echo "Bet b0";
+    bet b0_mt_off_upsample.nii.gz b0_mt_off_upsample_brain -m;
+    b0_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_upsample_brain.nii.gz";
+    brain_mask_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_upsample_brain_mask.nii.gz";
 
     # --------------------Re-stride and cleanup-----------------------
     cd ${target_dir}/${sub};
