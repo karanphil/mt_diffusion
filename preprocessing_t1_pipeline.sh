@@ -42,7 +42,7 @@ for sub in $subs;
 	# ----------------------Bet---------------------------
 	if [ ! -f "t1_bet.nii.gz" ]; then
 		echo "Bet";
-		antsBrainExtraction.sh -d 3 -a t1.nii.gz -u 0 -e $atlas_dir/t1_template.nii.gz -m $atlas_dir/t1_brain_probability_map.nii.gz -o output;
+		antsBrainExtraction.sh -d 3 -a t1.nii.gz -u 0 -e ${atlas_dir}/t1_template.nii.gz -m ${atlas_dir}/t1_brain_probability_map.nii.gz -o output;
 		scil_volume_math convert outputBrainExtractionMask.nii.gz t1_bet_mask.nii.gz --data_type uint8 -f;
 		scil_volume_math multiplication t1.nii.gz t1_bet_mask.nii.gz t1_bet.nii.gz --data_type float32 -f;
 	fi

@@ -44,7 +44,7 @@ for sub in $subs;
     # --------------------MT-on extension with b0--------------------
     if [ ! -f "mt_on_dwi_extended.nii.gz" ]; then
         echo "Extract b0";
-        scil_dwi_extract_b0 $dwi_mt_off $bval $bvec b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
+        scil_dwi_extract_b0 $dwi_mt_off $bval $bvec b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check -f;
         # Add b0 MT-off to MT-on DWI
         scil_volume_math concatenate b0_mt_off.nii.gz $dwi_mt_on mt_on_dwi_extended.nii.gz  -f;
         sed -e 's/^/0 /' $bvec > mt_on_dwi_extended.bvec;
@@ -100,7 +100,7 @@ for sub in $subs;
     # ---------------------Bet-----------------------
     if [ ! -f "b0_mt_off_brain.nii.gz" ]; then
         echo "Extract b0";
-        scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
+        scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check -f;
 
         echo "Bet b0";
         bet b0_mt_off.nii.gz b0_mt_off_brain -m;
@@ -119,7 +119,7 @@ for sub in $subs;
     # ---------------------Bet-----------------------
     if [ ! -f "b0_mt_off_brain.nii.gz" ]; then
         echo "Extract b0";
-        scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
+        scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check -f;
 
         echo "Bet b0";
         bet b0_mt_off.nii.gz b0_mt_off_brain -m;
@@ -162,7 +162,7 @@ for sub in $subs;
     # ---------------------Bet-----------------------
     if [ ! -f "b0_mt_off_brain.nii.gz" ]; then
         echo "Extract b0";
-        scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check;
+        scil_dwi_extract_b0 $dwi_mt_off $bval_mt_off $bvec_mt_off b0_mt_off.nii.gz --mean --b0_threshold $b0_thr_extract_b0 --skip_b0_check -f;
 
         echo "Bet b0";
         bet b0_mt_off.nii.gz b0_mt_off_brain -m;

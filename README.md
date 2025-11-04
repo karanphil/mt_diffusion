@@ -56,7 +56,7 @@ When this is finished (after many hours), compute the pre-processing of T1 data.
 
 ```
 atlas_dir="${main_dir}/mni_atlas"; 
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/preprocessing_t1_pipeline.sh ${main_dir}/${working_dir} ${main_dir}/${atlas_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/preprocessing_t1_pipeline.sh ${main_dir}/${working_dir} ${atlas_dir};
 ```
 
 After that, compute the fODFs with:
