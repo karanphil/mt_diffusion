@@ -119,24 +119,7 @@ for sub in $subs;
     echo "Bet b0";
     bet b0_mt_off.nii.gz b0_mt_off_brain -m;
     b0_mt_off="b0_mt_off.nii.gz";
-    brain_mt_off="b0_mt_off_brain.nii.gz";
     brain_mask_mt_off="b0_mt_off_brain_mask.nii.gz";
-
-    # ---------------------Normalization-----------------------
-    if [ ! -f "dwi_mt_off_norm.nii.gz" ]; then
-        # MT-off
-        mrcalc $dwi_mt_off $brain_mt_off -div dwi_mt_off_norm.nii.gz -force;
-        mrcalc dwi_mt_off_norm.nii.gz $brain_mask_mt_off -mult dwi_mt_off_norm.nii.gz -force;
-        scil_volume_math upper_clip dwi_mt_off_norm.nii.gz 1 dwi_mt_off_norm.nii.gz -f;
-        scil_volume_math lower_clip dwi_mt_off_norm.nii.gz 0 dwi_mt_off_norm.nii.gz -f;
-        #MT-on
-        mrcalc $dwi_mt_on $brain_mt_off -div dwi_mt_on_norm.nii.gz -force;
-        mrcalc dwi_mt_on_norm.nii.gz $brain_mask_mt_off -mult dwi_mt_on_norm.nii.gz -force;
-        scil_volume_math upper_clip dwi_mt_on_norm.nii.gz 1 dwi_mt_on_norm.nii.gz -f;
-        scil_volume_math lower_clip dwi_mt_on_norm.nii.gz 0 dwi_mt_on_norm.nii.gz -f;
-    fi
-    dwi_mt_off="dwi_mt_off_norm.nii.gz";
-    dwi_mt_on="dwi_mt_on_norm.nii.gz";
 
     # ---------------------Resample-----------------------
     if [ ! -f "dwi_mt_off_upsample.nii.gz" ]; then
@@ -159,7 +142,24 @@ for sub in $subs;
     echo "Bet b0";
     bet b0_mt_off_upsample.nii.gz b0_mt_off_upsample_brain -m;
     b0_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_upsample_brain.nii.gz";
+    brain_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_upsample_brain.nii.gz";
     brain_mask_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_upsample_brain_mask.nii.gz";
+
+        # ---------------------Normalization-----------------------
+    if [ ! -f "dwi_mt_off_norm.nii.gz" ]; then
+        # MT-off
+        mrcalc $dwi_mt_off $brain_mt_off -div dwi_mt_off_norm.nii.gz -force;
+        mrcalc dwi_mt_off_norm.nii.gz $brain_mask_mt_off -mult dwi_mt_off_norm.nii.gz -force;
+        scil_volume_math upper_clip dwi_mt_off_norm.nii.gz 1 dwi_mt_off_norm.nii.gz -f;
+        scil_volume_math lower_clip dwi_mt_off_norm.nii.gz 0 dwi_mt_off_norm.nii.gz -f;
+        #MT-on
+        mrcalc $dwi_mt_on $brain_mt_off -div dwi_mt_on_norm.nii.gz -force;
+        mrcalc dwi_mt_on_norm.nii.gz $brain_mask_mt_off -mult dwi_mt_on_norm.nii.gz -force;
+        scil_volume_math upper_clip dwi_mt_on_norm.nii.gz 1 dwi_mt_on_norm.nii.gz -f;
+        scil_volume_math lower_clip dwi_mt_on_norm.nii.gz 0 dwi_mt_on_norm.nii.gz -f;
+    fi
+    dwi_mt_off="dwi_mt_off_norm.nii.gz";
+    dwi_mt_on="dwi_mt_on_norm.nii.gz";
 
     # --------------------Re-stride and cleanup-----------------------
     cd ${target_dir}/${sub};
