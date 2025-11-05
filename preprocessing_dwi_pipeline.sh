@@ -147,6 +147,7 @@ for sub in $subs;
 
     # ---------------------Normalization-----------------------
     if [ ! -f "dwi_mt_off_norm.nii.gz" ]; then
+    echo "Normalization";
         # MT-off
         mrcalc $dwi_mt_off $brain_mt_off -div dwi_mt_off_norm.nii.gz -force;
         mrcalc dwi_mt_off_norm.nii.gz $brain_mask_mt_off -mult dwi_mt_off_norm.nii.gz -force;
@@ -158,8 +159,8 @@ for sub in $subs;
         scil_volume_math upper_clip dwi_mt_on_norm.nii.gz 1 dwi_mt_on_norm.nii.gz -f;
         scil_volume_math lower_clip dwi_mt_on_norm.nii.gz 0 dwi_mt_on_norm.nii.gz -f;
     fi
-    dwi_mt_off="dwi_mt_off_norm.nii.gz";
-    dwi_mt_on="dwi_mt_on_norm.nii.gz";
+    dwi_mt_off="${target_dir}/${sub}/preprocessing_dwi/dwi_mt_off_norm.nii.gz";
+    dwi_mt_on="${target_dir}/${sub}/preprocessing_dwi/dwi_mt_on_norm.nii.gz";
 
     # --------------------Re-stride and cleanup-----------------------
     cd ${target_dir}/${sub};
