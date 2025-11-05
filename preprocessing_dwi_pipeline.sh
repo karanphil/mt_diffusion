@@ -145,7 +145,7 @@ for sub in $subs;
     brain_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_upsample_brain.nii.gz";
     brain_mask_mt_off="${target_dir}/${sub}/preprocessing_dwi/b0_mt_off_upsample_brain_mask.nii.gz";
 
-        # ---------------------Normalization-----------------------
+    # ---------------------Normalization-----------------------
     if [ ! -f "dwi_mt_off_norm.nii.gz" ]; then
         # MT-off
         mrcalc $dwi_mt_off $brain_mt_off -div dwi_mt_off_norm.nii.gz -force;
