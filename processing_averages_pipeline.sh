@@ -12,9 +12,13 @@ code_dir=$2; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgil
 # The third argument is the register_flow directory (full path)
 register_data_dir=$3; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/register_flow"
 cd $target_dir;
-subs=$(ls -d hc*);
-# subs_scan=$(ls -d hc[0-9][0-9]);
+# subs=$(ls -d hc*);
+subs=$(ls -d hc[0-9][0-9]);
+
+# If we ever need to compare the population average scan-rescan, do the code twice with the following subset of subjects.
+# subs_scan=$(ls -d hc[0-9][0-9] 2>/dev/null | grep -v hc17 | grep -v hc28 | grep -v hc30) # Command for removing subjects without rescan
 # subs_rescan=$(ls -d hc[0-9][0-9]r);
+
 nb_sections=20; # This can be changed if needed
 
 # ----------------------------Average images PROCESSING------------------------
@@ -64,4 +68,3 @@ for bundle in $bundles;
 
 done;
 rm -r tmp;
-

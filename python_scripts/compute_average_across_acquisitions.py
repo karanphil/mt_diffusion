@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-
+Script to average a list off images (nifti files).
 """
 
 import argparse
@@ -23,7 +23,8 @@ def _build_arg_parser():
     p.add_argument('in_images', nargs='+',
                    help='Input images to average.')
 
-    p.add_argument('out_average')
+    p.add_argument('out_average',
+                   help='Output average image.')
 
     p.add_argument('--median', action='store_true',
                    help='Compute the median instead of the mean.')
