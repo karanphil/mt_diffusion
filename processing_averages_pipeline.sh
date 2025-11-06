@@ -26,8 +26,8 @@ cd ${register_data_dir}/output/results_registration/hc18/Metrics_into_template_s
 images=$(ls);
 echo "Average images PROCESSING";
 cd $target_dir;
-mkdir -p average;
-cd ${target_dir}/average;
+mkdir -p average_all_scans;
+cd ${target_dir}/average_all_scans;
 for image in $images; 
     do echo $image;
 
