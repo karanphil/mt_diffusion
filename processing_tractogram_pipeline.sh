@@ -37,7 +37,7 @@ for sub in $subs;
     cd ${target_dir}/${sub};
     mkdir -p dwi_for_tractography;
     cd ${target_dir}/${sub}/dwi_for_tractography;
-    if [ ! -f "dwi_mt_off_upsample.nii.gz" ]; then
+    if [ ! -f "csf_mask.nii.gz" ]; then
         echo "Resample";
         scil_volume_resample $dwi_mt_off dwi.nii.gz --voxel_size 1 -f;
         scil_volume_resample $b0 b0.nii.gz --voxel_size 1 -f;
