@@ -76,7 +76,6 @@ for sub in $subs;
     cd ${target_dir}/${sub}/tractography;
     if [ ! -f "local_tracking.nii.gz" ]; then
         echo "Tractography";
-        # ADD OPTION FOR CPU OR GPU (not everybody has gpu)
         scil_tracking_local $fodf $wm_mask $wm_mask local_tracking.trk $gpu_option --npv 10 -f;
         scil_tractogram_remove_invalid local_tracking.trk local_tracking.trk --remove_single_point -f;
     fi
