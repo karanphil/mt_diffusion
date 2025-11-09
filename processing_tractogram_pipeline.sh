@@ -61,7 +61,7 @@ for sub in $subs;
 
     # ---------------------CSD Computation---------------------
     cd ${target_dir}/${sub};
-    mkdir fodf_for_tractography;
+    mkdir -p fodf_for_tractography;
     cd ${target_dir}/${sub}/fodf_for_tractography;
     if [ ! -f "fodf.nii.gz" ]; then
         echo "CSD for tractography";
@@ -72,7 +72,7 @@ for sub in $subs;
 
     # ---------------------Tractography---------------------
     cd ${target_dir}/${sub};
-    mkdir tractography;
+    mkdir -p tractography;
     cd ${target_dir}/${sub}/tractography;
     if [ ! -f "local_tracking.nii.gz" ]; then
         echo "Tractography";
