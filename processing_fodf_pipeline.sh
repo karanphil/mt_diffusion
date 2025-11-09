@@ -68,6 +68,7 @@ for sub in $subs;
     mkdir fodf_metrics_mt_on;
     cd ${target_dir}/${sub}/fodf_metrics_mt_on;
     if [ ! -f "peaks.nii.gz" ]; then
+        echo "FODF metrics on MT-on";
         scil_fodf_max_in_ventricles $fodf_mt_on $fa $md --md_threshold 0.0025 --max_value_output max_fodf_in_ventricles.txt --in_mask $csf_mask --use_median -f;
         max_value=$(cat max_fodf_in_ventricles.txt);
         a_threshold=$(echo 2*${max_value}|bc);
