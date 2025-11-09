@@ -44,7 +44,8 @@ singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_fodf
 
 # Step 9
 use_gpu="true"; # Set this to "false" if no gpu is available.
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_tractogram_pipeline.sh ${main_dir}/${working_dir} $use_gpu;
+nvidia_opt="--nv"; # Comment if no gpu is available.
+singularity exec $nvidia_opt -B $main_dir $singularity_path bash ${code_dir}/processing_tractogram_pipeline.sh ${main_dir}/${working_dir} $use_gpu;
 
 # Step 10
 cd ${main_dir}/${code_name};

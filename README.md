@@ -69,7 +69,8 @@ Then, compute the tractogram with:
 
 ```
 use_gpu="true"; # Set this to "false" if no gpu is available.
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_tractogram_pipeline.sh ${main_dir}/${working_dir} $use_gpu;
+nvidia_opt="--nv"; # Comment if no gpu is available.
+singularity exec $nvidia_opt -B $main_dir $singularity_path bash ${code_dir}/processing_tractogram_pipeline.sh ${main_dir}/${working_dir} $use_gpu;
 ```
 
 Then, run rbx_flow. You will need to first clone the rbx_flow repository:
