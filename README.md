@@ -117,3 +117,11 @@ template_path="${main_dir}/mni_atlas/t1_template_bet.nii.gz"; # Put the right pa
 cd ${main_dir};
 bash ${code_dir}/processing_register_pipeline.sh ${main_dir}/${working_dir} $register_code_dir $register_data_dir $template_path $singularity_path;
 ```
+
+Next, compute the population average of all images and bundles:
+
+```
+register_data_dir="${main_dir}/register_flow";
+cd ${main_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_averages_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+```

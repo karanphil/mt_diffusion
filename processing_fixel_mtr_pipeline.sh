@@ -35,6 +35,8 @@ for sub in $subs;
     cd ${target_dir}/${sub}/fixel_mtr;
     if [ ! -f "mtr_peak_values.nii.gz" ]; then
         echo "Compute fixel-MTR";
+        # These thresholds let almost everything go through, so we have a lot of fixels to look at with visualization.
+        # The filtering will occur in the next steps using the masks instead of the maps. The masks are already thresholded.
         rel_thr=0.01;
         abs_thr=0.0;
         python ${code_dir}/python_scripts/compute_fixel_mtr.py $fodf_mt_off $fodf_mt_on $peaks_mt_off $peaks_mt_on ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_voxel-norm.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_none-norm.nii.gz mtr_fodf.nii.gz mtr_peak_values.nii.gz mtr_peaks.nii.gz --mask $mask --rel_thr $rel_thr --abs_thr $abs_thr --min_angle 20 -f;
