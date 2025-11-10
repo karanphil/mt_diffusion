@@ -33,17 +33,17 @@ for sub in $subs;
     ln -sf ${target_dir}/${sub}/preprocessing_t1/register_natif/outputWarped.nii.gz t1.nii.gz
 
     cd ${register_data_dir}/input/${sub}/metrics;
-    ln -s ${target_dir}/${sub}/fixel_analysis/voxel_density_mask_voxel-norm_*.nii.gz .;
-    ln -s ${target_dir}/${sub}/fixel_mtr/fixel_mtr*.nii.gz .;
-    ln -s ${target_dir}/${sub}/mtr/mtr*.nii.gz .;
-    ln -s ${target_dir}/${sub}/afd_fixel/afd_fixel_*.nii.gz .;
-    ln -s ${target_dir}/${sub}/fodf_metrics_mt_off/nufo.nii.gz .;
-    ln -s ${target_dir}/${sub}/mtr/powder_averaged_mtr.nii.gz .;
-    ln -s ${target_dir}/${sub}/dti/fa.nii.gz .;
-    ln -s ${target_dir}/${sub}/dti/md.nii.gz .;
+    ln -sf ${target_dir}/${sub}/fixel_analysis/voxel_density_mask_voxel-norm_*.nii.gz .;
+    ln -sf ${target_dir}/${sub}/fixel_mtr/fixel_mtr*.nii.gz .;
+    ln -sf ${target_dir}/${sub}/mtr/mtr*.nii.gz .;
+    ln -sf ${target_dir}/${sub}/afd_fixel/afd_fixel_*.nii.gz .;
+    ln -sf ${target_dir}/${sub}/fodf_metrics_mt_off/nufo.nii.gz .;
+    ln -sf ${target_dir}/${sub}/mtr/powder_averaged_mtr.nii.gz .;
+    ln -sf ${target_dir}/${sub}/dti/fa.nii.gz .;
+    ln -sf ${target_dir}/${sub}/dti/md.nii.gz .;
 
     cd ${register_data_dir}/input/${sub}/tractograms;
-    ln -s ${target_dir}/${sub}/bundles/*.trk .;
+    ln -sf ${target_dir}/${sub}/bundles/*.trk .;
 
 done;
 

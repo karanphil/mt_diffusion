@@ -26,8 +26,8 @@ for sub in $subs;
     tractogram="${target_dir}/${sub}/tractography/local_tracking.trk";
 
     mkdir -p ${rbx_data_dir}/input/${sub};
-    ln -s $fa ${rbx_data_dir}/input/${sub}/fa.nii.gz;
-    ln -s $tractogram ${rbx_data_dir}/input/${sub}/local_tracking.trk;
+    ln -sf $fa ${rbx_data_dir}/input/${sub}/fa.nii.gz;
+    ln -sf $tractogram ${rbx_data_dir}/input/${sub}/local_tracking.trk;
 
 done;
 
