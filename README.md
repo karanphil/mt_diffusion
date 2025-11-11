@@ -6,7 +6,7 @@ First, set the versions for rbx_flow and register_flow:
 
 ```
 rbx_flow_version="1.3.0";
-register_flow_version="1.0.0";
+register_flow_version="0.2.0";
 ```
 
 Then, you should create a repository to host the project: 

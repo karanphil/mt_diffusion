@@ -5,7 +5,7 @@
 
 # VERSIONS
 rbx_flow_version="1.3.0";
-register_flow_version="1.0.0";
+register_flow_version="0.2.0";
 
 # # Step 1
 # main_dir="mt-diff-mcgill"; # Put any name you like
