@@ -7,8 +7,8 @@
 
 # The first argument of the script is the target directory (full path)
 target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing"
-# The second argument is the directory where the register_flow code lives (full path)
-register_code_dir=$2; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/code/register_flow"
+# The second argument is the version of register_flow
+register_flow_version=$2; # ex: "1.0.0"
 # The third argument is the register_flow directory to create and use (full path)
 register_data_dir=$3; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/register_flow"
 # The fourth argument is the T1 template file (has to be bet) (full path)
@@ -50,4 +50,4 @@ done;
 mkdir -p ${register_data_dir}/output;
 cd ${register_data_dir}/output;
 
-nextflow run ${register_code_dir}/main.nf --input ../input --template $template_path -with-singularity $singularity_path --trk_remove_invalid -resume;
+nextflow run scilus/register_flow -r $register_flow_version --input ../input --template $template_path -with-singularity $singularity_path --trk_remove_invalid -resume;

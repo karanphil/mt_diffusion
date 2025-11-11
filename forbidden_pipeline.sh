@@ -3,6 +3,10 @@
 # IMPORTANT: LAUNCH THIS SCRIPT FROM A FOLDER WHERE YOU WANT TO CREATE THE PROJECT FOLDER STRUCTURE.
 # AKA inside mt-diff-mcgill folder.
 
+# VERSIONS
+rbx_flow_version="1.3.0";
+register_flow_version="1.0.0";
+
 # # Step 1
 # main_dir="mt-diff-mcgill"; # Put any name you like
 # mkdir $main_dir;
@@ -29,8 +33,8 @@ bash ${code_dir}/rename_files.sh $original_data_dir ${main_dir}/${working_dir};
 
 # Step 5
 container_dir="containers"; # Put any name you like
-singularity_path="${main_dir}/${container_dir}/scilus_2.2.0.sif";
-singularity build $singularity_path docker://scilus/scilus:2.2.0;
+singularity_path="${main_dir}/${container_dir}/scilus_2.1.2.sif";
+singularity build $singularity_path docker://scilus/scilus:2.1.2;
 
 # Step 6
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/preprocessing_dwi_pipeline.sh ${main_dir}/${working_dir} ${code_dir};
@@ -48,30 +52,20 @@ nvidia_opt="--nv"; # Comment if no gpu is available.
 singularity exec $nvidia_opt -B $main_dir $singularity_path bash ${code_dir}/processing_tractogram_pipeline.sh ${main_dir}/${working_dir} $use_gpu;
 
 # Step 10
-cd ${main_dir}/${code_name};
-git clone git@github.com:scilus/rbx_flow.git;
-rbx_code_dir="${main_dir}/${code_name}/rbx_flow";
-
-# Step 11
 rbx_data_dir="${main_dir}/rbx_flow"; # Put any name you like
 rbx_atlas_dir="${main_dir}/rbx_atlas"; # Put the right path to the atlas
 cd ${main_dir};
-bash ${code_dir}/processing_rbx_pipeline.sh ${main_dir}/${working_dir} $rbx_code_dir $rbx_data_dir $rbx_atlas_dir $singularity_path;
+bash ${code_dir}/processing_rbx_pipeline.sh ${main_dir}/${working_dir} $rbx_flow_version $rbx_data_dir $rbx_atlas_dir $singularity_path;
 
-# Step 12
+# Step 11
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_bundles_pipeline.sh ${main_dir}/${working_dir} ${code_dir} $rbx_data_dir;
 
-# Step 13
+# Step 12
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_fixel_mtr_pipeline.sh ${main_dir}/${working_dir} ${code_dir};
 
-# Step 14
-cd ${main_dir}/${code_name};
-git clone git@github.com:scilus/register_flow.git;
-register_code_dir="${main_dir}/${code_name}/register_flow";
-
-# Step 15
+# Step 13
 register_data_dir="${main_dir}/register_flow";
 template_path="${main_dir}/mni_atlas/t1_template_bet.nii.gz"; # Put the right path to the template
 cd ${main_dir};
-bash ${code_dir}/processing_register_pipeline.sh ${main_dir}/${working_dir} $register_code_dir $register_data_dir $template_path $singularity_path;
+bash ${code_dir}/processing_register_pipeline.sh ${main_dir}/${working_dir} $register_flow_version $register_data_dir $template_path $singularity_path;
 

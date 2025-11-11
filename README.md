@@ -2,7 +2,14 @@ These are the instructions for running the whole MT-diffusion pipeline.
 
 Important note: If you ever want to comment out a section of a pipeline, always comment stuff inside IF statements, never outside.
 
-First, you should create a repository to host the project: 
+First, set the versions for rbx_flow and register_flow:
+
+```
+rbx_flow_version="1.3.0";
+register_flow_version="1.0.0";
+```
+
+Then, you should create a repository to host the project: 
 
 ```
 main_dir="mt-diff-mcgill"; # Put any name you like
@@ -42,8 +49,8 @@ For the next steps, it is suggested to use a singularity. It can be downloaded f
 
 ```
 container_dir="containers"; # Put any name you like
-singularity_path="${main_dir}/${container_dir}/scilus_2.2.0.sif";
-singularity build $singularity_path docker://scilus/scilus:2.2.0;
+singularity_path="${main_dir}/${container_dir}/scilus_2.1.2.sif";
+singularity build $singularity_path docker://scilus/scilus:2.1.2;
 ```
 
 Now, compute the pre-processing of DWI data:
@@ -73,21 +80,13 @@ nvidia_opt="--nv"; # Comment if no gpu is available.
 singularity exec $nvidia_opt -B $main_dir $singularity_path bash ${code_dir}/processing_tractogram_pipeline.sh ${main_dir}/${working_dir} $use_gpu;
 ```
 
-Then, run rbx_flow. You will need to first clone the rbx_flow repository:
-
-```
-cd ${main_dir}/${code_name};
-git clone git@github.com:scilus/rbx_flow.git;
-rbx_code_dir="${main_dir}/${code_name}/rbx_flow";
-```
-
-Second, a bundles atlas is needed. Add the path to this atlas and run the rbx pipeline:
+Then, run rbx_flow. A bundles atlas is needed. Add the path to this atlas and run the rbx pipeline:
 
 ```
 rbx_data_dir="${main_dir}/rbx_flow";
 rbx_atlas_dir="${main_dir}/rbx_atlas"; # Put the right path to the atlas
 cd ${main_dir};
-bash ${code_dir}/processing_rbx_pipeline.sh ${main_dir}/${working_dir} $rbx_code_dir $rbx_data_dir $rbx_atlas_dir $singularity_path;
+bash ${code_dir}/processing_rbx_pipeline.sh ${main_dir}/${working_dir} $rbx_flow_version $rbx_data_dir $rbx_atlas_dir $singularity_path;
 ```
 
 After computing the bundles with rbx_flow, it is time to bring the SIFT2 weights back from the tractogram to the bundles, and then run a bundle fixel analysis (fixel density and other stuff):
@@ -102,21 +101,13 @@ Next, compute the fixel-MTR, PA-MTR and project them to the bundles:
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_fixel_mtr_pipeline.sh ${main_dir}/${working_dir} ${code_dir};
 ```
 
-Now that everything is computed per subject, it is time to register them all to the MNI template. You will need to first clone the register_flow repository:
-
-```
-cd ${main_dir}/${code_name};
-git clone git@github.com:scilus/register_flow.git;
-register_code_dir="${main_dir}/${code_name}/register_flow";
-```
-
-Then, run the register_flow pipeline:
+Now that everything is computed per subject, it is time to register them all to the MNI template:
 
 ```
 register_data_dir="${main_dir}/register_flow";
 template_path="${main_dir}/mni_atlas/t1_template_bet.nii.gz"; # Put the right path to the template
 cd ${main_dir};
-bash ${code_dir}/processing_register_pipeline.sh ${main_dir}/${working_dir} $register_code_dir $register_data_dir $template_path $singularity_path;
+bash ${code_dir}/processing_register_pipeline.sh ${main_dir}/${working_dir} $register_flow_version $register_data_dir $template_path $singularity_path;
 ```
 
 Next, compute the population average of all images and bundles:

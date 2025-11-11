@@ -6,8 +6,8 @@
 
 # The first argument of the script is the target directory (full path)
 target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/full_processing"
-# The second argument is the directory where the rbx_flow code lives (full path)
-rbx_code_dir=$2; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/code/rbx_flow"
+# The second argument is the version of rbx_flow
+rbx_flow_versions=$2; # ex: "1.3.0"
 # The third argument is the rbx_flow directory to create and use (full path)
 rbx_data_dir=$3; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/rbx_flow"
 # The fourth argument is the bundles atlas directory (full path)
@@ -34,4 +34,4 @@ done;
 mkdir -p ${rbx_data_dir}/output;
 cd ${rbx_data_dir}/output;
 
-nextflow run ${rbx_code_dir}/main.nf --input ../input --atlas_directory $rbx_atlas_dir -with-singularity $singularity_path --register_processes 8 --rbx_processes 8 -resume;
+nextflow run scilus/rbx_flow -r $rbx_flow_versions --input ../input --atlas_directory $rbx_atlas_dir -with-singularity $singularity_path --register_processes 8 --rbx_processes 8 -resume;
