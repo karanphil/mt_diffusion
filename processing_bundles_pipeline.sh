@@ -39,16 +39,16 @@ for sub in $subs;
         for b in $bundles;
             do bundle_name=${b%".trk"};
             # Compute outliers rejection
-            scil_bundle_reject_outliers $b $b --alpha 0.5 -f;
+            scil_bundle_reject_outliers.py $b $b --alpha 0.5 -f;
             # Export dps files
-            scil_tractogram_dps_math $b export sift2 --out_dps_file ${bundle_name}_sift2_weights.txt -f;
+            scil_tractogram_dps_math.py $b export sift2 --out_dps_file ${bundle_name}_sift2_weights.txt -f;
             # Resave bundles with reference in 2mm iso
             n=${bundle_name}.tck;
-            scil_tractogram_convert $b $n;
-            scil_tractogram_convert $n $b --reference $fa -f;
+            scil_tractogram_convert.py $b $n;
+            scil_tractogram_convert.py $n $b --reference $fa -f;
             rm *.tck;
             # Add SIFT2 weights
-            scil_tractogram_dps_math $b import sift2 --out_tractogram $b --in_dps_file ${bundle_name}_sift2_weights.txt -f;
+            scil_tractogram_dps_math.py $b import sift2 --out_tractogram $b --in_dps_file ${bundle_name}_sift2_weights.txt -f;
             rm ${bundle_name}_sift2_weights.txt;
 
         done;
@@ -65,7 +65,7 @@ for sub in $subs;
         # These thresholds ensure that fixels populated only by a few streamlines of a given bundle are not counted for the masks. These do not affect the maps.
         rel_thr=0.1;
         abs_thr=1.5;
-        scil_bundle_fixel_analysis $peaks_mt_off --in_bundles ${target_dir}/${sub}/bundles/*.trk --processes 8 --single_bundle --split_bundles --rel_thr 0.1 --abs_thr 1.5 --norm voxel none --out_dir fixel_analysis/ -f --dps_key sift2;
+        scil_bundle_fixel_analysis.py $peaks_mt_off --in_bundles ${target_dir}/${sub}/bundles/*.trk --processes 8 --single_bundle --split_bundles --rel_thr 0.1 --abs_thr 1.5 --norm voxel none --out_dir fixel_analysis/ -f --dps_key sift2;
         cd ${target_dir}/${sub}/fixel_analysis;
         cp single_bundle_mask_voxel-norm_WM.nii.gz tmp1.nii.gz;
         cp single_bundle_mask_none-norm_WM.nii.gz tmp2.nii.gz;

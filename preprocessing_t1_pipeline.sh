@@ -26,7 +26,7 @@ for sub in $subs;
     cd ${target_dir}/${sub}/dti;
 	if [ ! -f "fa.nii.gz" ]; then
 		echo "DTI computation";
-		scil_dti_metrics $dwi $bval $bvec --mask $mask --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz -f;
+		scil_dti_metrics.py $dwi $bval $bvec --mask $mask --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz -f;
 	fi
 	fa="${target_dir}/${sub}/dti/fa.nii.gz";
 
@@ -43,14 +43,14 @@ for sub in $subs;
 	if [ ! -f "t1_bet.nii.gz" ]; then
 		echo "Bet";
 		antsBrainExtraction.sh -d 3 -a t1.nii.gz -u 0 -e ${atlas_dir}/t1_template.nii.gz -m ${atlas_dir}/t1_brain_probability_map.nii.gz -o output;
-		scil_volume_math convert outputBrainExtractionMask.nii.gz t1_bet_mask.nii.gz --data_type uint8 -f;
-		scil_volume_math multiplication t1.nii.gz t1_bet_mask.nii.gz t1_bet.nii.gz --data_type float32 -f;
+		scil_volume_math.py convert outputBrainExtractionMask.nii.gz t1_bet_mask.nii.gz --data_type uint8 -f;
+		scil_volume_math.py multiplication t1.nii.gz t1_bet_mask.nii.gz t1_bet.nii.gz --data_type float32 -f;
 	fi
 
 	# ---------------------Denoising---------------------
 	if [ ! -f "t1_bet_nlm.nii.gz" ]; then
 		echo "Denoise";
-		scil_denoising_nlmeans t1_bet.nii.gz t1_bet_nlm.nii.gz --mask_denoise t1_bet_mask.nii.gz --processes 6 --number_coils 1 --basic_sigma -f;
+		scil_denoising_nlmeans.py t1_bet.nii.gz t1_bet_nlm.nii.gz --mask_denoise t1_bet_mask.nii.gz --processes 6 --number_coils 1 --basic_sigma -f;
 	fi
 	t1="${target_dir}/${sub}/preprocessing_t1/t1_bet_nlm.nii.gz";
 
@@ -102,12 +102,12 @@ for sub in $subs;
 		antsApplyTransforms -d 3 -i ../wm_map.nii.gz -r $fa -o wm_map.nii.gz -n NearestNeighbor -t output0GenericAffine.mat output1Warp.nii.gz;
 		antsApplyTransforms -d 3 -i ../gm_map.nii.gz -r $fa -o gm_map.nii.gz -n NearestNeighbor -t output0GenericAffine.mat output1Warp.nii.gz;
 		antsApplyTransforms -d 3 -i ../csf_map.nii.gz -r $fa -o csf_map.nii.gz -n NearestNeighbor -t output0GenericAffine.mat output1Warp.nii.gz;
-		scil_volume_math multiplication wm_mask.nii.gz $mask wm_mask.nii.gz --data_type uint16 -f;
-		scil_volume_math multiplication gm_mask.nii.gz $mask gm_mask.nii.gz --data_type uint16 -f;
-		scil_volume_math multiplication csf_mask.nii.gz $mask csf_mask.nii.gz --data_type uint16 -f;
-		scil_volume_math convert wm_mask.nii.gz wm_mask.nii.gz --data_type uint8 -f;
-		scil_volume_math convert gm_mask.nii.gz gm_mask.nii.gz --data_type uint8 -f;
-		scil_volume_math convert csf_mask.nii.gz csf_mask.nii.gz --data_type uint8 -f;
+		scil_volume_math.py multiplication wm_mask.nii.gz $mask wm_mask.nii.gz --data_type uint16 -f;
+		scil_volume_math.py multiplication gm_mask.nii.gz $mask gm_mask.nii.gz --data_type uint16 -f;
+		scil_volume_math.py multiplication csf_mask.nii.gz $mask csf_mask.nii.gz --data_type uint16 -f;
+		scil_volume_math.py convert wm_mask.nii.gz wm_mask.nii.gz --data_type uint8 -f;
+		scil_volume_math.py convert gm_mask.nii.gz gm_mask.nii.gz --data_type uint8 -f;
+		scil_volume_math.py convert csf_mask.nii.gz csf_mask.nii.gz --data_type uint8 -f;
 	fi
 
 done;

@@ -54,16 +54,16 @@ for bundle in $bundles;
     echo $b;
 
     inputs=$(for sub in $subs; do echo "${register_data_dir}/output/results_registration/${sub}/Trks_into_template_space/${bundle}"; done );
-    scil_tractogram_math union $inputs united_${b}.trk -f;
+    scil_tractogram_math.py union $inputs united_${b}.trk -f;
 
-    scil_tractogram_compress united_${b}.trk united_${b}_compressed.trk -f;
-    scil_bundle_alter_to_target_dice united_${b}_compressed.trk united_${b}_altered.trk --subsample --min_dice 0.95 -f;
+    scil_tractogram_compress.py united_${b}.trk united_${b}_compressed.trk -f;
+    scil_bundle_alter_to_target_dice.py united_${b}_compressed.trk united_${b}_altered.trk --subsample --min_dice 0.95 -f;
     mv united_${b}_altered.trk united_${b}.trk;
     rm united_${b}_compressed.trk;
-    scil_bundle_uniformize_endpoints united_${b}.trk united_${b}_tmp.trk --auto -f;
+    scil_bundle_uniformize_endpoints.py united_${b}.trk united_${b}_tmp.trk --auto -f;
     mv united_${b}_tmp.trk united_${b}.trk;
-    scil_bundle_compute_centroid united_${b}.trk centroid_${b}.trk --nb_points $nb_sections -f;
-    scil_bundle_label_map united_${b}.trk centroid_${b}.trk tmp --nb_pts $nb_sections -f;
+    scil_bundle_compute_centroid.py united_${b}.trk centroid_${b}.trk --nb_points $nb_sections -f;
+    scil_bundle_label_map.py united_${b}.trk centroid_${b}.trk tmp --nb_pts $nb_sections -f;
     cp tmp/labels_map.nii.gz labels_${b}.nii.gz;
 
 done;

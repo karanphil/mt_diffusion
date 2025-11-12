@@ -39,13 +39,13 @@ for sub in $subs;
     cd ${target_dir}/${sub}/dwi_for_tractography;
     if [ ! -f "csf_mask.nii.gz" ]; then
         echo "Resample";
-        scil_volume_resample $dwi_mt_off dwi.nii.gz --voxel_size 1 -f;
-        scil_volume_resample $b0 b0.nii.gz --voxel_size 1 -f;
-        scil_volume_resample $fa fa.nii.gz --voxel_size 1 -f;
-        scil_volume_resample $md md.nii.gz --voxel_size 1 -f;
-        scil_volume_resample $mask mask.nii.gz --voxel_size 1 --interp nn -f;
-        scil_volume_resample $wm_mask wm_mask.nii.gz --voxel_size 1 --interp nn -f;
-        scil_volume_resample $csf_mask csf_mask.nii.gz --voxel_size 1 --interp nn -f;
+        scil_volume_resample.py $dwi_mt_off dwi.nii.gz --voxel_size 1 -f;
+        scil_volume_resample.py $b0 b0.nii.gz --voxel_size 1 -f;
+        scil_volume_resample.py $fa fa.nii.gz --voxel_size 1 -f;
+        scil_volume_resample.py $md md.nii.gz --voxel_size 1 -f;
+        scil_volume_resample.py $mask mask.nii.gz --voxel_size 1 --interp nn -f;
+        scil_volume_resample.py $wm_mask wm_mask.nii.gz --voxel_size 1 --interp nn -f;
+        scil_volume_resample.py $csf_mask csf_mask.nii.gz --voxel_size 1 --interp nn -f;
         cp $bval_mt_off dwi.bval;
         cp $bvec_mt_off dwi.bvec;
     fi
@@ -65,8 +65,8 @@ for sub in $subs;
     cd ${target_dir}/${sub}/fodf_for_tractography;
     if [ ! -f "fodf.nii.gz" ]; then
         echo "CSD for tractography";
-        scil_frf_ssst $dwi $bval $bvec frf.txt --mask $mask --mask_wm $wm_mask --roi_radii 30 30 20 -f;
-        scil_fodf_ssst $dwi $bval $bvec frf.txt fodf.nii.gz --mask $mask --processes 8 --sh_order 6 -f;
+        scil_frf_ssst.py $dwi $bval $bvec frf.txt --mask $mask --mask_wm $wm_mask --roi_radii 30 30 20 -f;
+        scil_fodf_ssst.py $dwi $bval $bvec frf.txt fodf.nii.gz --mask $mask --processes 8 --sh_order 6 -f;
     fi
     fodf="${target_dir}/${sub}/fodf_for_tractography/fodf.nii.gz";
 
@@ -76,8 +76,8 @@ for sub in $subs;
     cd ${target_dir}/${sub}/tractography;
     if [ ! -f "local_tracking.nii.gz" ]; then
         echo "Tractography";
-        scil_tracking_local $fodf $wm_mask $wm_mask local_tracking.trk $gpu_option --npv 10 -f;
-        scil_tractogram_remove_invalid local_tracking.trk local_tracking.trk --remove_single_point -f;
+        scil_tracking_local.py $fodf $wm_mask $wm_mask local_tracking.trk $gpu_option --npv 10 -f;
+        scil_tractogram_remove_invalid.py local_tracking.trk local_tracking.trk --remove_single_point -f;
     fi
     tractogram="${target_dir}/${sub}/tractography/local_tracking.trk";
 
@@ -85,11 +85,11 @@ for sub in $subs;
     if [ ! -f "sift2_weights.nii.gz" ]; then
         echo "SIFT2";
         fodf_tournier="${target_dir}/${sub}/fodf_tournier.nii.gz";
-        scil_sh_convert $fodf $fodf_tournier descoteaux07_legacy tournier07 -f;
+        scil_sh_convert.py $fodf $fodf_tournier descoteaux07_legacy tournier07 -f;
         tractogram_tck="${target_dir}/${sub}/local_tracking.tck";
-        scil_tractogram_convert $tractogram $tractogram_tck -f;
+        scil_tractogram_convert.py $tractogram $tractogram_tck -f;
         tcksift2 $tractogram_tck $fodf_tournier sift2_weights.txt -force;
-        scil_tractogram_dps_math $tractogram import "sift2" --in_dps_file sift2_weights.txt --out_tractogram $tractogram -f;
+        scil_tractogram_dps_math.py $tractogram import "sift2" --in_dps_file sift2_weights.txt --out_tractogram $tractogram -f;
         rm $tractogram_tck $fodf_tournier;
     fi
 

@@ -33,7 +33,7 @@ for sub in $subs;
     # This should already be done in the t1 preprocessing, but just in case.
 	if [ ! -f "fa.nii.gz" ]; then
 		echo "DTI computation";
-		scil_dti_metrics $dwi_mt_off $bval_mt_off $bvec_mt_off --mask $mask --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz -f;
+		scil_dti_metrics.py $dwi_mt_off $bval_mt_off $bvec_mt_off --mask $mask --not_all --fa fa.nii.gz --md md.nii.gz --rgb rgb.nii.gz -f;
 	fi
 	fa="${target_dir}/${sub}/dti/fa.nii.gz";
     md="${target_dir}/${sub}/dti/md.nii.gz";
@@ -44,9 +44,9 @@ for sub in $subs;
     cd ${target_dir}/${sub}/fodf;
     if [ ! -f "fodf_mt_off.nii.gz" ]; then
         echo "CSD Computation";
-        scil_frf_ssst $dwi_mt_off $bval_mt_off $bvec_mt_off frf.txt --mask $mask --mask_wm $wm_mask --roi_radii 15 15 10 -f;
-        scil_fodf_ssst $dwi_mt_off $bval_mt_off $bvec_mt_off frf.txt fodf_mt_off.nii.gz --mask $mask --processes 8 --sh_order 6 -f;
-        scil_fodf_ssst $dwi_mt_on $bval_mt_on $bvec_mt_on frf.txt fodf_mt_on.nii.gz --mask $mask --processes 8 --sh_order 6 -f;
+        scil_frf_ssst.py $dwi_mt_off $bval_mt_off $bvec_mt_off frf.txt --mask $mask --mask_wm $wm_mask --roi_radii 15 15 10 -f;
+        scil_fodf_ssst.py $dwi_mt_off $bval_mt_off $bvec_mt_off frf.txt fodf_mt_off.nii.gz --mask $mask --processes 8 --sh_order 6 -f;
+        scil_fodf_ssst.py $dwi_mt_on $bval_mt_on $bvec_mt_on frf.txt fodf_mt_on.nii.gz --mask $mask --processes 8 --sh_order 6 -f;
     fi
     fodf_mt_off="${target_dir}/${sub}/fodf/fodf_mt_off.nii.gz";
     fodf_mt_on="${target_dir}/${sub}/fodf/fodf_mt_on.nii.gz";
@@ -58,10 +58,10 @@ for sub in $subs;
     cd ${target_dir}/${sub}/fodf_metrics_mt_off;
     if [ ! -f "peaks.nii.gz" ]; then
         echo "FODF metrics on MT-off";
-        scil_fodf_max_in_ventricles $fodf_mt_off $fa $md --md_threshold 0.0025 --max_value_output max_fodf_in_ventricles.txt --in_mask $csf_mask --use_median -f;
+        scil_fodf_max_in_ventricles.py $fodf_mt_off $fa $md --md_threshold 0.0025 --max_value_output max_fodf_in_ventricles.txt --in_mask $csf_mask --use_median -f;
         max_value=$(cat max_fodf_in_ventricles.txt);    
         a_threshold=$(echo 2*${max_value}|bc);
-        scil_fodf_metrics $fodf_mt_off --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
+        scil_fodf_metrics.py $fodf_mt_off --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
     fi
     # MT-on
     cd ${target_dir}/${sub};
@@ -69,10 +69,10 @@ for sub in $subs;
     cd ${target_dir}/${sub}/fodf_metrics_mt_on;
     if [ ! -f "peaks.nii.gz" ]; then
         echo "FODF metrics on MT-on";
-        scil_fodf_max_in_ventricles $fodf_mt_on $fa $md --md_threshold 0.0025 --max_value_output max_fodf_in_ventricles.txt --in_mask $csf_mask --use_median -f;
+        scil_fodf_max_in_ventricles.py $fodf_mt_on $fa $md --md_threshold 0.0025 --max_value_output max_fodf_in_ventricles.txt --in_mask $csf_mask --use_median -f;
         max_value=$(cat max_fodf_in_ventricles.txt);
         a_threshold=$(echo 2*${max_value}|bc);
-        scil_fodf_metrics $fodf_mt_on --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
+        scil_fodf_metrics.py $fodf_mt_on --mask $mask --abs_peaks_and_values --at $a_threshold -f --processes 8;
     fi
 
 done;

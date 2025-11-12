@@ -30,7 +30,7 @@ for sub in $subs;
         for bundle in $bundles;
             do b=${bundle%"_to_template.trk"};
             echo $b;
-            scil_bundle_label_map ${register_data_dir}/output/results_registration/${sub}/Trks_into_template_space/${bundle} ${target_dir}/average_all_scans/centroid_${b}.trk tmp --nb_pts $nb_sections -f;
+            scil_bundle_label_map.py ${register_data_dir}/output/results_registration/${sub}/Trks_into_template_space/${bundle} ${target_dir}/average_all_scans/centroid_${b}.trk tmp --nb_pts $nb_sections -f;
             cp tmp/labels_map.nii.gz labels_${b}.nii.gz;
         
         done;
@@ -48,11 +48,11 @@ for sub in $subs;
         for bundle in $bundles;
             do b=${bundle%"_to_template.trk"};
             echo $b;
-            scil_volume_math lower_threshold_eq ${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/voxel_density_mask_voxel-norm_${b}_to_template.nii.gz 1.0 ${b}_mask.nii.gz -f;
+            scil_volume_math.py lower_threshold_eq ${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/voxel_density_mask_voxel-norm_${b}_to_template.nii.gz 1.0 ${b}_mask.nii.gz -f;
 
             erosion=$(echo $erosions | awk -v n=$((count+1)) '{print $n}');
             echo "Erosion: $erosion";
-            scil_volume_math erosion ${b}_mask.nii.gz ${erosion} ${b}_mask_eroded.nii.gz -f;
+            scil_volume_math.py erosion ${b}_mask.nii.gz ${erosion} ${b}_mask_eroded.nii.gz -f;
             ((count++));
 
         done;
