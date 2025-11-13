@@ -18,7 +18,8 @@ for sub in $subs;
 
     dwi_mt_off="${target_dir}/${sub}/dwi/dwi_mt_off.nii.gz";
     bval_mt_off="${target_dir}/${sub}/dwi/dwi_mt_off.bval";
-    bvec_mt_off="${target_dir}/${sub}/dwi/dwi_mt_off.bvec";
+    dwi_mt_on="${target_dir}/${sub}/dwi/dwi_mt_on.nii.gz";
+    bval_mt_on="${target_dir}/${sub}/dwi/dwi_mt_on.bval";
     fodf_mt_off="${target_dir}/${sub}/fodf/fodf_mt_off.nii.gz";
     fodf_mt_on="${target_dir}/${sub}/fodf/fodf_mt_on.nii.gz";
     peaks_mt_off="${target_dir}/${sub}/fodf_metrics_mt_off/peaks.nii.gz";
