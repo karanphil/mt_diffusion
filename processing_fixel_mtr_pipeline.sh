@@ -59,6 +59,7 @@ for sub in $subs;
     cd ${target_dir}/${sub}/mtr;
     if [ ! -f "powder_averaged_mtr.nii.gz" ]; then
         echo "Powder Average MTR Calculation";
+        echo "scil_dwi_powder_average.py $dwi_mt_off $bval_mt_off dwi_mt_off_pa.nii.gz --mask $mask -f";
         scil_dwi_powder_average.py $dwi_mt_off $bval_mt_off dwi_mt_off_pa.nii.gz --mask $mask -f;
         scil_dwi_powder_average.py $dwi_mt_on $bval_mt_on dwi_mt_on_pa.nii.gz --mask $mask -f;
         scil_volume_math.py subtraction dwi_mt_off_pa.nii.gz dwi_mt_on_pa.nii.gz powder_averaged_mtr.nii.gz --data_type float32 -f;
