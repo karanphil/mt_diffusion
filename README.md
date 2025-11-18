@@ -107,7 +107,7 @@ Now that everything is computed per subject, it is time to register them all to 
 register_data_dir="${main_dir}/register_flow";
 template_path="${main_dir}/mni_atlas/t1_template_bet.nii.gz"; # Put the right path to the template
 cd ${main_dir};
-bash ${code_dir}/processing_register_pipeline.sh ${main_dir}/${working_dir} $register_flow_version $register_data_dir $template_path $singularity_path;
+bash ${code_dir}/processing_registration_pipeline.sh ${main_dir}/${working_dir} $register_flow_version $register_data_dir $template_path $singularity_path;
 ```
 
 Next, compute the population average of all images and bundles:
