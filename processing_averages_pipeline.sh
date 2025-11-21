@@ -48,6 +48,7 @@ done;
 cd ${register_data_dir}/output/results_registration/hc18/Trks_into_template_space;
 bundles=$(ls *.trk);
 echo "Average bundles PROCESSING";
+cd ${target_dir}/average_all_scans;
 mkdir -p tmp;
 for bundle in $bundles;
     do b=${bundle%"_to_template.trk"};
