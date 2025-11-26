@@ -9,8 +9,8 @@ target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcg
 # The second argument is the code directory (full path).
 code_dir=$2; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/code/mt-diffusion"
 cd $target_dir;
-# subs=$(ls -d hc*);
-subs=("hc18");
+subs=$(ls -d hc*);
+
 
 # ----------------------------Fixel-MTR PROCESSING-------------------------
 echo "Bundles PROCESSING";
