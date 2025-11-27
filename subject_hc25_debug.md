@@ -1,5 +1,7 @@
 So the subject 25 (hc25 and hc25r) has very a thin CC, with hyperintensities on the T1 also. Thus, fsl-fast has trouble segmenting a proper WM mask in the middle part of the CC. To fix this, I computed a supplementary mask with the FA, using a threshold of FA>=0.5. I did the union of both wm_mask.nii.gz and this fa_thr_0p5.nii.gz. Here are the command:
 
+!!! Don't forget to remove all files that you want to overwrite using the scripts, as we look for already existing data before launch !!!
+
 ```
 # In the main directory of the project (mt-diff-mcgill), do:
 main_dir=$(pwd -P);
@@ -17,7 +19,7 @@ scil_volume_math.py lower_threshold_eq ${target_dir}/${sub}/dti/fa.nii.gz 0.5 fa
 scil_volume_math.py union wm_mask.nii.gz fa_thr_0p5.nii.gz wm_mask_for_tractography.nii.gz
 ```
 
-Then, I reran the tractography using this mask.
+Then, I ran the tractography using this mask.
 
 ```
 # Go to the ${target_dir}/${sub}/tractography folder.
@@ -29,7 +31,7 @@ scil_tracking_local.py $fodf $wm_mask $wm_mask local_tracking.trk $gpu_option --
 scil_tractogram_remove_invalid.py local_tracking.trk local_tracking.trk --remove_single_point -f;
 ```
 
-Now, rerun SIFT2:
+Now, run SIFT2:
 
 ```
 fodf_tournier="${target_dir}/${sub}/fodf_for_tractography/fodf_tournier.nii.gz";
@@ -41,7 +43,7 @@ scil_tractogram_dps_math.py $tractogram import "sift2" --in_dps_file sift2_weigh
 rm $tractogram_tck $fodf_tournier;
 ```
 
-Next, update the tractograms in rbx_flow, and resume it:
+If rbx_flow was already ran, update the tractograms in rbx_flow, and resume it:
 
 ```
 rbx_flow_version="1.3.0";
