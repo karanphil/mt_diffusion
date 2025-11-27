@@ -84,9 +84,9 @@ for sub in $subs;
     # ---------------------SIFT2---------------------
     if [ ! -f "sift2_weights.nii.gz" ]; then
         echo "SIFT2";
-        fodf_tournier="${target_dir}/${sub}/fodf_tournier.nii.gz";
+        fodf_tournier="${target_dir}/${sub}/fodf_for_tractography/fodf_tournier.nii.gz";
         scil_sh_convert.py $fodf $fodf_tournier descoteaux07_legacy tournier07 -f;
-        tractogram_tck="${target_dir}/${sub}/local_tracking.tck";
+        tractogram_tck="${target_dir}/${sub}/tractography/local_tracking.tck";
         scil_tractogram_convert.py $tractogram $tractogram_tck -f;
         tcksift2 $tractogram_tck $fodf_tournier sift2_weights.txt -force;
         scil_tractogram_dps_math.py $tractogram import "sift2" --in_dps_file sift2_weights.txt --out_tractogram $tractogram -f;
