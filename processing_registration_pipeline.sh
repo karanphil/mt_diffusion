@@ -37,8 +37,8 @@ for sub in $subs;
     ln -sf ${target_dir}/${sub}/fixel_mtr/fixel_mtr*.nii.gz .;
     ln -sf ${target_dir}/${sub}/mtr/mtr*.nii.gz .;
     ln -sf ${target_dir}/${sub}/afd_fixel/afd_fixel_*.nii.gz .;
-    ln -sf ${target_dir}/${sub}/fodf_metrics_mt_off/nufo.nii.gz .;
     ln -sf ${target_dir}/${sub}/mtr/powder_averaged_mtr.nii.gz .;
+    ln -sf ${target_dir}/${sub}/fodf_metrics_mt_off/nufo.nii.gz .;
     ln -sf ${target_dir}/${sub}/dti/fa.nii.gz .;
     ln -sf ${target_dir}/${sub}/dti/md.nii.gz .;
 
