@@ -12,7 +12,7 @@ code_dir=$2; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgil
 rbx_data_dir=$3; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/rbx_flow"
 cd $target_dir;
 # subs=$(ls -d hc*);
-subs=("hc25 hc25r");
+subs=("hc25r");
 
 # ----------------------------Bundles PROCESSING-------------------------
 echo "Bundles PROCESSING";

@@ -10,7 +10,7 @@ target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcg
 code_dir=$2; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/code/mt-diffusion"
 cd $target_dir;
 # subs=$(ls -d hc*);
-subs=("hc25 hc25r");
+subs=("hc25r");
 
 # ----------------------------Fixel-MTR PROCESSING-------------------------
 echo "MTR PROCESSING";
