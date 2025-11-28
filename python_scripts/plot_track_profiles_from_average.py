@@ -9,7 +9,6 @@ fixel-wise MTR. Made for a single profile at a time.
 import argparse
 import logging
 
-from cmcrameri import cm
 from matplotlib.lines import Line2D 
 import matplotlib as mpl
 from matplotlib import pyplot as plt
@@ -75,17 +74,16 @@ def main():
     nufo_profile = np.array([np.loadtxt(args.in_nufo_profile)])
     labels = np.arange(1, args.nb_sections + 1, 1)
 
-    cmap = cm.naviaS
-    cmap_idx = np.arange(3, 1000, 1)
+    colors = ['#00A759', '#B45E2F']
     norm = mpl.colors.Normalize(vmin=0.3, vmax=0.7)
 
     fig, ax1 = plt.subplots(figsize=(8, 5))
 
     ax1.plot(labels[mtr_profile != 0], mtr_profile[mtr_profile != 0],
-             label='MTR', marker='o', color=cmap(cmap_idx[0]))
+             label='MTR', marker='o', color=colors[0])
     ax1.plot(labels[fixel_mtr_profile != 0],
              fixel_mtr_profile[fixel_mtr_profile != 0], label='Fixel-wise MTR',
-             marker='o', color=cmap(cmap_idx[1]))
+             marker='o', color=colors[1])
 
     # Add secondary axis for NuFO
     ax2 = ax1.twinx()

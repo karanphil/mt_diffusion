@@ -10,7 +10,6 @@ import argparse
 import logging
 import warnings
 
-from cmcrameri import cm
 from matplotlib.lines import Line2D 
 import matplotlib as mpl
 from matplotlib import pyplot as plt
@@ -153,8 +152,7 @@ def main():
      fixel_diff_std  = np.nanstd(fixel_mtr_profile_diff, axis=0)
 
      # Plot profiles
-     cmap = cm.naviaS
-     cmap_idx = np.arange(3, 1000, 1)
+     colors = ['#00A759', '#B45E2F']
      norm = mpl.colors.Normalize(vmin=0.3, vmax=0.7)
 
      fig, (ax1, ax3) = plt.subplots(2, 1, figsize=(8, 7),
@@ -164,17 +162,17 @@ def main():
      ax1.fill_between(labels[min_nb_subjects_mask],
                       mtr_profile[min_nb_subjects_mask] - mtr_profile_std[min_nb_subjects_mask],
                       mtr_profile[min_nb_subjects_mask] + mtr_profile_std[min_nb_subjects_mask],
-                      color=cmap(cmap_idx[0]), alpha=0.2)
+                      color=colors[0], alpha=0.2)
      ax1.fill_between(labels[min_nb_subjects_mask],
                       fixel_mtr_profile[min_nb_subjects_mask] - fixel_mtr_profile_std[min_nb_subjects_mask],
                       fixel_mtr_profile[min_nb_subjects_mask] + fixel_mtr_profile_std[min_nb_subjects_mask],
-                      color=cmap(cmap_idx[1]), alpha=0.2)
+                      color=colors[1], alpha=0.2)
 
      ax1.plot(labels[min_nb_subjects_mask], mtr_profile[min_nb_subjects_mask],
-              label='MTR', marker='o', color=cmap(cmap_idx[0]))
+              label='MTR', marker='o', color=colors[0])
      ax1.plot(labels[min_nb_subjects_mask],
               fixel_mtr_profile[min_nb_subjects_mask], label='Fixel-wise MTR',
-              marker='o', color=cmap(cmap_idx[1]))
+              marker='o', color=colors[1])
 
      # Add secondary axis for NuFO
      ax2 = ax1.twinx()
@@ -223,21 +221,21 @@ def main():
      ax3.fill_between(labels[min_nb_subjects_mask],
                       mtr_diff_mean[min_nb_subjects_mask] - mtr_diff_std[min_nb_subjects_mask],
                       mtr_diff_mean[min_nb_subjects_mask] + mtr_diff_std[min_nb_subjects_mask],
-                      color=cmap(cmap_idx[0]), alpha=0.2)
+                      color=colors[0], alpha=0.2)
 
      ax3.fill_between(labels[min_nb_subjects_mask],
                       fixel_diff_mean[min_nb_subjects_mask] - fixel_diff_std[min_nb_subjects_mask],
                       fixel_diff_mean[min_nb_subjects_mask] + fixel_diff_std[min_nb_subjects_mask],
-                      color=cmap(cmap_idx[1]), alpha=0.2)
+                      color=colors[1], alpha=0.2)
 
      # Mean curves
      ax3.plot(labels[min_nb_subjects_mask],
               mtr_diff_mean[min_nb_subjects_mask],
-              marker='o', color=cmap(cmap_idx[0]))
+              marker='o', color=colors[0])
 
      ax3.plot(labels[min_nb_subjects_mask],
               fixel_diff_mean[min_nb_subjects_mask],
-              marker='o', color=cmap(cmap_idx[1]))
+              marker='o', color=colors[1])
 
      ax3.set_ylabel('|%diff| scan-rescan')
      ax3.set_xlabel('Bundle section')
