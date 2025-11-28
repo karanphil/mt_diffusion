@@ -106,13 +106,13 @@ for bundle in $bundles;
     # Only scans with rescans
     in_mtr_profiles_scan=$(for sub in $subs_scan; do echo "${target_dir}/${sub}/mtr_profile_${b}.txt"; done );
     in_fixel_mtr_profiles_scan=$(for sub in $subs_scan; do echo "${target_dir}/${sub}/fixel_mtr_profile_${b}.txt"; done );
-    in_nufo_profiles_scan=$(for sub in $subs_scan; do echo "${target_dir}/${sub}/nufo_profile_${b}.txt"; done );
-    in_afd_profiles_scan=$(for sub in $subs_scan; do echo "${target_dir}/${sub}/afd_profile_${b}.txt"; done );
+    # in_nufo_profiles_scan=$(for sub in $subs_scan; do echo "${target_dir}/${sub}/nufo_profile_${b}.txt"; done );
+    # in_afd_profiles_scan=$(for sub in $subs_scan; do echo "${target_dir}/${sub}/afd_profile_${b}.txt"; done );
     # Only rescans
     in_mtr_profiles_rescan=$(for sub in $subs_rescan; do echo "${target_dir}/${sub}/mtr_profile_${b}.txt"; done );
     in_fixel_mtr_profiles_rescan=$(for sub in $subs_rescan; do echo "${target_dir}/${sub}/fixel_mtr_profile_${b}.txt"; done );
-    in_nufo_profiles_rescan=$(for sub in $subs_rescan; do echo "${target_dir}/${sub}/nufo_profile_${b}.txt"; done );
-    in_afd_profiles_rescan=$(for sub in $subs_rescan; do echo "${target_dir}/${sub}/afd_profile_${b}.txt"; done );
+    # in_nufo_profiles_rescan=$(for sub in $subs_rescan; do echo "${target_dir}/${sub}/nufo_profile_${b}.txt"; done );
+    # in_afd_profiles_rescan=$(for sub in $subs_rescan; do echo "${target_dir}/${sub}/afd_profile_${b}.txt"; done );
 
     # TODO: Adapt the python script to take all_scan, scan and rescan as input, to produce plots showing the between and within-subject variability.
     # See plot_track_profiles_diff.py
