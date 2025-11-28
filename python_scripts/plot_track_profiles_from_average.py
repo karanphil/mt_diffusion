@@ -70,7 +70,7 @@ def main():
     # Load profiles
     mtr_profile = np.array([np.loadtxt(args.in_mtr_profile)])
     fixel_mtr_profile = np.array([np.loadtxt(args.in_fixel_mtr_profile)])
-    afd_profile = np.array([np.loadtxt(args.in_afd_profile)])
+    afd_profile = np.array([np.loadtxt(args.in_afd_fixel_profile)])
     nufo_profile = np.array([np.loadtxt(args.in_nufo_profile)])
     labels = np.arange(1, args.nb_sections + 1, 1)
 

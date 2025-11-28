@@ -107,7 +107,7 @@ def main():
      mtr_profiles_all = np.array([np.loadtxt(f) for f in args.in_mtr_profiles_all])
      fixel_mtr_profiles_all = np.array([np.loadtxt(f) for f in args.in_fixel_mtr_profiles_all])
      nufo_profiles_all = np.array([np.loadtxt(f) for f in args.in_nufo_profiles_all])
-     afd_profiles_all = np.array([np.loadtxt(f) for f in args.in_afd_profiles_all])
+     afd_profiles_all = np.array([np.loadtxt(f) for f in args.in_afd_fixel_profiles_all])
      mtr_profiles_scan = np.array([np.loadtxt(f) for f in args.in_mtr_profiles_scan])
      fixel_mtr_profiles_scan = np.array([np.loadtxt(f) for f in args.in_fixel_mtr_profiles_scan])
      mtr_profiles_rescan = np.array([np.loadtxt(f) for f in args.in_mtr_profiles_rescan])
