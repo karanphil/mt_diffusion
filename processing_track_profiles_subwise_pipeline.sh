@@ -33,7 +33,7 @@ for sub in $subs;
     if [ ! -f "labels_AF_L.nii.gz" ]; then
         echo "Labels PROCESSING";
         for bundle in $bundles;
-            do b=${bundle%".trk"};
+            do b=${bundle%"_to_template.trk"};
             echo $b;
             scil_bundle_label_map.py ${register_data_dir}/output/results_registration/${sub}/Trks_into_template_space/${bundle} ${target_dir}/average_all_scans/centroid_${b}.trk tmp --nb_pts $nb_sections -f;
             cp tmp/labels_map.nii.gz labels_${b}.nii.gz;
@@ -51,7 +51,7 @@ for sub in $subs;
         echo "Bundles masks PROCESSING";
         count=0
         for bundle in $bundles;
-            do b=${bundle%".trk"};
+            do b=${bundle%"_to_template.trk"};
             echo $b;
             scil_volume_math.py lower_threshold_eq ${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/voxel_density_mask_voxel-norm_${b}.nii.gz 1.0 ${b}_mask.nii.gz -f;
 
@@ -70,7 +70,7 @@ for sub in $subs;
     if [ ! -f "fixel_mtr_profile_AF_L.nii.gz" ]; then
         echo "Track-profiles PROCESSING";
         for bundle in $bundles;
-            do b=${bundle%".trk"};
+            do b=${bundle%"_to_template.trk"};
             echo $b;
 
             mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/mtr_${b}.nii.gz";
@@ -97,7 +97,7 @@ mkdir -p subject_wise_analysis;
 cd ${target_dir}/subject_wise_analysis;
 
 for bundle in $bundles;
-    do b=${bundle%".trk"};
+    do b=${bundle%"_to_template.trk"};
     echo $b;
     # All scans
     in_mtr_profiles=$(for sub in $subs; do echo "${target_dir}/${sub}/mtr_profile_${b}.txt"; done );
