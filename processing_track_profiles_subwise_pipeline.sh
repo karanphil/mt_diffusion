@@ -19,6 +19,7 @@ nb_sections=20; # This can be changed if needed
 map_thr=1.0;
 afd_thr=0.3; # This can be changed if needed
 min_nvox=100; # This can be changed if needed
+min_nb_subjects=5; # This can be changed if needed
 
 cd ${register_data_dir}/output/results_registration/hc18/Trks_into_template_space;
 bundles=$(ls *.trk);
@@ -114,8 +115,6 @@ for bundle in $bundles;
     # in_nufo_profiles_rescan=$(for sub in $subs_rescan; do echo "${target_dir}/${sub}/nufo_profile_${b}.txt"; done );
     # in_afd_profiles_rescan=$(for sub in $subs_rescan; do echo "${target_dir}/${sub}/afd_profile_${b}.txt"; done );
 
-    # TODO: Adapt the python script to take all_scan, scan and rescan as input, to produce plots showing the between and within-subject variability.
-    # See plot_track_profiles_diff.py
-    python ${code_dir}/python_scripts/plot_track_profiles_from_txt.py . --in_mtr_profiles $in_mtr_profiles --in_fixel_mtr_profiles $in_fixel_mtr_profiles --in_nufo_profiles $in_nufo_profiles --in_afd_profiles $in_afd_profiles --bundle_name ${b} --variance -f;
+    python ${code_dir}/python_scripts/plot_track_profiles_from_txt.py ${b} . --in_mtr_profiles_all $in_mtr_profiles --in_fixel_mtr_profiles_all $in_fixel_mtr_profiles --in_afd_fixel_profiles_all $in_afd_profiles --in_nufo_profiles_all $in_nufo_profiles --in_mtr_profiles_scan $in_mtr_profiles_scan --in_fixel_mtr_profiles_scan $in_fixel_mtr_profiles_scan --in_mtr_profiles_rescan $in_mtr_profiles_rescan --in_fixel_mtr_profiles_rescan $in_fixel_mtr_profiles_rescan --nb_sections $nb_sections --min_nb_subjects $min_nb_subjects -f;
     
 done;
