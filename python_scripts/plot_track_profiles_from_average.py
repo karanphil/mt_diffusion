@@ -74,6 +74,8 @@ def main():
     nufo_profile = np.array([np.loadtxt(args.in_nufo_profile)])
     labels = np.arange(1, args.nb_sections + 1, 1)
 
+    print(mtr_profile.shape)
+
     colors = ['#00A759', '#B45E2F']
     norm = mpl.colors.Normalize(vmin=0.3, vmax=0.7)
 
