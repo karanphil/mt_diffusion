@@ -78,3 +78,8 @@ singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_aver
 average_dir=${main_dir}/${working_dir}/average_all_scans;
 cd ${main_dir};
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_average_pipeline.sh ${average_dir} ${code_dir};
+
+# Step 16
+register_data_dir="${main_dir}/register_flow";
+cd ${main_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_average_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
