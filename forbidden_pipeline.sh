@@ -82,4 +82,4 @@ singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_trac
 # Step 16
 register_data_dir="${main_dir}/register_flow";
 cd ${main_dir};
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_average_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};

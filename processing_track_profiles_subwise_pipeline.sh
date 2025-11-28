@@ -53,7 +53,7 @@ for sub in $subs;
         for bundle in $bundles;
             do b=${bundle%".trk"};
             echo $b;
-            scil_volume_math.py lower_threshold_eq ${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/voxel_density_mask_voxel-norm_${b}_to_template.nii.gz 1.0 ${b}_mask.nii.gz -f;
+            scil_volume_math.py lower_threshold_eq ${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/voxel_density_mask_voxel-norm_${b}.nii.gz 1.0 ${b}_mask.nii.gz -f;
 
             erosion=$(echo $erosions | awk -v n=$((count+1)) '{print $n}');
             echo "Erosion: $erosion";
@@ -70,7 +70,7 @@ for sub in $subs;
     if [ ! -f "fixel_mtr_profile_AF_L.nii.gz" ]; then
         echo "Track-profiles PROCESSING";
         for bundle in $bundles;
-            do b=${bundle%"_to_template.trk"};
+            do b=${bundle%".trk"};
             echo $b;
 
             mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/mtr_${b}.nii.gz";
