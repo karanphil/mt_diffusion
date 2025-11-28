@@ -14,7 +14,11 @@ code_dir=$2; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgil
 register_data_dir=$3; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/register_flow"
 cd $target_dir;
 subs=$(ls -d hc*);
+
 nb_sections=20; # This can be changed if needed
+map_thr=1.0;
+afd_thr=0.3; # This can be changed if needed
+min_nvox=100; # This can be changed if needed
 
 cd ${register_data_dir}/output/results_registration/hc18/Trks_into_template_space;
 bundles=$(ls *.trk);
@@ -28,7 +32,7 @@ for sub in $subs;
     if [ ! -f "labels_AF_L.nii.gz" ]; then
         echo "Labels PROCESSING";
         for bundle in $bundles;
-            do b=${bundle%"_to_template.trk"};
+            do b=${bundle%".trk"};
             echo $b;
             scil_bundle_label_map.py ${register_data_dir}/output/results_registration/${sub}/Trks_into_template_space/${bundle} ${target_dir}/average_all_scans/centroid_${b}.trk tmp --nb_pts $nb_sections -f;
             cp tmp/labels_map.nii.gz labels_${b}.nii.gz;
@@ -46,7 +50,7 @@ for sub in $subs;
         echo "Bundles masks PROCESSING";
         count=0
         for bundle in $bundles;
-            do b=${bundle%"_to_template.trk"};
+            do b=${bundle%".trk"};
             echo $b;
             scil_volume_math.py lower_threshold_eq ${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/voxel_density_mask_voxel-norm_${b}_to_template.nii.gz 1.0 ${b}_mask.nii.gz -f;
 
@@ -68,13 +72,14 @@ for sub in $subs;
             do b=${bundle%"_to_template.trk"};
             echo $b;
 
-            mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/mtr_${b}_to_template.nii.gz";
-            fixel_mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/fixel_mtr_${b}_to_template.nii.gz";
-            afd_fixel="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/afd_fixel_${b}_to_template.nii.gz";
-            nufo="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/nufo_to_template.nii.gz";
+            mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/mtr_${b}.nii.gz";
+            fixel_mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/fixel_mtr_${b}.nii.gz";
+            afd_fixel="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/afd_fixel_${b}.nii.gz";
+            nufo="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/nufo.nii.gz";
+            labels="${target_dir}/${sub}/labels/labels_${b}.nii.gz";
             bundle_mask="${target_dir}/${sub}/masks_bundles/${b}_mask_eroded.nii.gz";
 
-            python ${code_dir}/python_scripts/compute_track_profiles.py $mtr $fixel_mtr ../labels/labels_${b}.nii.gz $afd_fixel $nufo . --in_bundle_map $bundle_mask --bundle_name ${b} --map_threshold 1.0 --afd_threshold 0.3 --min_nvox 100 -f; 
+            python ${code_dir}/python_scripts/compute_track_profiles.py $mtr $fixel_mtr $labels ${b} $afd_fixel $nufo . --in_bundle_map $bundle_mask --map_threshold $map_thr --afd_threshold $afd_thr --min_nvox $min_nvox -f; 
         
         done;
     fi
@@ -91,7 +96,7 @@ mkdir -p subject_wise_analysis;
 cd ${target_dir}/subject_wise_analysis;
 
 for bundle in $bundles;
-    do b=${bundle%"_to_template.trk"};
+    do b=${bundle%".trk"};
     echo $b;
     # All scans
     in_mtr_profiles=$(for sub in $subs; do echo "${target_dir}/${sub}/mtr_profile_${b}.txt"; done );

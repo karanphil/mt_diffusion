@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Script to compute the track-profile of a bundle for both the MTR and the
-fixel-wise MTR.
+Script to compute the track-profile of a bundle for the MTR, fixel-wise MTR,
+AFD and NuFO.
 """
 
 import argparse
@@ -21,33 +21,47 @@ def _build_arg_parser():
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter)
 
-    p.add_argument('in_bundle_mtr')
+    p.add_argument('in_bundle_mtr',
+                   help='Input bundle-specific MTR image.')
 
-    p.add_argument('in_bundle_fixel_mtr')
+    p.add_argument('in_bundle_fixel_mtr',
+                   help='Input bundle-specific fixel-wise MTR image.')
 
-    p.add_argument('in_bundle_labels')
+    p.add_argument('in_bundle_labels',
+                   help='Input bundle labels (sections) image.')
 
-    p.add_argument('in_afd_fixel')
+    p.add_argument('in_bundle_name', type=str,
+                   help='Name of the bundle being processed.')
 
-    p.add_argument('in_nufo')
+    p.add_argument('in_afd_fixel',
+                   help='Input bundle-specific AFD fixel image.')
 
-    p.add_argument('out_dir')
+    p.add_argument('in_nufo',
+                   help='Input NuFO image.')
 
-    p.add_argument('--in_bundle_map')
+    p.add_argument('out_dir',
+                   help='Output directory to save the track-profiles in txt.')
 
-    p.add_argument('--bundle_name')
+    p.add_argument('--in_bundle_map',
+                   help='Input bundle map to create a mask of the bundle. '
+                        'If not provided, the whole bundle labels are used.')
 
     p.add_argument('--map_threshold', type=float, default=1.0,
-                   help='Threshold to apply to the bundle map to create a '
-                        'mask. Default is 1.0.')
+                   help='Threshold (higher-or-equal) to apply to the bundle '
+                        'map to create a mask. Default is 1.0.')
 
     p.add_argument('--afd_threshold', type=float, default=0.3,
-                   help='Threshold to apply to the AFD fixel map to discard '
-                        'voxels with low AFD. Default is 0.3.')
+                   help='Threshold (higher-or-equal) to apply to the AFD '
+                        'fixel map to discard voxels with low AFD. Default is '
+                        '0.3.')
 
     p.add_argument('--min_nvox', type=int, default=100,
                    help='Minimum number of voxels per bundle section to '
                         'consider it valid. Default is 100.')
+    
+    p.add_argument('--nb_sections', type=int, default=20,
+                   help='Number of sections in the bundle labels. '
+                        'Default is 20.')
 
     add_verbose_arg(p)
     add_overwrite_arg(p)
@@ -78,6 +92,7 @@ def main():
 
     afd_fixel_img = nib.load(args.in_afd_fixel)
     afd_fixel = afd_fixel_img.get_fdata().astype(np.float32)
+    afd_mask = afd_fixel >= args.afd_threshold
 
     nufo_img = nib.load(args.in_nufo)
     nufo = nufo_img.get_fdata().astype(np.float32)
@@ -89,7 +104,7 @@ def main():
     else:
         mask = np.ones(mtr.shape, dtype=bool)
 
-    labels_list = np.arange(1, 20 + 1, 1)
+    labels_list = np.arange(1, args.nb_sections + 1, 1)
 
     fixel_mtr_profile = np.zeros((len(labels_list),))
     mtr_profile = np.zeros((len(labels_list),))
@@ -97,9 +112,9 @@ def main():
     afd_profile = np.zeros((len(labels_list),))
     nb_voxels_profile = np.zeros((len(labels_list),))
     for i, label in enumerate(labels_list):
-        label_mask = (labels == label) & mask & (afd_fixel > args.afd_threshold)
+        label_mask = (labels == label) & mask & afd_mask
         nb_voxels_profile[i] = np.sum(label_mask)
-        if np.sum(afd_fixel[label_mask]) != 0 and np.sum(label_mask) >= args.min_nvox:
+        if np.sum(afd_fixel[label_mask]) != 0 and nb_voxels_profile[i] >= args.min_nvox:
             fixel_mtr_profile[i] = np.average(fixel_mtr[label_mask],
                                               weights=afd_fixel[label_mask])
             mtr_profile[i] = np.average(mtr[label_mask],
@@ -108,11 +123,16 @@ def main():
                                          weights=afd_fixel[label_mask])
             afd_profile[i] = np.average(afd_fixel[label_mask])
 
-    np.savetxt(f"{args.out_dir}/mtr_profile_{args.bundle_name}.txt", mtr_profile)
-    np.savetxt(f"{args.out_dir}/fixel_mtr_profile_{args.bundle_name}.txt", fixel_mtr_profile)
-    np.savetxt(f"{args.out_dir}/nufo_profile_{args.bundle_name}.txt", nufo_profile)
-    np.savetxt(f"{args.out_dir}/afd_profile_{args.bundle_name}.txt", afd_profile)
-    np.savetxt(f"{args.out_dir}/nb_voxels_profile_{args.bundle_name}.txt", nb_voxels_profile)
+    np.savetxt(f"{args.out_dir}/mtr_profile_{args.in_bundle_name}.txt",
+               mtr_profile)
+    np.savetxt(f"{args.out_dir}/fixel_mtr_profile_{args.in_bundle_name}.txt",
+               fixel_mtr_profile)
+    np.savetxt(f"{args.out_dir}/nufo_profile_{args.in_bundle_name}.txt",
+               nufo_profile)
+    np.savetxt(f"{args.out_dir}/afd_profile_{args.in_bundle_name}.txt",
+               afd_profile)
+    np.savetxt(f"{args.out_dir}/nb_voxels_profile_{args.in_bundle_name}.txt",
+               nb_voxels_profile)
 
 
 if __name__ == "__main__":
