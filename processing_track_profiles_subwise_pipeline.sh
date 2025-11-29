@@ -53,7 +53,7 @@ for sub in $subs;
         for bundle in $bundles;
             do b=${bundle%"_to_template.trk"};
             echo $b;
-            scil_volume_math.py lower_threshold_eq ${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/voxel_density_mask_voxel-norm_${b}.nii.gz 1.0 ${b}_mask.nii.gz -f;
+            scil_volume_math.py lower_threshold_eq ${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/voxel_density_mask_voxel-norm_${b}_to_template.nii.gz 1.0 ${b}_mask.nii.gz -f;
 
             erosion=$(echo $erosions | awk -v n=$((count+1)) '{print $n}');
             echo "Erosion: $erosion";
@@ -73,10 +73,10 @@ for sub in $subs;
             do b=${bundle%"_to_template.trk"};
             echo $b;
 
-            mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/mtr_${b}.nii.gz";
-            fixel_mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/fixel_mtr_${b}.nii.gz";
-            afd_fixel="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/afd_fixel_${b}.nii.gz";
-            nufo="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/nufo.nii.gz";
+            mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/mtr_${b}_to_template.nii.gz";
+            fixel_mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/fixel_mtr_${b}_to_template.nii.gz";
+            afd_fixel="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/afd_fixel_${b}_to_template.nii.gz";
+            nufo="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/nufo.nii_to_template.gz";
             labels="${target_dir}/${sub}/labels/labels_${b}.nii.gz";
             bundle_mask="${target_dir}/${sub}/masks_bundles/${b}_mask_eroded.nii.gz";
 
