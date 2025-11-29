@@ -76,7 +76,7 @@ for sub in $subs;
             mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/mtr_${b}_to_template.nii.gz";
             fixel_mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/fixel_mtr_${b}_to_template.nii.gz";
             afd_fixel="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/afd_fixel_${b}_to_template.nii.gz";
-            nufo="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/nufo.nii_to_template.gz";
+            nufo="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/nufo_to_template.nii.gz";
             labels="${target_dir}/${sub}/labels/labels_${b}.nii.gz";
             bundle_mask="${target_dir}/${sub}/masks_bundles/${b}_mask_eroded.nii.gz";
 
