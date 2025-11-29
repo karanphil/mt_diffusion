@@ -239,7 +239,7 @@ def main():
      # Create boxplot
      # TODO : add data points.
      bp = ax3.boxplot(data_for_boxplot, positions=positions, patch_artist=True,
-                      showfliers=False, medianprops=dict(color='black'))
+                      showfliers=False, medianprops=dict(color='black'), widths=0.2)
      # Color the boxes alternating (MTR = cmap[0], Fixel = cmap[1])
      for i, box in enumerate(bp['boxes']):
           col = colors[0] if i % 2 == 0 else colors[1]
