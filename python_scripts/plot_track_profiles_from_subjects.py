@@ -148,6 +148,8 @@ def main():
      mtr_mask = (mtr_profiles_scan != 0) & (mtr_profiles_rescan != 0) & (mtr_profile_diff != np.inf) & (~np.isnan(mtr_profile_diff))
      fixel_mtr_mask = (fixel_mtr_profiles_scan != 0) & (fixel_mtr_profiles_rescan != 0) & (fixel_mtr_profile_diff != np.inf) & (~np.isnan(fixel_mtr_profile_diff))
      # Masks to consider only sections with minimum data points (subjects)
+     print((np.sum(mtr_mask, axis=0) >= args.min_nb_subjects))
+     print((np.sum(fixel_mtr_mask, axis=0) >= args.min_nb_subjects))
      mtr_mask = mtr_mask & np.repeat((np.sum(mtr_mask, axis=0) >= args.min_nb_subjects), nb_subjects, axis=0).reshape(nb_subjects, args.nb_sections)
      fixel_mtr_mask = fixel_mtr_mask & np.repeat((np.sum(fixel_mtr_mask, axis=0) >= args.min_nb_subjects), nb_subjects, axis=0).reshape(nb_subjects, args.nb_sections)
 
