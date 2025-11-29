@@ -239,8 +239,8 @@ def main():
 
      ax3.set_ylabel('|%diff| scan-rescan')
      ax3.set_xlabel('Bundle section')
-     ax3.set_ylim(0, 10)
-     ax3.set_yticks(np.arange(1, 11, 1))
+     ax3.set_ylim(0, 30)
+     # ax3.set_yticks(np.arange(1, 11, 1))
      ax3.set_xlim(0, 2 * args.nb_sections + 1.5)
      # ax3.set_xticks(np.arange(1, args.nb_sections + 1, 1))
      # ax3.legend(loc='upper right')
