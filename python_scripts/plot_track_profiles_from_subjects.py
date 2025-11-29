@@ -142,16 +142,14 @@ def main():
      mtr_profile_diff = np.zeros((nb_subjects, args.nb_sections))
      fixel_mtr_profile_diff = np.zeros((nb_subjects, args.nb_sections))
      for i in range(nb_subjects):
-          # Might have to add a check to avoid comparing empty sections
-          # TODO : create a mask to avoid dividing by zero and avoid + or - zero, and avoid inf.
           mtr_profile_diff[i, :] = np.abs(mtr_profiles_scan[i] - mtr_profiles_rescan[i]) / mtr_profiles_scan[i] * 100
           fixel_mtr_profile_diff[i, :] = np.abs(fixel_mtr_profiles_scan[i] - fixel_mtr_profiles_rescan[i]) / fixel_mtr_profiles_scan[i] * 100
+     # Masks to consider only valid data points
      mtr_mask = (mtr_profiles_scan != 0) & (mtr_profiles_rescan != 0) & (mtr_profile_diff != np.inf) & (~np.isnan(mtr_profile_diff))
      fixel_mtr_mask = (fixel_mtr_profiles_scan != 0) & (fixel_mtr_profiles_rescan != 0) & (fixel_mtr_profile_diff != np.inf) & (~np.isnan(fixel_mtr_profile_diff))
-
-     print(mtr_mask.shape)
-     print(mtr_profile_diff.shape)
-     print(mtr_profiles_scan.shape)
+     # Masks to consider only sections with minimum data points (subjects)
+     mtr_mask = mtr_mask & np.repeat((np.sum(mtr_mask, axis=0) >= args.min_nb_subjects), nb_subjects, axis=0).reshape(nb_subjects, args.nb_sections)
+     fixel_mtr_mask = fixel_mtr_mask & np.repeat((np.sum(fixel_mtr_mask, axis=0) >= args.min_nb_subjects), nb_subjects, axis=0).reshape(nb_subjects, args.nb_sections)
 
      data_for_boxplot = []
      for sec in range(args.nb_sections):
