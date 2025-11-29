@@ -146,11 +146,12 @@ def main():
           mtr_profile_diff[i, :] = np.abs(mtr_profiles_scan[i] - mtr_profiles_rescan[i]) / mtr_profiles_scan[i] * 100
           fixel_mtr_profile_diff[i, :] = np.abs(fixel_mtr_profiles_scan[i] - fixel_mtr_profiles_rescan[i]) / fixel_mtr_profiles_scan[i] * 100
 
-     # Compute absolute difference means and std
-     mtr_diff_mean = np.nanmean(mtr_profile_diff, axis=0)
-     mtr_diff_std  = np.nanstd(mtr_profile_diff, axis=0)
-     fixel_diff_mean = np.nanmean(fixel_mtr_profile_diff, axis=0)
-     fixel_diff_std  = np.nanstd(fixel_mtr_profile_diff, axis=0)
+     data_for_boxplot = []
+     for sec in range(args.nb_sections):
+          # MTR diff values at this section across subjects
+          data_for_boxplot.append(mtr_profile_diff[:, sec])
+          # Fixel-MTR diff
+          data_for_boxplot.append(fixel_mtr_profile_diff[:, sec])
 
      # Plot profiles
      colors = ['#00A759', '#B45E2F']
@@ -222,32 +223,26 @@ def main():
 
      # Absolute difference subplot
      ax3 = fig.add_subplot(gs[1, 0])
-     # Variance shading
-     ax3.fill_between(labels[min_nb_subjects_mask],
-                      mtr_diff_mean[min_nb_subjects_mask] - mtr_diff_std[min_nb_subjects_mask],
-                      mtr_diff_mean[min_nb_subjects_mask] + mtr_diff_std[min_nb_subjects_mask],
-                      color=colors[0], alpha=0.2)
 
-     ax3.fill_between(labels[min_nb_subjects_mask],
-                      fixel_diff_mean[min_nb_subjects_mask] - fixel_diff_std[min_nb_subjects_mask],
-                      fixel_diff_mean[min_nb_subjects_mask] + fixel_diff_std[min_nb_subjects_mask],
-                      color=colors[1], alpha=0.2)
+     # Create boxplot
+     bp = ax3.boxplot(data_for_boxplot, patch_artist=True, showfliers=False,
+                      medianprops=dict(color='black'))
+     # Color the boxes alternating (MTR = cmap[0], Fixel = cmap[1])
+     for i, box in enumerate(bp['boxes']):
+          col = colors[0] if i % 2 == 0 else colors[1]
+          box.set_facecolor(col)
+          box.set_alpha(0.5)
 
-     # Mean curves
-     ax3.plot(labels[min_nb_subjects_mask],
-              mtr_diff_mean[min_nb_subjects_mask],
-              marker='o', color=colors[0])
-
-     ax3.plot(labels[min_nb_subjects_mask],
-              fixel_diff_mean[min_nb_subjects_mask],
-              marker='o', color=colors[1])
+     positions = np.arange(1.5, 2 * args.nb_sections + 1, 2)
+     ax3.set_xticks(positions)
+     ax3.set_xticklabels(np.arange(1, args.nb_sections + 1))
 
      ax3.set_ylabel('|%diff| scan-rescan')
      ax3.set_xlabel('Bundle section')
      ax3.set_ylim(0, 5)
      ax3.set_yticks(np.arange(1, 6, 1))
-     ax3.set_xlim(0, args.nb_sections + 1)
-     ax3.set_xticks(np.arange(1, args.nb_sections + 1, 1))
+     # ax3.set_xlim(0, args.nb_sections + 1)
+     # ax3.set_xticks(np.arange(1, args.nb_sections + 1, 1))
      # ax3.legend(loc='upper right')
      # ax3.grid(alpha=0.3)
 
