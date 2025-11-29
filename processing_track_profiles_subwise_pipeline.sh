@@ -115,6 +115,6 @@ for bundle in $bundles;
     # in_nufo_profiles_rescan=$(for sub in $subs_rescan; do echo "${target_dir}/${sub}/nufo_profile_${b}.txt"; done );
     # in_afd_profiles_rescan=$(for sub in $subs_rescan; do echo "${target_dir}/${sub}/afd_profile_${b}.txt"; done );
 
-    python ${code_dir}/python_scripts/plot_track_profiles_from_txt.py ${b} . --in_mtr_profiles_all $in_mtr_profiles --in_fixel_mtr_profiles_all $in_fixel_mtr_profiles --in_afd_fixel_profiles_all $in_afd_profiles --in_nufo_profiles_all $in_nufo_profiles --in_mtr_profiles_scan $in_mtr_profiles_scan --in_fixel_mtr_profiles_scan $in_fixel_mtr_profiles_scan --in_mtr_profiles_rescan $in_mtr_profiles_rescan --in_fixel_mtr_profiles_rescan $in_fixel_mtr_profiles_rescan --nb_sections $nb_sections --min_nb_subjects $min_nb_subjects -f;
+    python ${code_dir}/python_scripts/plot_track_profiles_from_subjects.py ${b} . --in_mtr_profiles_all $in_mtr_profiles --in_fixel_mtr_profiles_all $in_fixel_mtr_profiles --in_afd_fixel_profiles_all $in_afd_profiles --in_nufo_profiles_all $in_nufo_profiles --in_mtr_profiles_scan $in_mtr_profiles_scan --in_fixel_mtr_profiles_scan $in_fixel_mtr_profiles_scan --in_mtr_profiles_rescan $in_mtr_profiles_rescan --in_fixel_mtr_profiles_rescan $in_fixel_mtr_profiles_rescan --nb_sections $nb_sections --min_nb_subjects $min_nb_subjects -f;
     
 done;
