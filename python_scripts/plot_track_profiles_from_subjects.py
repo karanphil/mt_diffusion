@@ -152,11 +152,18 @@ def main():
      fixel_mtr_mask = fixel_mtr_mask & np.repeat((np.sum(fixel_mtr_mask, axis=0) >= args.min_nb_subjects)[np.newaxis, :], nb_subjects, axis=0)
 
      data_for_boxplot = []
+     positions = []
+     section_centers = []
+     offset = 0.2  # distance between MTR and Fixel boxes (smaller = closer)
      for sec in range(args.nb_sections):
           # MTR diff values at this section across subjects
           data_for_boxplot.append(mtr_profile_diff[mtr_mask[:, sec], sec])
           # Fixel-MTR diff
           data_for_boxplot.append(fixel_mtr_profile_diff[fixel_mtr_mask[:, sec], sec])
+          center = sec + 1  # section index on x-axis
+          section_centers.append(center)
+          positions.append(center - offset)  # MTR
+          positions.append(center + offset)  # Fixel-MTR
 
      # Plot profiles
      colors = ['#00A759', '#B45E2F']
@@ -230,11 +237,9 @@ def main():
      ax3 = fig.add_subplot(gs[1, 0])
 
      # Create boxplot
-     # TODO : get the boxes closer.
      # TODO : add data points.
-     # TODO : fix bug with empty sections (no data for some subjects).
-     bp = ax3.boxplot(data_for_boxplot, patch_artist=True, showfliers=False,
-                      medianprops=dict(color='black'))
+     bp = ax3.boxplot(data_for_boxplot, positions=positions, patch_artist=True,
+                      showfliers=False, medianprops=dict(color='black'))
      # Color the boxes alternating (MTR = cmap[0], Fixel = cmap[1])
      for i, box in enumerate(bp['boxes']):
           col = colors[0] if i % 2 == 0 else colors[1]
