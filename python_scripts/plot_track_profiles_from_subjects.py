@@ -225,8 +225,13 @@ def main():
      ax3 = fig.add_subplot(gs[1, 0])
 
      # Create boxplot
+     # TODO : look for meanlineprops to add mean marker
+     # TODO : add data points
+     # TODO : fix bug with empty sections (no data for some subjects)
      bp = ax3.boxplot(data_for_boxplot, patch_artist=True, showfliers=False,
-                      medianprops=dict(color='black'))
+                      medianprops=dict(color='black'),
+                      meanprops=dict(color='red'),
+                      showmeans=True)
      # Color the boxes alternating (MTR = cmap[0], Fixel = cmap[1])
      for i, box in enumerate(bp['boxes']):
           col = colors[0] if i % 2 == 0 else colors[1]
