@@ -253,7 +253,7 @@ def main():
      ax3.set_xlabel('Bundle section')
      ax3.set_ylim(0, 20)
      ax3.set_yticks([0, 5, 10, 15, 20])
-     ax3.set_xlim(0, 2 * args.nb_sections + 1.5)
+     ax3.set_xlim(0, args.nb_sections + 1)
      # ax3.set_xticks(np.arange(1, args.nb_sections + 1, 1))
      # ax3.legend(loc='upper right')
      # ax3.grid(alpha=0.3)
