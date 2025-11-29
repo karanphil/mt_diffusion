@@ -231,7 +231,7 @@ def main():
      for i, box in enumerate(bp['boxes']):
           col = colors[0] if i % 2 == 0 else colors[1]
           box.set_facecolor(col)
-          # box.set_alpha(0.5)
+          box.set_alpha(0.5)
 
      positions = np.arange(1.5, 2 * args.nb_sections + 1, 2)
      ax3.set_xticks(positions)
@@ -241,7 +241,7 @@ def main():
      ax3.set_xlabel('Bundle section')
      ax3.set_ylim(0, 10)
      ax3.set_yticks(np.arange(1, 11, 1))
-     ax3.set_xlim(0, 2 * args.nb_sections + 2)
+     ax3.set_xlim(0, 2 * args.nb_sections + 1.5)
      # ax3.set_xticks(np.arange(1, args.nb_sections + 1, 1))
      # ax3.legend(loc='upper right')
      # ax3.grid(alpha=0.3)
