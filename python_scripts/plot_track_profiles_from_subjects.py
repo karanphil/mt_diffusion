@@ -143,17 +143,22 @@ def main():
      fixel_mtr_profile_diff = np.zeros((nb_subjects, args.nb_sections))
      for i in range(nb_subjects):
           # Might have to add a check to avoid comparing empty sections
+          # TODO : create a mask to avoid dividing by zero and avoid + or - zero, and avoid inf.
           mtr_profile_diff[i, :] = np.abs(mtr_profiles_scan[i] - mtr_profiles_rescan[i]) / mtr_profiles_scan[i] * 100
           fixel_mtr_profile_diff[i, :] = np.abs(fixel_mtr_profiles_scan[i] - fixel_mtr_profiles_rescan[i]) / fixel_mtr_profiles_scan[i] * 100
+     mtr_mask = (mtr_profiles_scan != 0) & (mtr_profiles_rescan != 0) & (mtr_profile_diff != np.inf) & (~np.isnan(mtr_profile_diff))
+     fixel_mtr_mask = (fixel_mtr_profiles_scan != 0) & (fixel_mtr_profiles_rescan != 0) & (fixel_mtr_profile_diff != np.inf) & (~np.isnan(fixel_mtr_profile_diff))
+
+     print(mtr_mask.shape)
+     print(mtr_profile_diff.shape)
+     print(mtr_profiles_scan.shape)
 
      data_for_boxplot = []
      for sec in range(args.nb_sections):
           # MTR diff values at this section across subjects
-          print(fixel_mtr_profile_diff[:, sec])
-          print(fixel_mtr_profile_diff[~np.isnan(fixel_mtr_profile_diff[:, sec]), sec])
-          data_for_boxplot.append(mtr_profile_diff[~np.isnan(mtr_profile_diff[:, sec]), sec])
+          data_for_boxplot.append(mtr_profile_diff[mtr_mask[:, sec], sec])
           # Fixel-MTR diff
-          data_for_boxplot.append(fixel_mtr_profile_diff[~np.isnan(fixel_mtr_profile_diff[:, sec]), sec])
+          data_for_boxplot.append(fixel_mtr_profile_diff[fixel_mtr_mask[:, sec], sec])
 
      # Plot profiles
      colors = ['#00A759', '#B45E2F']
@@ -227,9 +232,9 @@ def main():
      ax3 = fig.add_subplot(gs[1, 0])
 
      # Create boxplot
-     # TODO : look for meanlineprops to add mean marker
-     # TODO : add data points
-     # TODO : fix bug with empty sections (no data for some subjects)
+     # TODO : get the boxes closer.
+     # TODO : add data points.
+     # TODO : fix bug with empty sections (no data for some subjects).
      bp = ax3.boxplot(data_for_boxplot, patch_artist=True, showfliers=False,
                       medianprops=dict(color='black'))
      # Color the boxes alternating (MTR = cmap[0], Fixel = cmap[1])
