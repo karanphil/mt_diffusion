@@ -243,7 +243,7 @@ def main():
      ax3.set_yticks(np.arange(1, 6, 1))
      ax3.set_xlim(0, args.nb_sections + 1)
      ax3.set_xticks(np.arange(1, args.nb_sections + 1, 1))
-     ax3.legend(loc='upper right')
+     # ax3.legend(loc='upper right')
      # ax3.grid(alpha=0.3)
 
      plt.tight_layout()
