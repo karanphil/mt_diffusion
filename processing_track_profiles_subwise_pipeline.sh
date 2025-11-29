@@ -67,7 +67,7 @@ for sub in $subs;
     cd ${target_dir}/${sub};
     mkdir -p track_profiles;
     cd ${target_dir}/${sub}/track_profiles;
-    if [ ! -f "fixel_mtr_profile_AF_L.nii.gz" ]; then
+    if [ ! -f "fixel_mtr_profile_AF_L.txt" ]; then
         echo "Track-profiles PROCESSING";
         for bundle in $bundles;
             do b=${bundle%"_to_template.trk"};
