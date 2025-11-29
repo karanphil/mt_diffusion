@@ -215,7 +215,7 @@ def main():
      lines_2, labels_2 = ax2.get_legend_handles_labels()
      ax1.legend(lines_1 + lines_2 + [complexity_handle], labels_1 + labels_2 + ["Complexity"], loc='best')
 
-     ax1.set_ylim(0.33, 0.45)
+     ax1.set_ylim(0.33, 0.48)
      ax1.set_xlim(0, args.nb_sections + 1)
      ax1.set_xticks(np.arange(1, args.nb_sections + 1, 1))
      ax2.set_ylim(1, 5)
@@ -231,7 +231,7 @@ def main():
      for i, box in enumerate(bp['boxes']):
           col = colors[0] if i % 2 == 0 else colors[1]
           box.set_facecolor(col)
-          box.set_alpha(0.5)
+          box.set_alpha(0.2)
 
      positions = np.arange(1.5, 2 * args.nb_sections + 1, 2)
      ax3.set_xticks(positions)
@@ -239,8 +239,8 @@ def main():
 
      ax3.set_ylabel('|%diff| scan-rescan')
      ax3.set_xlabel('Bundle section')
-     ax3.set_ylim(0, 5)
-     ax3.set_yticks(np.arange(1, 6, 1))
+     ax3.set_ylim(0, 10)
+     ax3.set_yticks(np.arange(1, 11, 1))
      # ax3.set_xlim(0, args.nb_sections + 1)
      # ax3.set_xticks(np.arange(1, args.nb_sections + 1, 1))
      # ax3.legend(loc='upper right')
