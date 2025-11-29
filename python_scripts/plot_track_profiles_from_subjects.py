@@ -10,6 +10,7 @@ import argparse
 import logging
 import warnings
 
+from matplotlib.gridspec import GridSpec
 from matplotlib.lines import Line2D 
 import matplotlib as mpl
 from matplotlib import pyplot as plt
@@ -155,9 +156,11 @@ def main():
      colors = ['#00A759', '#B45E2F']
      norm = mpl.colors.Normalize(vmin=0.3, vmax=0.7)
 
-     fig, (ax1, ax3) = plt.subplots(2, 1, figsize=(8, 7),
-                                    gridspec_kw={'height_ratios': [3, 1]},
-                                    sharex=True)
+     fig = plt.figure(figsize=(8, 7))
+     gs = GridSpec(2, 2, width_ratios=[20, 1], height_ratios=[3, 1],
+                   wspace=0.15, hspace=0.25)
+     
+     ax1 = fig.add_subplot(gs[0, 0])
 
      ax1.fill_between(labels[min_nb_subjects_mask],
                       mtr_profile[min_nb_subjects_mask] - mtr_profile_std[min_nb_subjects_mask],
@@ -192,9 +195,10 @@ def main():
      ax2.tick_params(axis='y', labelcolor="darkgrey")
 
      # Add AFD colorbar
+     ax_cb = fig.add_subplot(gs[0, 1])
      sm = plt.cm.ScalarMappable(cmap='Greys', norm=norm)
      sm.set_array([])
-     cbar = fig.colorbar(sm, ax=ax2, pad=0.08)
+     cbar = fig.colorbar(sm, cax=ax_cb)
      cbar.set_label('Mean AFD', color="darkgrey")
      cbar.ax.tick_params(color='darkgrey', labelcolor='darkgrey')
      cbar.outline.set_edgecolor('darkgrey')
@@ -217,6 +221,7 @@ def main():
      ax2.set_yticks(np.arange(1, 6, 1))
 
      # Absolute difference subplot
+     ax3 = fig.add_subplot(gs[1, 0])
      # Variance shading
      ax3.fill_between(labels[min_nb_subjects_mask],
                       mtr_diff_mean[min_nb_subjects_mask] - mtr_diff_std[min_nb_subjects_mask],
