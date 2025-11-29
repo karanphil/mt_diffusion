@@ -154,7 +154,7 @@ def main():
      data_for_boxplot = []
      positions = []
      section_centers = []
-     offset = 0.2  # distance between MTR and Fixel boxes (smaller = closer)
+     offset = 0.1  # distance between MTR and Fixel boxes (smaller = closer)
      for sec in range(args.nb_sections):
           # MTR diff values at this section across subjects
           data_for_boxplot.append(mtr_profile_diff[mtr_mask[:, sec], sec])
