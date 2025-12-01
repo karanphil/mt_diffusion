@@ -87,6 +87,7 @@ def main():
 
     # Add secondary axis for NuFO
     ax2 = ax1.twinx()
+    print(nufo_profile[nufo_profile != 0])
     ax2.plot(labels[nufo_profile != 0],
              nufo_profile[nufo_profile != 0],
              linestyle='--', color="darkgrey", zorder=3)
