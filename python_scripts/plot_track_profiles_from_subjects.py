@@ -227,7 +227,7 @@ def main():
      lines_2, labels_2 = ax2.get_legend_handles_labels()
      ax1.legend(lines_1 + lines_2 + [complexity_handle], labels_1 + labels_2 + ["Complexity"], loc='best')
 
-     ax1.set_ylim(0.33, 0.48)
+     ax1.set_ylim(0.33, 0.50)
      ax1.set_xlim(0, args.nb_sections + 1)
      ax1.set_xticks(np.arange(1, args.nb_sections + 1, 1))
      ax2.set_ylim(1, 5)
