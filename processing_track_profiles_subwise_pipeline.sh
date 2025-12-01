@@ -16,7 +16,7 @@ cd $target_dir;
 subs=$(ls -d hc*);
 
 nb_sections=20; # This can be changed if needed
-map_thr=1.0;
+map_thr=1.0; # Take all the eroded masks
 afd_thr=0.3; # This can be changed if needed
 min_nvox=100; # This can be changed if needed
 min_nb_subjects=5; # This can be changed if needed
