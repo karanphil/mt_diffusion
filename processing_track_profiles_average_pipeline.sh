@@ -12,7 +12,7 @@ target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcg
 code_dir=$2; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/code/mt-diffusion"
 
 nb_sections=20; # This can be changed if needed
-map_thr=1.0; # This can be changed if needed
+map_thr=0.75; # Approx 10/13 (so 10/13 is ok)
 afd_thr=0.3; # This can be changed if needed
 min_nvox=100; # This can be changed if needed
 
