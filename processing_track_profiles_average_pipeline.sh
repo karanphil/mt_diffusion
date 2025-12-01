@@ -30,6 +30,6 @@ for bundle in $bundles;
         python ${code_dir}/python_scripts/compute_track_profiles.py ${target_dir}/mtr_${b}.nii.gz ${target_dir}/fixel_mtr_${b}.nii.gz ${target_dir}/labels_${b}.nii.gz ${b} ${target_dir}/afd_fixel_${b}.nii.gz ${target_dir}/nufo.nii.gz . --nb_sections $nb_sections --map_threshold $map_thr --afd_threshold $afd_thr --min_nvox $min_nvox;
     fi
 
-    python ${code_dir}/python_scripts/plot_track_profiles_from_average.py mtr_profile_${b}.txt fixel_mtr_profile_${b}.txt ${b} nufo_profile_${b}.txt afd_profile_${b}.txt . --nb_sections $nb_sections;
+    python ${code_dir}/python_scripts/plot_track_profiles_from_average.py mtr_profile_${b}.txt fixel_mtr_profile_${b}.txt ${b} afd_profile_${b}.txt nufo_profile_${b}.txt . --nb_sections $nb_sections;
     
 done;
