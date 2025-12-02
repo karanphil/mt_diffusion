@@ -78,7 +78,8 @@ for sub in $subs;
             afd_fixel="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/afd_fixel_${b}_to_template.nii.gz";
             nufo="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/nufo_to_template.nii.gz";
             labels="${target_dir}/${sub}/labels/labels_${b}.nii.gz";
-            bundle_mask="${target_dir}/${sub}/masks_bundles/${b}_mask_eroded.nii.gz";
+            # bundle_mask="${target_dir}/${sub}/masks_bundles/${b}_mask_eroded.nii.gz";
+            bundle_mask="${target_dir}/${sub}/masks_bundles/${b}_mask.nii.gz";
 
             python ${code_dir}/python_scripts/compute_track_profiles.py $mtr $fixel_mtr $labels ${b} $afd_fixel $nufo . --in_bundle_map $bundle_mask --map_threshold $map_thr --afd_threshold $afd_thr --min_nvox $min_nvox -f; 
         
@@ -96,6 +97,7 @@ subs_rescan=$(ls -d hc[0-9][0-9]r);
 mkdir -p subject_wise_analysis;
 cd ${target_dir}/subject_wise_analysis;
 
+echo "Track-profiles PLOTTING";
 for bundle in $bundles;
     do b=${bundle%"_to_template.trk"};
     echo $b;
