@@ -118,18 +118,21 @@ cd ${main_dir};
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_averages_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
 ```
 
-Now, compute and plot the track-profiles for the average data.
+Now, compute and plot the track-profiles for the average data:
 
 ```
 average_dir=${main_dir}/${working_dir}/average_all_scans;
-cd ${main_dir};
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_average_pipeline.sh ${average_dir} ${code_dir};
 ```
 
-Now, compute and plot the track-profiles for the between/within-subject analysis
+Now, compute and plot the track-profiles for the between/within-subject analysis:
 
 ```
-register_data_dir="${main_dir}/register_flow";
-cd ${main_dir};
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_average_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+```
+
+Now, a matrix of dice scores comparing the overlap of each section of each bundle can be computed:
+
+```
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_bundles_crossing_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
 ```
