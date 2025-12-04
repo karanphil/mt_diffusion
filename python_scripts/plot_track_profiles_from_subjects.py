@@ -101,7 +101,7 @@ def main():
                                   args.in_mtr_profiles_scan,
                                   args.in_fixel_mtr_profiles_scan,
                                   args.in_mtr_profiles_rescan,
-                                  args.in_fixel_mtr_profiles_rescan,])
+                                  args.in_fixel_mtr_profiles_rescan])
      assert_outputs_exist(parser, args, [args.out_dir])
 
      # Load profiles

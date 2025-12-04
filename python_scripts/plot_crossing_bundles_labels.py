@@ -109,6 +109,8 @@ def main():
     assert_inputs_exist(parser, [args.in_jsons])
     assert_outputs_exist(parser, args, [args.out_png])
 
+    # TODO : ne pas utiliser le DICE score!!!
+
     nb_sections = args.nb_sections
     dice_matrices = []
     bundle_names_ref = None
