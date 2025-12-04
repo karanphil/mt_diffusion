@@ -32,13 +32,18 @@ def _build_arg_parser():
     p.add_argument('--nb_sections', type=int, default=20,
                    help='Number of sections in the bundle labels. '
                         'Default is 20.')
-
-    p.add_argument('--vmax', type=float, default=1.0,
-                   help='Upper bound for colormap (default: 1.0).')
     
     p.add_argument('--bundles_names', nargs='+', default=None,
                    help='Subset of bundle names to include. '
                         'If not provided, all bundles are used.')
+    
+    p.add_argument('--highlight_threshold', type=float, default=0.2,
+                   help='Threshold to highlight Dice scores in the matrix. '
+                        'Default is 0.2.')
+
+    p.add_argument('--save_txt', default=None,
+                   help='Save the final averaged matrix as a .txt file. '
+                        'This should be the path to the output .txt file.')
 
     add_verbose_arg(p)
     add_overwrite_arg(p)
@@ -136,18 +141,17 @@ def main():
     # Group mean Dice
     M = np.mean(dice_matrices, axis=0)
 
+    # ---- Save matrix to TXT ----
+    if args.save_txt is not None:
+        np.savetxt(args.save_txt, M, fmt="%.6f")
+
     nb_bundles = len(bundle_names_ref)
 
     # Plot (UNCHANGED from your version)
     fig, ax = plt.subplots(figsize=(12, 12))
-
-    im = ax.imshow(
-        M,
-        origin='lower',
-        vmin=0,
-        vmax=args.vmax,
-        extent=[-0.5, M.shape[1] - 0.5, -0.5, M.shape[0] - 0.5]
-    )
+ 
+    im = ax.imshow(M, origin='lower', vmin=0, vmax=1,
+                   extent=[-0.5, M.shape[1] - 0.5, -0.5, M.shape[0] - 0.5])
 
     # ---- Minor grid ----
     for k in range(1, nb_bundles * nb_sections):
@@ -162,18 +166,12 @@ def main():
         ax.axvline(pos, linewidth=0.6, color='0.3', zorder=3)
 
     # ---- Highlight ----
-    threshold = 0.2
     for i in range(M.shape[0]):
         for j in range(M.shape[1]):
-            if M[i, j] >= threshold:
-                rect = patches.Rectangle(
-                    (j - 0.5, i - 0.5),
-                    1, 1,
-                    fill=False,
-                    edgecolor='red',
-                    linewidth=0.2,
-                    zorder=10
-                )
+            if M[i, j] >= args.highlight_threshold:
+                rect = patches.Rectangle((j - 0.5, i - 0.5), 1, 1, fill=False,
+                                         edgecolor='red', linewidth=0.2,
+                                         zorder=10)
                 ax.add_patch(rect)
 
     # ---- Bundle labels ----
