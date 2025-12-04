@@ -26,9 +26,9 @@ bundles=$(ls *.trk);
 for sub in $subs; 
     do echo $sub;
     # ----------------------------Labels PROCESSING-------------------------
-    cd ${target_dir}/${sub};
-    mkdir -p labels;
-    cd ${target_dir}/${sub}/labels;
+    cd ${register_data_dir}/output;
+    mkdir -p processing_registration/${sub}/labels;
+    cd ${register_data_dir}/output/processing_registration/${sub}/labels;
     mkdir -p tmp;
     if [ ! -f "labels_AF_L.nii.gz" ]; then
         echo "Labels PROCESSING";
@@ -43,9 +43,9 @@ for sub in $subs;
     rm -r tmp;
 
     # -------------------------Bundles masks PROCESSING------------------------
-    cd ${target_dir}/${sub};
-    mkdir -p masks_bundles;
-    cd ${target_dir}/${sub}/masks_bundles;
+    cd ${register_data_dir}/output;
+    mkdir -p processing_registration/${sub}/bundles_masks;
+    cd ${register_data_dir}/output/processing_registration/${sub}/bundles_masks;
     erosions="3 3 1 1 1 1 1 1 1 1 2 2 2 2 2 2 1 1 2 2 2 2 2 1 1 2 2 2 2 1 1" # This was hardcoded according to the size of the bundles.
     if [ ! -f "AF_L_mask_eroded.nii.gz" ]; then
         echo "Bundles masks PROCESSING";
@@ -64,9 +64,9 @@ for sub in $subs;
     fi
 
     # -------------------------Track-profiles PROCESSING-----------------------
-    cd ${target_dir}/${sub};
-    mkdir -p track_profiles;
-    cd ${target_dir}/${sub}/track_profiles;
+    cd ${register_data_dir}/output;
+    mkdir -p processing_registration/${sub}/track_profiles;
+    cd ${register_data_dir}/output/processing_registration/${sub}/track_profiles;
     if [ ! -f "fixel_mtr_profile_AF_L.txt" ]; then
         echo "Track-profiles PROCESSING";
         for bundle in $bundles;
@@ -77,9 +77,9 @@ for sub in $subs;
             fixel_mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/fixel_mtr_${b}_to_template.nii.gz";
             afd_fixel="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/afd_fixel_${b}_to_template.nii.gz";
             nufo="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/nufo_to_template.nii.gz";
-            labels="${target_dir}/${sub}/labels/labels_${b}.nii.gz";
-            # bundle_mask="${target_dir}/${sub}/masks_bundles/${b}_mask_eroded.nii.gz";
-            bundle_mask="${target_dir}/${sub}/masks_bundles/${b}_mask.nii.gz";
+            labels="${register_data_dir}/output/processing_registration/${sub}/labels/labels_${b}.nii.gz";
+            # bundle_mask="${register_data_dir}/output/processing_registration/${sub}/bundles_masks/${b}_mask_eroded.nii.gz";
+            bundle_mask="${register_data_dir}/output/processing_registration/${sub}/bundles_masks/${b}_mask.nii.gz";
 
             python ${code_dir}/python_scripts/compute_track_profiles.py $mtr $fixel_mtr $labels ${b} $afd_fixel $nufo . --in_bundle_map $bundle_mask --map_threshold $map_thr --afd_threshold $afd_thr --min_nvox $min_nvox -f; 
         

@@ -29,6 +29,8 @@ def _build_arg_parser():
 
     p.add_argument('--vmax', type=float, default=1.0,
                    help='Upper bound for colormap (default: 1.0).')
+    
+    # TODO: add option to select a subset of bundles to plot
 
     return p
 
