@@ -26,7 +26,7 @@ def _build_arg_parser():
     p.add_argument('out_png',
                    help='Output PNG file for the Dice matrix plot.')
 
-    p.add_argument('--in_jsons', nargs='+',
+    p.add_argument('--in_jsons', nargs='+', required=True,
                    help='Input JSON files (one per subject).')
 
     p.add_argument('--nb_sections', type=int, default=20,
