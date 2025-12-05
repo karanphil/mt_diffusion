@@ -151,7 +151,7 @@ def main():
     # Plotting
     fig, ax = plt.subplots(figsize=(12, 12))
  
-    im = ax.imshow(M, origin='lower', vmin=0, vmax=1,
+    im = ax.imshow(M, origin='lower', vmin=0, vmax=100,
                    extent=[-0.5, M.shape[1] - 0.5, -0.5, M.shape[0] - 0.5])
 
     # ---- Minor grid ----
