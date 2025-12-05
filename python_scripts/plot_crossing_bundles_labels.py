@@ -3,7 +3,7 @@
 
 """
 Plot a full (nb_bundles*nb_sections) x (nb_bundles*nb_sections)
-group-averaged Dice matrix from multiple JSON files.
+group-averaged overlap matrix from multiple JSON files.
 """
 
 import argparse
@@ -24,7 +24,7 @@ def _build_arg_parser():
     )
 
     p.add_argument('out_png',
-                   help='Output PNG file for the Dice matrix plot.')
+                   help='Output PNG file for the overlap matrix plot.')
 
     p.add_argument('--in_jsons', nargs='+', required=True,
                    help='Input JSON files (one per subject).')
@@ -37,9 +37,9 @@ def _build_arg_parser():
                    help='Subset of bundle names to include. '
                         'If not provided, all bundles are used.')
     
-    p.add_argument('--highlight_threshold', type=float, default=0.2,
-                   help='Threshold to highlight Dice scores in the matrix. '
-                        'Default is 0.2.')
+    p.add_argument('--highlight_threshold', type=float, default=50.0,
+                   help='Threshold to highlight percentage overlap in the '
+                        'matrix. Default is 50%.')
 
     p.add_argument('--save_txt', default=None,
                    help='Save the final averaged matrix as a .txt file. '
@@ -51,8 +51,8 @@ def _build_arg_parser():
     return p
 
 
-# Compute Dice matrix for ONE subject
-def compute_subject_dice(crossing_info, bundle_names, nb_sections):
+# Compute overlap matrix for ONE subject
+def compute_subject_overlap(crossing_info, bundle_names, nb_sections):
 
     nb_bundles = len(bundle_names)
     full_size = nb_bundles * nb_sections
@@ -69,7 +69,7 @@ def compute_subject_dice(crossing_info, bundle_names, nb_sections):
                 raise ValueError(f'"Nb_voxels" not found for {b}, section {s}')
             voxels[b][s] = nb_vox
 
-    # ---- Fill Dice matrix ----
+    # ---- Fill overlap matrix ----
     for bi, bundle_i in enumerate(bundle_names):
         for bj, bundle_j in enumerate(bundle_names):
 
@@ -88,13 +88,14 @@ def compute_subject_dice(crossing_info, bundle_names, nb_sections):
                         continue
 
                     Ni = voxels[bundle_i][si]
-                    Nj = voxels[bundle_j][sj]
+                    # Nj = voxels[bundle_j][sj]
 
-                    dice = 2.0 * shared / (Ni + Nj) if (Ni + Nj) > 0 else 0.0
+                    overlap = shared / Ni * 100 if Ni > 0 else 0.0
+                    # dice = 2.0 * shared / (Ni + Nj) if (Ni + Nj) > 0 else 0.0
 
                     ii = row_offset + (si - 1)
                     jj = col_offset + (sj - 1)
-                    M[ii, jj] = dice
+                    M[ii, jj] = overlap
 
     return M
 
@@ -109,13 +110,11 @@ def main():
     assert_inputs_exist(parser, [args.in_jsons])
     assert_outputs_exist(parser, args, [args.out_png])
 
-    # TODO : ne pas utiliser le DICE score!!!
-
     nb_sections = args.nb_sections
-    dice_matrices = []
+    overlap_matrices = []
     bundle_names_ref = None
 
-    # Load all subjects & compute Dice
+    # Load all subjects & compute overlap
     for json_file in args.in_jsons:
         with open(json_file, 'r') as f:
             crossing_info = json.load(f)
@@ -137,11 +136,11 @@ def main():
             if bundle_names != bundle_names_ref:
                 raise ValueError("Bundle order mismatch across subjects!")
 
-        M = compute_subject_dice(crossing_info, bundle_names, nb_sections)
-        dice_matrices.append(M)
+        M = compute_subject_overlap(crossing_info, bundle_names, nb_sections)
+        overlap_matrices.append(M)
 
-    # Group mean Dice
-    M = np.mean(dice_matrices, axis=0)
+    # Group mean overlap
+    M = np.mean(overlap_matrices, axis=0)
 
     # ---- Save matrix to TXT ----
     if args.save_txt is not None:
@@ -149,7 +148,7 @@ def main():
 
     nb_bundles = len(bundle_names_ref)
 
-    # Plot (UNCHANGED from your version)
+    # Plotting
     fig, ax = plt.subplots(figsize=(12, 12))
  
     im = ax.imshow(M, origin='lower', vmin=0, vmax=1,
@@ -185,10 +184,10 @@ def main():
 
     ax.set_xlabel("Bundles x Sections")
     ax.set_ylabel("Bundles x Sections")
-    ax.set_title(f"Group mean Dice matrix (N={len(dice_matrices)})")
+    ax.set_title(f"Group mean overlap matrix")
 
     cbar = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02, shrink=0.95)
-    cbar.set_label("Dice score")
+    cbar.set_label("Percentage overlap")
 
     plt.tight_layout()
     plt.savefig(args.out_png, dpi=1000)
