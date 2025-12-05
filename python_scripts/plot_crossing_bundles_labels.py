@@ -37,7 +37,7 @@ def _build_arg_parser():
                    help='Subset of bundle names to include. '
                         'If not provided, all bundles are used.')
     
-    p.add_argument('--highlight_threshold', type=float, default=50.0,
+    p.add_argument('--highlight_threshold', type=float, default=50,
                    help='Threshold to highlight percentage overlap in the '
                         'matrix. Default is 50%.')
 
@@ -157,8 +157,8 @@ def main():
     # ---- Minor grid ----
     for k in range(1, nb_bundles * nb_sections):
         pos = k - 0.5
-        ax.axhline(pos, linewidth=0.15, color='0.85', zorder=3)
-        ax.axvline(pos, linewidth=0.15, color='0.85', zorder=3)
+        ax.axhline(pos, linewidth=0.05, color='0.85', zorder=3)
+        ax.axvline(pos, linewidth=0.05, color='0.85', zorder=3)
 
     # ---- Major grid ----
     for k in range(1, nb_bundles):
@@ -171,7 +171,7 @@ def main():
         for j in range(M.shape[1]):
             if M[i, j] >= args.highlight_threshold:
                 rect = patches.Rectangle((j - 0.5, i - 0.5), 1, 1, fill=False,
-                                         edgecolor='red', linewidth=0.2,
+                                         edgecolor='red', linewidth=0.1,
                                          zorder=10)
                 ax.add_patch(rect)
 

@@ -21,7 +21,7 @@ nb_sections=20; # This can be changed if needed
 map_thr=1.0; # Take all the eroded masks
 afd_thr=0.3; # This can be changed if needed
 min_nvox=100; # This can be changed if needed
-highlight_threshold=0.2; # This can be changed if needed
+highlight_threshold=50; # This can be changed if needed
 
 in_bundles="AF_L AF_R CC_1 CC_2a CC_2b CC_3 CC_4 CC_5 CC_6 CC_7 CG_L CG_R CST_L CST_R ILF_L ILF_R MCP OR_L OR_R SLF_1_L SLF_1_R SLF_2_L SLF_2_R SLF_3_L SLF_3_R"; # Removing some bundles to simplify the plots
 
