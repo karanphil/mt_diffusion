@@ -141,6 +141,8 @@ def main():
 
     # Group mean overlap
     M = np.mean(overlap_matrices, axis=0)
+    print(M[12*20:13*20, 16*20:17*20])
+    print(M[16*20:17*20, 12*20:13*20])
 
     # ---- Save matrix to TXT ----
     if args.save_txt is not None:
