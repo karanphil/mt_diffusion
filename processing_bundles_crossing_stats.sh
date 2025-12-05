@@ -33,8 +33,6 @@ for sub in $subs;
         if [ ! -f "processing_registration/${sub}/crossing_bundles_labels.json" ]; then
             python ${code_dir}/python_scripts/compute_crossing_bundles_labels.py processing_registration/${sub}/crossing_bundles_labels.json --in_labels processing_registration/${sub}/labels/labels_* --in_afd_fixel results_registration/${sub}/Metrics_into_template_space/afd_fixel_* --in_bundle_map results_registration/${sub}/Metrics_into_template_space/voxel_density_mask_voxel-norm_* --map_threshold $map_thr --afd_threshold $afd_thr --min_nvox $min_nvox --nb_sections $nb_sections -f;
         fi
-        done;
-
 done;
 
 # ------------------------Track-profile plots PROCESSING-----------------------

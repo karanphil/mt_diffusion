@@ -25,7 +25,7 @@ code_dir="${main_dir}/${code_name}/mt_diffusion"; # Important to set this right
 # Step 3
 cd $main_dir;
 working_dir="full_processing"; # Put any name you like
-mkdir $working_dir;
+mkdir -p $working_dir;
 
 # Step 4
 original_data_dir="mt-diff-10peeps"; # IMPORTANT: Replace this with the actual path to the data
