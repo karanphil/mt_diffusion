@@ -159,7 +159,7 @@ def main():
         from cmcrameri import cm
         cmap = cm.navia
     else:
-        cmap = plt.get_cmap('viridis')
+        cmap = plt.get_cmap('bone')
  
     im = ax.imshow(M, cmap=cmap, origin='lower', vmin=0, vmax=100,
                    extent=[-0.5, M.shape[1] - 0.5, -0.5, M.shape[0] - 0.5])
