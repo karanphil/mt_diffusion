@@ -45,6 +45,10 @@ def _build_arg_parser():
                    help='Save the final averaged matrix as a .txt file. '
                         'This should be the path to the output .txt file.')
 
+    p.add_argument('--use_crameri', action='store_true',
+                   help='Use the Crameri colormap for plotting. '
+                        'Default is False.')
+
     add_verbose_arg(p)
     add_overwrite_arg(p)
 
@@ -141,8 +145,6 @@ def main():
 
     # Group mean overlap
     M = np.mean(overlap_matrices, axis=0)
-    print(M[12*20:13*20, 16*20:17*20])
-    print(M[16*20:17*20, 12*20:13*20])
 
     # ---- Save matrix to TXT ----
     if args.save_txt is not None:
@@ -152,8 +154,14 @@ def main():
 
     # Plotting
     fig, ax = plt.subplots(figsize=(12, 12))
+
+    if args.use_crameri:
+        from cmcrameri import cm
+        cmap = cm.navia
+    else:
+        cmap = plt.get_cmap('viridis')
  
-    im = ax.imshow(M, origin='lower', vmin=0, vmax=100,
+    im = ax.imshow(M, cmap=cmap, origin='lower', vmin=0, vmax=100,
                    extent=[-0.5, M.shape[1] - 0.5, -0.5, M.shape[0] - 0.5])
 
     # ---- Minor grid ----
