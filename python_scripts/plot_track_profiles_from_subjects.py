@@ -78,11 +78,80 @@ def _build_arg_parser():
                     help='Minimum number of subjects required to compute the '
                          'mean profile value at each bundle section. '
                          'Default is 5.')
+     
+     # Add-ons
+     p.add_argument('--in_overlap_txt', type=str,
+                    help='TXT file with bundle crossings > threshold.')
+
+     p.add_argument('--in_significance_txt', type=str,
+                    help='TXT file with significant sections per bundle.')
 
      add_verbose_arg(p)
      add_overwrite_arg(p)
 
      return p
+
+
+def load_overlap_sections_from_txt(txt_file, target_bundle):
+     """
+     Parses lines like:
+     CST_L - section 12        --> ILF_L : 14.32%
+     """
+     overlap_sections = set()
+
+     if txt_file is None:
+          return overlap_sections
+
+     with open(txt_file, "r") as f:
+          for line in f:
+               line = line.strip()
+
+               # Skip headers
+               if not line or line.startswith("#") or "-->" not in line:
+                    continue
+
+               left, right = line.split("-->")
+
+               # Left side: "BUNDLE - section X"
+               bundle_part = left.split("- section")[0].strip()
+               section_part = left.split("- section")[1].strip()
+
+               if bundle_part != target_bundle:
+                    continue
+
+               sec = int(section_part)
+
+               overlap_sections.add(sec)
+
+     return overlap_sections
+
+
+def load_significant_sections_from_txt(txt_file, target_bundle):
+     significant_sections = set()
+
+     if txt_file is None:
+          return significant_sections
+
+     with open(txt_file, "r") as f:
+          lines = f.readlines()
+
+     inside_bundle_block = False
+
+     for line in lines:
+          line = line.strip()
+
+          if line.startswith("==="):
+               inside_bundle_block = target_bundle in line
+               continue
+
+          if inside_bundle_block:
+               if "No significant sections" in line:
+                    break
+               if line.startswith("Section"):
+                    sec = int(line.split("Section")[1].strip())
+                    significant_sections.add(sec)
+
+     return significant_sections
 
 
 def main():
@@ -151,6 +220,13 @@ def main():
      mtr_mask = mtr_mask & np.repeat((np.sum(mtr_mask, axis=0) >= args.min_nb_subjects)[np.newaxis, :], nb_subjects, axis=0)
      fixel_mtr_mask = fixel_mtr_mask & np.repeat((np.sum(fixel_mtr_mask, axis=0) >= args.min_nb_subjects)[np.newaxis, :], nb_subjects, axis=0)
 
+     # Load overlap and significant sections
+     overlap_sections = load_overlap_sections_from_txt(
+     args.in_overlap_txt, args.in_bundle_name)
+     significant_sections = load_significant_sections_from_txt(
+     args.in_significance_txt, args.in_bundle_name)
+     overlap_and_significant = overlap_sections & significant_sections
+
      data_for_boxplot = []
      positions = []
      section_centers = []
@@ -189,6 +265,13 @@ def main():
      ax1.plot(labels[min_nb_subjects_mask],
               fixel_mtr_profile[min_nb_subjects_mask], label='Fixel-wise MTR',
               marker='o', color=colors[1])
+     
+     # Highlight overlap and significant sections
+     for sec in overlap_sections:
+          ax1.axvspan(sec - 0.5, sec + 0.5, color='orange', alpha=0.15,
+                      zorder=0)
+     for sec in overlap_and_significant:
+          ax1.axvspan(sec - 0.5, sec + 0.5, color='red', alpha=0.25, zorder=0)
 
      # Add secondary axis for NuFO
      ax2 = ax1.twinx()
@@ -223,9 +306,23 @@ def main():
      ax1.set_title('Track-profile of MTR and fixel-wise MTR for the {} bundle'.format(args.in_bundle_name))
 
      # Combine legends from both axes
+     if args.in_overlap_txt:
+          overlap_patch = mpl.patches.Patch(color='orange', alpha=0.15,
+                                            label='Overlap > threshold')
+     else:
+          overlap_patch = None
+     if args.in_significance_txt:
+          significant_patch = mpl.patches.Patch(color='red', alpha=0.25,
+                                                label='Overlap + significant Δ')
+     else:
+          significant_patch = None
      lines_1, labels_1 = ax1.get_legend_handles_labels()
      lines_2, labels_2 = ax2.get_legend_handles_labels()
-     ax1.legend(lines_1 + lines_2 + [complexity_handle], labels_1 + labels_2 + ["Complexity"], loc='best')
+     ax1.legend(lines_1 + lines_2 + [complexity_handle, overlap_patch,
+                                     significant_patch],
+                labels_1 + labels_2 + ["Complexity", "Overlap > threshold",
+                                       "Overlap + significant"],
+                loc='best')
 
      ax1.set_ylim(0.30, 0.50)
      ax1.set_xlim(0, args.nb_sections + 1)
@@ -237,7 +334,6 @@ def main():
      ax3 = fig.add_subplot(gs[1, 0])
 
      # Create boxplot
-     # TODO : add data points.
      bp = ax3.boxplot(data_for_boxplot, positions=positions, patch_artist=True,
                       showfliers=False, medianprops=dict(color='black'), widths=0.2)
      # Color the boxes alternating (MTR = cmap[0], Fixel = cmap[1])
