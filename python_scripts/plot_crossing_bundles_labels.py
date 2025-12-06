@@ -17,6 +17,18 @@ from scilpy.io.utils import (add_overwrite_arg, add_verbose_arg,
                              assert_inputs_exist, assert_outputs_exist)
 
 
+# ---- Bundle family exclusions ----
+EXCLUDE_FAMILIES = [
+    ["SLF"],      # all SLF parts exclude each other
+    ["CC"],       # all CC parts exclude each other
+]
+
+# ---- Specific pair exclusions (parallel tracts) ----
+EXCLUDE_PAIRS = [
+    ("AF", "SLF"), ("CG", "SLF")
+]
+
+
 def _build_arg_parser():
     p = argparse.ArgumentParser(
         description=__doc__,
@@ -37,13 +49,23 @@ def _build_arg_parser():
                    help='Subset of bundle names to include. '
                         'If not provided, all bundles are used.')
     
-    p.add_argument('--highlight_threshold', type=float, default=50,
-                   help='Threshold to highlight percentage overlap in the '
-                        'matrix. Default is 50%.')
+    # p.add_argument('--highlight_threshold', type=float, default=50,
+    #                help='Threshold to highlight percentage overlap in the '
+    #                     'matrix. Default is 50%.')
 
-    p.add_argument('--save_txt', default=None,
+    p.add_argument('--save_full_txt', default=None,
                    help='Save the final averaged matrix as a .txt file. '
                         'This should be the path to the output .txt file.')
+    
+    p.add_argument('--save_important_txt', default=None,
+                   help='Save a .txt file listing section-to-bundle '
+                        'crossings greater than 10%, excluding same-family '
+                        'and parallel bundles. This should be the path to the '
+                        'output .txt file.')
+    
+    p.add_argument('--important_threshold', type=float, default=10.0,
+                   help='Threshold for important crossings to be saved '
+                        'in the text file. Default is 10%.')
 
     p.add_argument('--use_crameri', action='store_true',
                    help='Use the Crameri colormap for plotting. '
@@ -104,6 +126,20 @@ def compute_subject_overlap(crossing_info, bundle_names, nb_sections):
     return M
 
 
+def is_excluded(bundle_a, bundle_b):
+    # Same family exclusion
+    for fam in EXCLUDE_FAMILIES:
+        if any(f in bundle_a for f in fam) and any(f in bundle_b for f in fam):
+            return True
+
+    # Explicit pair exclusion (both directions)
+    for a, b in EXCLUDE_PAIRS:
+        if (a in bundle_a and b in bundle_b) or (b in bundle_a and a in bundle_b):
+            return True
+
+    return False
+
+
 def main():
     parser = _build_arg_parser()
     args = parser.parse_args()
@@ -146,61 +182,123 @@ def main():
     # Group mean overlap
     M = np.mean(overlap_matrices, axis=0)
 
-    # ---- Save matrix to TXT ----
-    if args.save_txt is not None:
-        np.savetxt(args.save_txt, M, fmt="%.6f")
-
+    # Compute section-to-bundle crossing summary
     nb_bundles = len(bundle_names_ref)
+    C = np.zeros((nb_bundles * nb_sections, nb_bundles))
+    for bi in range(nb_bundles):
+        for si in range(nb_sections):
+            row = bi * nb_sections + si
+            for bj in range(nb_bundles):
+                col_start = bj * nb_sections
+                col_end = col_start + nb_sections
+                # Sum over the 20 sections of bundle bj
+                C[row, bj] = np.sum(M[row, col_start:col_end])
 
-    # Plotting
-    fig, ax = plt.subplots(figsize=(12, 12))
+    # Save matrix to TXT
+    if args.save_full_txt is not None:
+        np.savetxt(args.save_full_txt, M, fmt="%.6f")
 
+    # Save crossings > 10% to TXT
+    if args.save_important_txt is not None:
+        C_threshold = args.important_threshold
+        with open(args.save_important_txt, "w") as f:
+            f.write("Section-to-bundle crossings > 10% (group-averaged)\n")
+            f.write("Excluded: same-family bundles + parallel bundles\n\n")
+            for bi, bundle_i in enumerate(bundle_names_ref):
+                for si in range(nb_sections):
+                    row = bi * nb_sections + si
+                    source_label = f"{bundle_i} - section {si+1}"
+                    for bj, bundle_j in enumerate(bundle_names_ref):
+                        # ---- Exclusions ----
+                        if is_excluded(bundle_i, bundle_j):
+                            continue
+                        val = C[row, bj]
+                        if val >= C_threshold:
+                            f.write(f"{source_label:<35} --> {bundle_j:<20} : {val:.2f}%\n")
+
+    # Choose colormap
     if args.use_crameri:
         from cmcrameri import cm
         cmap = cm.navia
     else:
         cmap = plt.get_cmap('bone')
- 
-    im = ax.imshow(M, cmap=cmap, origin='lower', vmin=0, vmax=100,
-                   extent=[-0.5, M.shape[1] - 0.5, -0.5, M.shape[0] - 0.5])
+
+    # Plot section-to-bundle matrix
+    fig1, ax1 = plt.subplots(figsize=(12, 6))
+    im1 = ax1.imshow(C.T, origin='lower', aspect='auto', cmap=cmap, vmin=0,
+                     vmax=100)
+
+    # ---- X axis = bundles × sections ----
+    centers_x = np.arange(nb_bundles) * nb_sections + nb_sections / 2 - 0.5
+    ax1.set_xticks(centers_x)
+    ax1.set_xticklabels(bundle_names_ref, rotation=90)
+
+    # ---- Y axis = bundles ----
+    ax1.set_yticks(np.arange(nb_bundles))
+    ax1.set_yticklabels(bundle_names_ref)
+
+    # ---- Vertical major grid between bundles ----
+    for k in range(1, nb_bundles):
+        pos = k * nb_sections - 0.5
+        ax1.axvline(pos, linewidth=0.6, color='0.3')
+
+    # ---- Horizontal major grid between bundles ----
+    for k in range(1, nb_bundles):
+        ax1.axhline(k - 0.5, linewidth=0.6, color='0.3')
+
+    ax1.set_xlabel("Source bundle (split by sections)")
+    ax1.set_ylabel("Target bundle (averaged over sections)")
+    # ax1.set_title("Bundle-by-bundle cumulative section overlap")
+
+    cbar1 = fig1.colorbar(im1, ax=ax1, fraction=0.05, pad=0.02)
+    cbar1.set_label("Percentage overlap")
+
+    plt.tight_layout()
+    plt.savefig(args.out_png, dpi=1000)
+    # plt.show()
+
+    # Plot section-to-section matrix
+    fig2, ax2 = plt.subplots(figsize=(12, 12))
+    im2 = ax2.imshow(M.T, cmap=cmap, origin='lower', vmin=0, vmax=100,
+                     extent=[-0.5, M.shape[1] - 0.5, -0.5, M.shape[0] - 0.5])
 
     # ---- Minor grid ----
     for k in range(1, nb_bundles * nb_sections):
         pos = k - 0.5
-        ax.axhline(pos, linewidth=0.05, color='0.85', zorder=3)
-        ax.axvline(pos, linewidth=0.05, color='0.85', zorder=3)
+        ax2.axhline(pos, linewidth=0.05, color='0.3', zorder=3)
+        ax2.axvline(pos, linewidth=0.05, color='0.3', zorder=3)
 
     # ---- Major grid ----
     for k in range(1, nb_bundles):
         pos = k * nb_sections - 0.5
-        ax.axhline(pos, linewidth=0.6, color='0.3', zorder=3)
-        ax.axvline(pos, linewidth=0.6, color='0.3', zorder=3)
+        ax2.axhline(pos, linewidth=0.6, color='0.3', zorder=3)
+        ax2.axvline(pos, linewidth=0.6, color='0.3', zorder=3)
 
-    # ---- Highlight ----
-    for i in range(M.shape[0]):
-        for j in range(M.shape[1]):
-            if M[i, j] >= args.highlight_threshold:
-                rect = patches.Rectangle((j - 0.5, i - 0.5), 1, 1, fill=False,
-                                         edgecolor='red', linewidth=0.1,
-                                         zorder=10)
-                ax.add_patch(rect)
+    # # ---- Highlight ----
+    # for i in range(M.T.shape[0]):
+    #     for j in range(M.T.shape[1]):
+    #         if M.T[i, j] >= args.highlight_threshold:
+    #             rect = patches.Rectangle((j - 0.5, i - 0.5), 1, 1, fill=False,
+    #                                      edgecolor='red', linewidth=0.1,
+    #                                      zorder=10)
+    #             ax.add_patch(rect)
 
     # ---- Bundle labels ----
     centers = np.arange(nb_bundles) * nb_sections + nb_sections / 2 - 0.5
-    ax.set_xticks(centers)
-    ax.set_yticks(centers)
-    ax.set_xticklabels(bundle_names_ref, rotation=90)
-    ax.set_yticklabels(bundle_names_ref)
+    ax2.set_xticks(centers)
+    ax2.set_yticks(centers)
+    ax2.set_xticklabels(bundle_names_ref, rotation=90)
+    ax2.set_yticklabels(bundle_names_ref)
 
-    ax.set_xlabel("Bundles x Sections")
-    ax.set_ylabel("Bundles x Sections")
-    ax.set_title(f"Group mean overlap matrix")
+    ax2.set_xlabel("Source bundle (split by sections)")
+    ax2.set_ylabel("Target bundle (split by sections)")
+    # ax2.set_title(f"Group mean overlap matrix")
 
-    cbar = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02, shrink=0.95)
-    cbar.set_label("Percentage overlap")
+    cbar2 = fig2.colorbar(im2, ax=ax2, fraction=0.035, pad=0.02, shrink=0.95)
+    cbar2.set_label("Percentage overlap")
 
     plt.tight_layout()
-    plt.savefig(args.out_png, dpi=1000)
+    plt.savefig(args.out_png.replace(".png", "_full.png"), dpi=1000)
     # plt.show()
 
 

@@ -21,7 +21,7 @@ nb_sections=20; # This can be changed if needed
 map_thr=1.0; # Take all the eroded masks
 afd_thr=0.3; # This can be changed if needed
 min_nvox=100; # This can be changed if needed
-highlight_threshold=50; # This can be changed if needed
+important_threshold=10; # This can be changed if needed
 
 in_bundles="AF_L AF_R CC_1 CC_2a CC_2b CC_3 CC_4 CC_5 CC_6 CC_7 CG_L CG_R CST_L CST_R ILF_L ILF_R MCP OR_L OR_R SLF_1_L SLF_1_R SLF_2_L SLF_2_R SLF_3_L SLF_3_R"; # Removing some bundles to simplify the plots
 
@@ -42,4 +42,4 @@ cd ${register_data_dir}/output/processing_registration;
 
 echo "Crossing bundles labels PLOTTING";
 in_jsons=$(for sub in $subs; do echo "${register_data_dir}/output/processing_registration/${sub}/crossing_bundles_labels.json"; done );
-python ${code_dir}/python_scripts/plot_crossing_bundles_labels.py ${register_data_dir}/output/processing_registration/crossing_bundles_labels.png --in_jsons $in_jsons --bundles_names $in_bundles --nb_sections $nb_sections --highlight_threshold $highlight_threshold --save_txt ${register_data_dir}/output/processing_registration/crossing_bundles_labels.txt -f;
+python ${code_dir}/python_scripts/plot_crossing_bundles_labels.py ${register_data_dir}/output/processing_registration/crossing_bundles_labels.png --in_jsons $in_jsons --bundles_names $in_bundles --nb_sections $nb_sections --save_full_txt ${register_data_dir}/output/processing_registration/crossing_bundles_labels_full.txt --save_important_txt ${register_data_dir}/output/processing_registration/crossing_bundles_labels_important.txt --important_threshold $important_threshold -f;
