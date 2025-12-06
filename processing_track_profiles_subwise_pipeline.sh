@@ -12,6 +12,8 @@ target_dir=$1; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcg
 code_dir=$2; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/code/mt-diffusion"
 # The third argument is the register_flow directory (full path)
 register_data_dir=$3; # ex: "/home/local/USHERBROOKE/karp2601/data/stockage/mt-diff-mcgill/register_flow"
+# The fourth argument is wether to include overlap and significance info in the plots
+include_extra_info=$4; # ex: True or False
 cd $target_dir;
 subs=$(ls -d hc*);
 
@@ -20,6 +22,13 @@ map_thr=1.0; # Take all the eroded masks
 afd_thr=0.3; # This can be changed if needed
 min_nvox=100; # This can be changed if needed
 min_nb_subjects=5; # This can be changed if needed
+
+overlap_cmd="";
+significance_cmd="";
+if [ $include_extra_info == "True" ]; then
+    overlap_cmd="--in_overlap_txt ${register_data_dir}/output/processing_registration/crossing_bundles_labels_important.txt";
+    significance_cmd="--in_significance_txt ${register_data_dir}/output/processing_registration/significant_track_profiles_crossings.txt";
+fi
 
 cd ${register_data_dir}/output/results_registration/hc18/Trks_into_template_space;
 bundles=$(ls *.trk);
@@ -79,6 +88,6 @@ for bundle in $bundles;
     # in_nufo_profiles_rescan=$(for sub in $subs_rescan; do echo "${register_data_dir}/output/processing_registration/${sub}/track_profiles/nufo_profile_${b}.txt"; done );
     # in_afd_profiles_rescan=$(for sub in $subs_rescan; do echo "${register_data_dir}/output/processing_registration/${sub}/track_profiles/afd_profile_${b}.txt"; done );
 
-    python ${code_dir}/python_scripts/plot_track_profiles_from_subjects.py ${b} . --in_mtr_profiles_all $in_mtr_profiles --in_fixel_mtr_profiles_all $in_fixel_mtr_profiles --in_afd_fixel_profiles_all $in_afd_profiles --in_nufo_profiles_all $in_nufo_profiles --in_mtr_profiles_scan $in_mtr_profiles_scan --in_fixel_mtr_profiles_scan $in_fixel_mtr_profiles_scan --in_mtr_profiles_rescan $in_mtr_profiles_rescan --in_fixel_mtr_profiles_rescan $in_fixel_mtr_profiles_rescan --nb_sections $nb_sections --min_nb_subjects $min_nb_subjects -f;
+    python ${code_dir}/python_scripts/plot_track_profiles_from_subjects.py ${b} . --in_mtr_profiles_all $in_mtr_profiles --in_fixel_mtr_profiles_all $in_fixel_mtr_profiles --in_afd_fixel_profiles_all $in_afd_profiles --in_nufo_profiles_all $in_nufo_profiles --in_mtr_profiles_scan $in_mtr_profiles_scan --in_fixel_mtr_profiles_scan $in_fixel_mtr_profiles_scan --in_mtr_profiles_rescan $in_mtr_profiles_rescan --in_fixel_mtr_profiles_rescan $in_fixel_mtr_profiles_rescan --nb_sections $nb_sections --min_nb_subjects $min_nb_subjects $overlap_cmd $significance_cmd -f;
     
 done;

@@ -134,7 +134,7 @@ singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_labe
 Then, compute and plot the track-profiles for the between/within-subject analysis:
 
 ```
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir} False;
 ```
 
 Now, a matrix of percentage overlap comparing the overlap of each section of each bundle can be computed if wanted:
@@ -158,5 +158,5 @@ bash ${code_dir}/processing_track_profiles_stats.sh ${main_dir}/${working_dir} $
 If you want to add the important crossing regions and significant sections to the track-profiles plots, rerun this command:
 
 ```
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir} True;
 ```
