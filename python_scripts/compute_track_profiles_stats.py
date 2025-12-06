@@ -65,21 +65,23 @@ def main():
     fixel_mtr_profiles = np.where(fixel_mtr_profiles > 0,
                                   fixel_mtr_profiles, np.nan)
 
-    shapiro = stats.shapiro(mtr_profiles, axis=0, nan_policy='omit')
-    for i, pvalue in enumerate(shapiro.pvalue):
-        if pvalue < 0.05:
-            print("Section {} of the MTR profiles does not follow a normal distribution. Pvalue = {}".format(i+1, pvalue))
+    # shapiro = stats.shapiro(mtr_profiles, axis=0, nan_policy='omit')
+    # for i, pvalue in enumerate(shapiro.pvalue):
+    #     if pvalue < 0.05:
+    #         print("Section {} of the MTR profiles does not follow a normal distribution. Pvalue = {}".format(i+1, pvalue))
 
-    shapiro = stats.shapiro(fixel_mtr_profiles, axis=0, nan_policy='omit')
-    for i, pvalue in enumerate(shapiro.pvalue):
-        if pvalue < 0.05:
-            print("Section {} of the fixel-MTR profiles does not follow a normal distribution. Pvalue = {}".format(i+1, pvalue))
+    # shapiro = stats.shapiro(fixel_mtr_profiles, axis=0, nan_policy='omit')
+    # for i, pvalue in enumerate(shapiro.pvalue):
+    #     if pvalue < 0.05:
+    #         print("Section {} of the fixel-MTR profiles does not follow a normal distribution. Pvalue = {}".format(i+1, pvalue))
 
-    ttest = stats.ttest_ind(mtr_profiles, fixel_mtr_profiles, axis=0, nan_policy='omit', equal_var=False)
-    print(ttest.pvalue)
-    _, pvalues_corrected = multitest.fdrcorrection(ttest.pvalue, alpha=0.05, method='indep')
+    # ttest = stats.ttest_ind(mtr_profiles, fixel_mtr_profiles, axis=0, nan_policy='omit', equal_var=False)
+    ttest = stats.ttest_rel(mtr_profiles, fixel_mtr_profiles, axis=0, nan_policy='omit')
+    # print(ttest.pvalue)
+    # _, pvalues_corrected = multitest.fdrcorrection(ttest.pvalue, alpha=0.05, method='indep')
+    pvalues_corrected = stats.false_discovery_control(ttest.pvalue, axis=0, method='bh')
 
-    print(pvalues_corrected)
+    print(pvalues_corrected < 0.05)
 
 
 if __name__ == "__main__":
