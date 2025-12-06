@@ -91,7 +91,6 @@ def main():
     write_mode = "a"  # append mode
     with open(args.out_txt, write_mode) as f:
         f.write(f"\n=== {bundle_name} ===\n")
-        f.write(f"Alpha (FDR corrected): {alpha}\n")
         if len(signif_sections) == 0:
             f.write("No significant sections\n")
         else:

@@ -18,6 +18,7 @@ bundles=$(ls *.trk);
 cd $target_dir;
 subs=$(ls -d hc[0-9][0-9]);
 cd ${register_data_dir}/output/processing_registration/;
+rm ${register_data_dir}/output/processing_registration/significant_track_profiles_crossings.txt; # Remove previous file if exists
 
 for bundle in $bundles;
     do b=${bundle%"_to_template.trk"};

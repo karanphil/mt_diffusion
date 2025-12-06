@@ -25,7 +25,7 @@ EXCLUDE_FAMILIES = [
 
 # ---- Specific pair exclusions (parallel tracts) ----
 EXCLUDE_PAIRS = [
-    ("AF", "SLF"), ("CG", "SLF")
+    ("AF", "SLF"), ("CG", "SLF"), ("ILF", "OR")
 ]
 
 
@@ -63,9 +63,9 @@ def _build_arg_parser():
                         'and parallel bundles. This should be the path to the '
                         'output .txt file.')
     
-    p.add_argument('--important_threshold', type=float, default=10.0,
+    p.add_argument('--important_threshold', type=float, default=20.0,
                    help='Threshold for important crossings to be saved '
-                        'in the text file. Default is 10%.')
+                        'in the text file. Default is 20%.')
 
     p.add_argument('--use_crameri', action='store_true',
                    help='Use the Crameri colormap for plotting. '
@@ -198,11 +198,11 @@ def main():
     if args.save_full_txt is not None:
         np.savetxt(args.save_full_txt, M, fmt="%.6f")
 
-    # Save crossings > 10% to TXT
+    # Save crossings > args.important_threshold to TXT
     if args.save_important_txt is not None:
         C_threshold = args.important_threshold
         with open(args.save_important_txt, "w") as f:
-            f.write("Section-to-bundle crossings > 10% (group-averaged)\n")
+            f.write("Section-to-bundle crossings > {}% (group-averaged)\n".format(args.important_threshold))
             f.write("Excluded: same-family bundles + parallel bundles\n\n")
             for bi, bundle_i in enumerate(bundle_names_ref):
                 for si in range(nb_sections):

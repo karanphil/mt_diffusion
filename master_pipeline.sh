@@ -74,24 +74,34 @@ register_data_dir="${main_dir}/register_flow";
 cd ${main_dir};
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_averages_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
 
-# Step 15
-average_dir=${main_dir}/${working_dir}/average_all_scans;
-cd ${main_dir};
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_average_pipeline.sh ${average_dir} ${code_dir};
+# # Step 15
+# average_dir=${main_dir}/${working_dir}/average_all_scans;
+# cd ${main_dir};
+# singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_average_pipeline.sh ${average_dir} ${code_dir};
 
 # Step 16
 register_data_dir="${main_dir}/register_flow";
 cd ${main_dir};
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_labels_per_subjects_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
 
 # Step 17
 register_data_dir="${main_dir}/register_flow";
 cd ${main_dir};
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_bundles_crossing_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
 
 # Step 18
 register_data_dir="${main_dir}/register_flow";
 cd ${main_dir};
-# singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
-# The singularity's version of scipy does not have the nan_policy option for the shapiro test. Please run this without singularity. If the scilpy dependencies are problematic, remove those functions from the script or install scilpy.
-bash ${code_dir}/processing_track_profiles_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_bundles_crossing_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+
+# Step 19
+register_data_dir="${main_dir}/register_flow";
+cd ${main_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+# The singularity's version of scipy does not have the nan_policy option for the shapiro test. Please run this without singularity if the python script has the shapiro test (it should be commented right now). If the scilpy dependencies are problematic, remove those functions from the script or install scilpy.
+# bash ${code_dir}/processing_track_profiles_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+
+# Step 20
+register_data_dir="${main_dir}/register_flow";
+cd ${main_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
