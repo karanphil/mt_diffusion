@@ -12,7 +12,6 @@ import warnings
 
 import numpy as np
 import scipy.stats as stats
-from statsmodels.stats import multitest
 
 
 from scilpy.io.utils import (add_overwrite_arg, add_verbose_arg,
@@ -27,8 +26,9 @@ def _build_arg_parser():
     p.add_argument('in_bundle_name', type=str,
                 help='Name of the bundle being processed.')
 
-    p.add_argument('out_dir',
-                help='Output directory to save the track-profiles plot.')
+    p.add_argument('out_txt',
+                   help='Global TXT file where significant sections for all '
+                        'bundles are stored.')
 
     p.add_argument('--in_mtr_profiles', nargs='+', required=True,
                 help='Input bundle-specific MTR track-profile txt files '
@@ -37,6 +37,10 @@ def _build_arg_parser():
     p.add_argument('--in_fixel_mtr_profiles', nargs='+', required=True,
                 help='Input bundle-specific fixel-wise MTR track-profile '
                         'txt files for all subjects (scan).')
+    
+    p.add_argument('--alpha', type=float, default=0.05,
+                   help='Significance threshold after correction '
+                        '(default: 0.05).')
 
     add_verbose_arg(p)
     add_overwrite_arg(p)
@@ -55,7 +59,7 @@ def main():
 
     assert_inputs_exist(parser, [args.in_mtr_profiles,
                                 args.in_fixel_mtr_profiles])
-    assert_outputs_exist(parser, args, [args.out_dir])
+    assert_outputs_exist(parser, args, [args.out_txt])
 
     # Load profiles
     mtr_profiles= np.array([np.loadtxt(f) for f in args.in_mtr_profiles])
@@ -77,11 +81,22 @@ def main():
 
     # ttest = stats.ttest_ind(mtr_profiles, fixel_mtr_profiles, axis=0, nan_policy='omit', equal_var=False)
     ttest = stats.ttest_rel(mtr_profiles, fixel_mtr_profiles, axis=0, nan_policy='omit')
-    # print(ttest.pvalue)
-    # _, pvalues_corrected = multitest.fdrcorrection(ttest.pvalue, alpha=0.05, method='indep')
     pvalues_corrected = stats.false_discovery_control(ttest.pvalue, axis=0, method='bh')
 
-    print(pvalues_corrected < 0.05)
+    # Saving report of significant sections
+    alpha = args.alpha
+    signif_mask = pvalues_corrected < alpha
+    signif_sections = np.where(signif_mask)[0] + 1  # +1 for 1-based indexing
+    bundle_name = args.in_bundle_name
+    write_mode = "a"  # append mode
+    with open(args.out_txt, write_mode) as f:
+        f.write(f"\n=== {bundle_name} ===\n")
+        f.write(f"Alpha (FDR corrected): {alpha}\n")
+        if len(signif_sections) == 0:
+            f.write("No significant sections\n")
+        else:
+            for s in signif_sections:
+                f.write(f"Section {s}\n")
 
 
 if __name__ == "__main__":

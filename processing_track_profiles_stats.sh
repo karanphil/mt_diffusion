@@ -26,6 +26,6 @@ for bundle in $bundles;
     in_mtr_profiles=$(for sub in $subs; do echo "${register_data_dir}/output/processing_registration/${sub}/track_profiles/mtr_profile_${b}.txt"; done );
     in_fixel_mtr_profiles=$(for sub in $subs; do echo "${register_data_dir}/output/processing_registration/${sub}/track_profiles/fixel_mtr_profile_${b}.txt"; done );
 
-    python ${code_dir}/python_scripts/compute_track_profiles_stats.py ${b} ${register_data_dir}/output/processing_registration --in_mtr_profiles $in_mtr_profiles --in_fixel_mtr_profiles $in_fixel_mtr_profiles;
+    python ${code_dir}/python_scripts/compute_track_profiles_stats.py ${b} ${register_data_dir}/output/processing_registration/significant_track_profiles_crossings.txt --in_mtr_profiles $in_mtr_profiles --in_fixel_mtr_profiles $in_fixel_mtr_profiles -f;
     
 done;
