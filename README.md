@@ -118,21 +118,45 @@ cd ${main_dir};
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_averages_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
 ```
 
-<!-- Now, compute and plot the track-profiles for the average data:
+Now, if you want, compute and plot the track-profiles for the average data (this was removed from the final analysis):
 
 ```
 average_dir=${main_dir}/${working_dir}/average_all_scans;
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_average_pipeline.sh ${average_dir} ${code_dir};
-``` -->
+```
 
-Now, compute and plot the track-profiles for the between/within-subject analysis:
+Next, compute the labels and bundle masks for each subjects using the average centroids:
+
+```
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_labels_per_subjects_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+```
+
+Then, compute and plot the track-profiles for the between/within-subject analysis:
 
 ```
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
 ```
 
-Now, a matrix of dice scores comparing the overlap of each section of each bundle can be computed:
+Now, a matrix of percentage overlap comparing the overlap of each section of each bundle can be computed if wanted:
 
 ```
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_bundles_crossing_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+```
+
+Furthermore, the significance of the differences between MTR and fixel-MTR in track-profiles can be evaluated:
+
+```
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+```
+
+If the Shapiro test for normality is uncommented from the python script, it will not run with the singularity. Simply install the necessary packages and run instead:
+
+```
+bash ${code_dir}/processing_track_profiles_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+```
+
+If you want to add the important crossing regions and significant sections to the track-profiles plots, rerun this command:
+
+```
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
 ```
