@@ -46,6 +46,16 @@ def _build_arg_parser():
                    help='Input bundle map to create a mask of the bundle. '
                         'If not provided, the whole bundle labels are used.')
 
+    p.add_argument('--in_crossing_bundle_map',
+                   help='Input crossing bundle map to create a mask of the '
+                        'crossing bundle. This will produce track-profiles '
+                        'using only the voxels comprised in this mask and the '
+                        'usual masks. If not provided, the whole bundle '
+                        'labels are used.')
+    
+    p.add_argument('--in_crossing_bundle_name',
+                   help='Name of the crossing bundle.')
+
     p.add_argument('--map_threshold', type=float, default=1.0,
                    help='Threshold (higher-or-equal) to apply to the bundle '
                         'map to create a mask. Default is 1.0.')
@@ -104,6 +114,13 @@ def main():
     else:
         mask = np.ones(mtr.shape, dtype=bool)
 
+    if args.in_crossing_bundle_map:
+        map_img = nib.load(args.in_crossing_bundle_map)
+        map = map_img.get_fdata().astype(np.float32)
+        crossing_mask = map >= args.map_threshold
+    else:
+        crossing_mask = np.ones(mtr.shape, dtype=bool)
+
     labels_list = np.arange(1, args.nb_sections + 1, 1)
 
     fixel_mtr_profile = np.zeros((len(labels_list),))
@@ -112,7 +129,7 @@ def main():
     afd_profile = np.zeros((len(labels_list),))
     nb_voxels_profile = np.zeros((len(labels_list),))
     for i, label in enumerate(labels_list):
-        label_mask = (labels == label) & mask & afd_mask
+        label_mask = (labels == label) & mask & afd_mask & crossing_mask
         nb_voxels_profile[i] = np.sum(label_mask)
         if np.sum(afd_fixel[label_mask]) != 0 and nb_voxels_profile[i] >= args.min_nvox:
             fixel_mtr_profile[i] = np.average(fixel_mtr[label_mask],
@@ -123,15 +140,22 @@ def main():
                                          weights=afd_fixel[label_mask])
             afd_profile[i] = np.average(afd_fixel[label_mask])
 
-    np.savetxt(f"{args.out_dir}/mtr_profile_{args.in_bundle_name}.txt",
+    if args.in_crossing_bundle_map and args.in_crossing_bundle_name:
+        ext_name = f"_crossing_{args.in_crossing_bundle_name}"
+    elif args.in_crossing_bundle_map:
+        ext_name = "_crossing"
+    else:
+        ext_name = ""
+
+    np.savetxt(f"{args.out_dir}/mtr_profile_{args.in_bundle_name}{ext_name}.txt",
                mtr_profile)
-    np.savetxt(f"{args.out_dir}/fixel_mtr_profile_{args.in_bundle_name}.txt",
+    np.savetxt(f"{args.out_dir}/fixel_mtr_profile_{args.in_bundle_name}{ext_name}.txt",
                fixel_mtr_profile)
-    np.savetxt(f"{args.out_dir}/nufo_profile_{args.in_bundle_name}.txt",
+    np.savetxt(f"{args.out_dir}/nufo_profile_{args.in_bundle_name}{ext_name}.txt",
                nufo_profile)
-    np.savetxt(f"{args.out_dir}/afd_profile_{args.in_bundle_name}.txt",
+    np.savetxt(f"{args.out_dir}/afd_profile_{args.in_bundle_name}{ext_name}.txt",
                afd_profile)
-    np.savetxt(f"{args.out_dir}/nb_voxels_profile_{args.in_bundle_name}.txt",
+    np.savetxt(f"{args.out_dir}/nb_voxels_profile_{args.in_bundle_name}{ext_name}.txt",
                nb_voxels_profile)
 
 

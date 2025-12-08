@@ -11,8 +11,10 @@ import logging
 import warnings
 
 from matplotlib.gridspec import GridSpec
+from matplotlib.legend_handler import HandlerTuple
 from matplotlib.lines import Line2D 
 import matplotlib as mpl
+from matplotlib.patches import Patch
 from matplotlib import pyplot as plt
 import nibabel as nib
 import numpy as np
@@ -250,6 +252,8 @@ def main():
                    wspace=0.15, hspace=0.25)
      
      ax1 = fig.add_subplot(gs[0, 0])
+     ymin = 0.25
+     ymax = 0.55
 
      ax1.fill_between(labels[min_nb_subjects_mask],
                       mtr_profile[min_nb_subjects_mask] - mtr_profile_std[min_nb_subjects_mask],
@@ -260,18 +264,54 @@ def main():
                       fixel_mtr_profile[min_nb_subjects_mask] + fixel_mtr_profile_std[min_nb_subjects_mask],
                       color=colors[1], alpha=0.2)
 
+     # --- Plot with markers ---
      ax1.plot(labels[min_nb_subjects_mask], mtr_profile[min_nb_subjects_mask],
-              label='MTR', marker='o', color=colors[0])
+              label='MTR', color=colors[0])
      ax1.plot(labels[min_nb_subjects_mask],
               fixel_mtr_profile[min_nb_subjects_mask], label='Fixel-wise MTR',
-              marker='o', color=colors[1])
-     
-     # Highlight overlap and significant sections
-     for sec in overlap_sections:
-          ax1.axvspan(sec - 0.5, sec + 0.5, color='orange', alpha=0.15,
-                      zorder=0)
-     for sec in overlap_and_significant:
-          ax1.axvspan(sec - 0.5, sec + 0.5, color='red', alpha=0.25, zorder=0)
+              color=colors[1])
+     for sec in range(1, args.nb_sections + 1):
+          if not min_nb_subjects_mask[sec - 1]:
+               continue
+          x = sec
+          y_mtr = mtr_profile[sec - 1]
+          y_fixel = fixel_mtr_profile[sec - 1]
+          # Use 'x' if overlap, else 'o'
+          marker_style = 'X' if sec in overlap_sections else 'o'
+          ax1.scatter(x, y_mtr, marker=marker_style, color=colors[0], zorder=5)
+          ax1.scatter(x, y_fixel, marker=marker_style, color=colors[1],
+                      zorder=5)
+
+     # Double-sided arrows for significance
+     linewidth = 1.0
+     cap_half_width = 0.05   # half-width of horizontal cap in X units
+     for sec in sorted(significant_sections):
+          if not min_nb_subjects_mask[sec - 1]:
+               continue
+          x = sec
+          y1 = mtr_profile[sec - 1]
+          y2 = fixel_mtr_profile[sec - 1]
+          # ---- Order endpoints
+          y_low, y_high = sorted([y1, y2])
+          # ---- Clip to visible Y range
+          y_low_clip = max(y_low, ymin)
+          y_high_clip = min(y_high, ymax)
+          # Fully invisible -> skip
+          if y_low_clip >= y_high_clip:
+               continue
+          # ---- Central vertical line (always clipped)
+          ax1.plot([x, x], [y_low_clip, y_high_clip], color='black',
+                   linewidth=linewidth, zorder=6, clip_on=True)
+          # ---- LOWER FLAT CAP (only if true endpoint is inside)
+          if y_low >= ymin:
+               ax1.plot([x - cap_half_width, x + cap_half_width],
+                        [y_low, y_low], color='black', linewidth=linewidth,
+                        zorder=7, clip_on=True)
+          # ---- UPPER FLAT CAP (only if true endpoint is inside)
+          if y_high <= ymax:
+               ax1.plot([x - cap_half_width, x + cap_half_width],
+                        [y_high, y_high], color='black', linewidth=linewidth,
+                        zorder=7, clip_on=True)
 
      # Add secondary axis for NuFO
      ax2 = ax1.twinx()
@@ -282,11 +322,6 @@ def main():
                  nufo_profile[min_nb_subjects_mask],
                  c=afd_profile[min_nb_subjects_mask],
                  cmap='Greys', norm=norm, edgecolors='darkgrey', zorder=4)
-     complexity_handle = Line2D([0], [0],
-                                color='darkgrey', linestyle='--',
-                                marker='o', markerfacecolor='white',
-                                markeredgecolor='darkgrey',
-                                label='Complexity')
      ax2.set_ylabel('Mean NuFO', color="darkgrey")
      ax2.tick_params(axis='y', labelcolor="darkgrey")
 
@@ -305,26 +340,34 @@ def main():
      ax1.set_ylabel('Mean MTR')
      ax1.set_title('Track-profile of MTR and fixel-wise MTR for the {} bundle'.format(args.in_bundle_name))
 
-     # Combine legends from both axes
+     # Set legend
+     legend_handles = []
+     # ---- Main profiles (circle + line) ----
+     legend_handles.append(Line2D([0], [0], color=colors[0], marker='o',
+                                  linestyle='-', label='MTR'))
+     legend_handles.append(Line2D([0], [0], color=colors[1], marker='o',
+                                  linestyle='-', label='Fixel-wise MTR'))
+
+     # ---- Complexity (NuFO + AFD color) ----
+     legend_handles.append(Line2D([0], [0], color='darkgrey', linestyle='--',
+                                  marker='o', markerfacecolor='white',
+                                  markeredgecolor='darkgrey',
+                                  label='Complexity'))
+
+     # ---- Overlap as "X" marker ----
      if args.in_overlap_txt:
-          overlap_patch = mpl.patches.Patch(color='orange', alpha=0.15,
-                                            label='Overlap > threshold')
-     else:
-          overlap_patch = None
-     if args.in_significance_txt:
-          significant_patch = mpl.patches.Patch(color='red', alpha=0.25,
-                                                label='Overlap + significant Δ')
-     else:
-          significant_patch = None
-     lines_1, labels_1 = ax1.get_legend_handles_labels()
-     lines_2, labels_2 = ax2.get_legend_handles_labels()
-     ax1.legend(lines_1 + lines_2 + [complexity_handle, overlap_patch,
-                                     significant_patch],
-                labels_1 + labels_2 + ["Complexity", "Overlap > threshold",
-                                       "Overlap + significant"],
+          overlap_handle = (Line2D([0], [0], color=colors[0], marker='X',
+                                   linestyle='None'),
+                            Line2D([0], [0], color=colors[1], marker='X',
+                                   linestyle='None'))
+          legend_handles.append(overlap_handle)
+
+     ax1.legend(handles=legend_handles,
+                labels=[h.get_label() if not isinstance(h, tuple) else ">20% overlap" for h in legend_handles],
+                handler_map={tuple: HandlerTuple(ndivide=None)},
                 loc='best')
 
-     ax1.set_ylim(0.30, 0.50)
+     ax1.set_ylim(ymin, ymax)
      ax1.set_xlim(0, args.nb_sections + 1)
      ax1.set_xticks(np.arange(1, args.nb_sections + 1, 1))
      ax2.set_ylim(1, 5)
@@ -357,7 +400,7 @@ def main():
      plt.tight_layout()
      # plt.show()
      plt.savefig(args.out_dir + '/track_profile_{}.png'.format(args.in_bundle_name),
-                 dpi=300)
+                 dpi=500)
 
 
 if __name__ == "__main__":
