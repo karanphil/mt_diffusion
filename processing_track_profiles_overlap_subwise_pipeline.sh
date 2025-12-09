@@ -34,8 +34,8 @@ cross_bundles[6]="CST_L CST_R"; # CC_6
 cross_bundles[7]="OR_L OR_R"; # CC_7, removing the ILF_R since the OR_R is already included and overlaps more
 cross_bundles[8]="CC_6 CC_7 CC_2a CC_2b"; # CG_L
 cross_bundles[9]="CC_6 CC_7 CC_2a CC_2b CC_3"; # CG_R
-cross_bundles[10]="CC_4 CC_5 CC_6"; # CST_L
-cross_bundles[11]="CC_4 CC_5 CC_6"; # CST_R
+cross_bundles[10]="CC_4 CC_5 CC_6 MCP"; # CST_L, added the MCP since we want to know its effect on thr CST
+cross_bundles[11]="CC_4 CC_5 CC_6 MCP"; # CST_R, added the MCP since we want to know its effect on thr CST
 cross_bundles[12]="CC_7"; # ILF_L
 cross_bundles[13]="CC_7"; # ILF_R
 cross_bundles[14]="CST_L CST_R"; # MCP
@@ -52,13 +52,13 @@ for sub in $subs;
     cd ${register_data_dir}/output;
     mkdir -p processing_registration/${sub}/track_profiles;
     cd ${register_data_dir}/output/processing_registration/${sub}/track_profiles;
-    if [ ! -f "fixel_mtr_profile_AF_L_crossing_CC_3.txt" ]; then
-        echo "Track-profiles PROCESSING";
-        count=0;
-        for b in $bundles;
-            do echo $b "crossing:";
-            for c in ${cross_bundles[$count]};
-                do echo "                       " $c;
+    echo "Track-profiles PROCESSING";
+    count=0;
+    for b in $bundles;
+        do echo $b "crossing:";
+        for c in ${cross_bundles[$count]};
+            do echo "                       " $c;
+            if [ ! -f "fixel_mtr_profile_${b}_crossing_${c}.txt" ]; then
                 mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/mtr_${b}_to_template.nii.gz";
                 fixel_mtr="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/fixel_mtr_${b}_to_template.nii.gz";
                 afd_fixel="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/afd_fixel_${b}_to_template.nii.gz";
@@ -67,11 +67,13 @@ for sub in $subs;
                 bundle_mask="${register_data_dir}/output/processing_registration/${sub}/bundles_masks/${b}_mask.nii.gz";
                 crossing_bundle_mask="${register_data_dir}/output/processing_registration/${sub}/bundles_masks/${c}_mask.nii.gz";
 
-                python ${code_dir}/python_scripts/compute_track_profiles.py $mtr $fixel_mtr $labels ${b} $afd_fixel $nufo . --in_bundle_map $bundle_mask --map_threshold $map_thr --afd_threshold $afd_thr --min_nvox $min_nvox --nb_sections $nb_sections --in_crossing_bundle_map $crossing_bundle_mask --in_crossing_bundle_name ${c} -f; 
-            done;
-            ((count++));
+                python ${code_dir}/python_scripts/compute_track_profiles.py $mtr $fixel_mtr $labels ${b} $afd_fixel $nufo . --in_bundle_map $bundle_mask --map_threshold $map_thr --afd_threshold $afd_thr --min_nvox $min_nvox --nb_sections $nb_sections --in_crossing_bundle_map $crossing_bundle_mask --in_crossing_bundle_name ${c} -f;
+
+            fi
 
         done;
-    fi
+        ((count++));
+
+    done;
 
 done;
