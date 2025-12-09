@@ -95,9 +95,10 @@ cd ${main_dir};
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_bundles_crossing_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
 
 # Step 19
+# TODO : Put this step after the stats step or add the ttest directly in the plotting script.
 register_data_dir="${main_dir}/register_flow";
 cd ${main_dir};
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_overlap_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_overlap_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir} True;
 
 # Step 20
 register_data_dir="${main_dir}/register_flow";

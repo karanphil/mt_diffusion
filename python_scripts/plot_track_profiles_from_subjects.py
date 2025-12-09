@@ -51,6 +51,10 @@ def _build_arg_parser():
                     help='Input NuFO track-profile txt files for all subjects '
                          '(scan).')
 
+     p.add_argument('--in_nb_voxels_profiles_all', nargs='+',
+                    help='Input NuFO track-profile txt files for all subjects '
+                         '(scan). OPTIONAL.')
+
      # Inputs for subjects with rescans (scan versions)
      p.add_argument('--in_mtr_profiles_scan', nargs='+', required=True,
                     help='Input bundle-specific MTR track-profile txt files '
@@ -96,6 +100,11 @@ def _build_arg_parser():
                     action='append',
                     help='Input bundle-specific fixel-wise MTR track-profile '
                          'txt files from the overlap analysis.')
+     
+     p.add_argument('--in_nb_voxels_profiles_overlap', nargs='+',
+                    action='append',
+                    help='Input NuFO track-profile txt files from the overlap '
+                         'analysis.')
 
      add_verbose_arg(p)
      add_overwrite_arg(p)
@@ -178,6 +187,8 @@ def main():
      fixel_mtr_profiles_scan = np.array([np.loadtxt(f) for f in args.in_fixel_mtr_profiles_scan])
      mtr_profiles_rescan = np.array([np.loadtxt(f) for f in args.in_mtr_profiles_rescan])
      fixel_mtr_profiles_rescan = np.array([np.loadtxt(f) for f in args.in_fixel_mtr_profiles_rescan])
+     if args.in_nb_voxels_profiles_all:
+          nb_voxels_profiles_all = np.array([np.loadtxt(f) for f in args.in_nb_voxels_profiles_all])
      labels = np.arange(1, args.nb_sections + 1, 1)
 
      # Prepare principal profiles by averaging all scans
@@ -202,6 +213,12 @@ def main():
                                   fixel_mtr_profile)
      nufo_profile = np.where(np.isnan(nufo_profile), 0, nufo_profile)
      afd_profile = np.where(np.isnan(afd_profile), 0, afd_profile)
+     if args.in_nb_voxels_profiles_all:
+          nb_voxels_profiles = np.where(nb_voxels_profiles_all > 0,
+                                        nb_voxels_profiles_all, np.nan)
+          nb_voxels_profile = np.nanmean(nb_voxels_profiles, axis=0)
+          nb_voxels_profile = np.where(np.isnan(nb_voxels_profile), 0,
+                                       nb_voxels_profile)
 
      # Compute the absolute difference between scan and rescan profiles
      nb_subjects_scan = mtr_profiles_scan.shape[0]
@@ -241,11 +258,11 @@ def main():
           fixel_mtr_profiles_overlap = np.where(fixel_mtr_profiles_overlap > 0,
                                                 fixel_mtr_profiles_overlap,
                                                 np.nan)
-          ttest_overlap = stats.ttest_rel(mtr_profiles_overlap,
-                                          fixel_mtr_profiles_overlap,
-                                          axis=1, nan_policy='omit')
-          pvalues_overlap = stats.false_discovery_control(ttest_overlap.pvalue,
-                                                          axis=1, method='bh')
+          # ttest_overlap = stats.ttest_rel(mtr_profiles_overlap,
+          #                                 fixel_mtr_profiles_overlap,
+          #                                 axis=1, nan_policy='omit')
+          # pvalues_overlap = stats.false_discovery_control(ttest_overlap.pvalue,
+          #                                                 axis=1, method='bh')
           nb_subjects_overlap = np.sum(~np.isnan(fixel_mtr_profiles_overlap),
                                        axis=1)
           min_nb_subjects_overlap_mask = nb_subjects_overlap >= args.min_nb_subjects
@@ -256,6 +273,17 @@ def main():
                                           mtr_profiles_overlap)
           fixel_mtr_profiles_overlap = np.where(np.isnan(fixel_mtr_profiles_overlap),
                                                 0, fixel_mtr_profiles_overlap)
+     if args.in_nb_voxels_profiles_overlap is not None:
+          nb_voxels_profiles_overlap = np.zeros((len(args.in_nb_voxels_profiles_overlap),
+                                                 nb_subjects, args.nb_sections))
+          for i, overlap_profiles in enumerate(args.in_nb_voxels_profiles_overlap):
+               nb_voxels_profiles_overlap[i] = np.array([np.loadtxt(f) for f in overlap_profiles])
+          nb_voxels_profiles_overlap = np.where(nb_voxels_profiles_overlap > 0,
+                                                nb_voxels_profiles_overlap,
+                                                np.nan)
+          nb_voxels_profiles_overlap = np.nanmean(nb_voxels_profiles_overlap, axis=1)
+          nb_voxels_profiles_overlap = np.where(np.isnan(nb_voxels_profiles_overlap), 0,
+                                                nb_voxels_profiles_overlap)
 
      data_for_boxplot = []
      positions = []
@@ -364,9 +392,17 @@ def main():
      # cbar.tick_params(axis='y', labelcolor="darkgrey")
 
      # Plot overlap markers if provided
-     # if (args.in_mtr_profiles_overlap is not None) and (args.in_fixel_mtr_profiles_overlap is not None):
-          # TODO : plot overlap profiles
-
+     if (args.in_mtr_profiles_overlap is not None) and (args.in_fixel_mtr_profiles_overlap is not None):
+          markers_overlap = ['x', '*', '+', 'D', 's']
+          for i in range(mtr_profiles_overlap.shape[0]):
+               ax1.scatter(labels[min_nb_subjects_overlap_mask[i]],
+                           mtr_profiles_overlap[i][min_nb_subjects_overlap_mask[i]],
+                           marker=markers_overlap[i],
+                           color=colors[0], zorder=5)
+               ax1.scatter(labels[min_nb_subjects_overlap_mask[i]],
+                           fixel_mtr_profiles_overlap[i][min_nb_subjects_overlap_mask[i]],
+                           marker=markers_overlap[i],
+                           color=colors[1], zorder=5)
 
      # Axis labels
      ax1.set_xlabel('Bundle section')

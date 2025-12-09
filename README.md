@@ -145,7 +145,7 @@ singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_bund
 
 The next step might require a bit of hard-coding. Indeed, this next script uses the information from the previous step to compute the track-profiles of bundles while considering only the overlaps with other bundles, given by the crossing_bundles_labels_important.txt file produced earlier. The combinations of bundles are hard-coded into the following script, so they might have to be changed manually.
 ```
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_overlap_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_overlap_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir} True;
 ```
 
 Furthermore, the significance of the differences between MTR and fixel-MTR in track-profiles can be evaluated:
