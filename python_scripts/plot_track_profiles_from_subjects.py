@@ -10,11 +10,11 @@ import argparse
 import logging
 import warnings
 
+import scipy.stats as stats
 from matplotlib.gridspec import GridSpec
 from matplotlib.legend_handler import HandlerTuple
 from matplotlib.lines import Line2D 
 import matplotlib as mpl
-from matplotlib.patches import Patch
 from matplotlib import pyplot as plt
 import nibabel as nib
 import numpy as np
@@ -87,6 +87,15 @@ def _build_arg_parser():
 
      p.add_argument('--in_significance_txt', type=str,
                     help='TXT file with significant sections per bundle.')
+     
+     p.add_argument('--in_mtr_profiles_overlap', nargs='+', action='append',
+                    help='Input bundle-specific MTR track-profile txt files '
+                         'from the overlap analysis.')
+
+     p.add_argument('--in_fixel_mtr_profiles_overlap', nargs='+',
+                    action='append',
+                    help='Input bundle-specific fixel-wise MTR track-profile '
+                         'txt files from the overlap analysis.')
 
      add_verbose_arg(p)
      add_overwrite_arg(p)
@@ -95,34 +104,23 @@ def _build_arg_parser():
 
 
 def load_overlap_sections_from_txt(txt_file, target_bundle):
-     """
-     Parses lines like:
-     CST_L - section 12        --> ILF_L : 14.32%
-     """
      overlap_sections = set()
-
      if txt_file is None:
           return overlap_sections
 
      with open(txt_file, "r") as f:
           for line in f:
                line = line.strip()
-
                # Skip headers
                if not line or line.startswith("#") or "-->" not in line:
                     continue
-
-               left, right = line.split("-->")
-
+               left, _= line.split("-->")
                # Left side: "BUNDLE - section X"
                bundle_part = left.split("- section")[0].strip()
                section_part = left.split("- section")[1].strip()
-
                if bundle_part != target_bundle:
                     continue
-
                sec = int(section_part)
-
                overlap_sections.add(sec)
 
      return overlap_sections
@@ -130,22 +128,18 @@ def load_overlap_sections_from_txt(txt_file, target_bundle):
 
 def load_significant_sections_from_txt(txt_file, target_bundle):
      significant_sections = set()
-
      if txt_file is None:
           return significant_sections
 
      with open(txt_file, "r") as f:
           lines = f.readlines()
-
      inside_bundle_block = False
 
      for line in lines:
           line = line.strip()
-
           if line.startswith("==="):
                inside_bundle_block = target_bundle in line
                continue
-
           if inside_bundle_block:
                if "No significant sections" in line:
                     break
@@ -187,6 +181,7 @@ def main():
      labels = np.arange(1, args.nb_sections + 1, 1)
 
      # Prepare principal profiles by averaging all scans
+     nb_subjects = mtr_profiles_all.shape[0]
      mtr_profiles = np.where(mtr_profiles_all > 0, mtr_profiles_all, np.nan)
      fixel_mtr_profiles = np.where(fixel_mtr_profiles_all > 0,
                                    fixel_mtr_profiles_all, np.nan)
@@ -209,25 +204,58 @@ def main():
      afd_profile = np.where(np.isnan(afd_profile), 0, afd_profile)
 
      # Compute the absolute difference between scan and rescan profiles
-     nb_subjects = mtr_profiles_scan.shape[0]
-     mtr_profile_diff = np.zeros((nb_subjects, args.nb_sections))
-     fixel_mtr_profile_diff = np.zeros((nb_subjects, args.nb_sections))
-     for i in range(nb_subjects):
+     nb_subjects_scan = mtr_profiles_scan.shape[0]
+     mtr_profile_diff = np.zeros((nb_subjects_scan, args.nb_sections))
+     fixel_mtr_profile_diff = np.zeros((nb_subjects_scan, args.nb_sections))
+     for i in range(nb_subjects_scan):
           mtr_profile_diff[i, :] = np.abs(mtr_profiles_scan[i] - mtr_profiles_rescan[i]) / mtr_profiles_scan[i] * 100
           fixel_mtr_profile_diff[i, :] = np.abs(fixel_mtr_profiles_scan[i] - fixel_mtr_profiles_rescan[i]) / fixel_mtr_profiles_scan[i] * 100
      # Masks to consider only valid data points
      mtr_mask = (mtr_profiles_scan != 0) & (mtr_profiles_rescan != 0) & (mtr_profile_diff != np.inf) & (~np.isnan(mtr_profile_diff))
      fixel_mtr_mask = (fixel_mtr_profiles_scan != 0) & (fixel_mtr_profiles_rescan != 0) & (fixel_mtr_profile_diff != np.inf) & (~np.isnan(fixel_mtr_profile_diff))
      # Masks to consider only sections with minimum data points (subjects)
-     mtr_mask = mtr_mask & np.repeat((np.sum(mtr_mask, axis=0) >= args.min_nb_subjects)[np.newaxis, :], nb_subjects, axis=0)
-     fixel_mtr_mask = fixel_mtr_mask & np.repeat((np.sum(fixel_mtr_mask, axis=0) >= args.min_nb_subjects)[np.newaxis, :], nb_subjects, axis=0)
+     mtr_mask = mtr_mask & np.repeat((np.sum(mtr_mask, axis=0) >= args.min_nb_subjects)[np.newaxis, :], nb_subjects_scan, axis=0)
+     fixel_mtr_mask = fixel_mtr_mask & np.repeat((np.sum(fixel_mtr_mask, axis=0) >= args.min_nb_subjects)[np.newaxis, :], nb_subjects_scan, axis=0)
 
      # Load overlap and significant sections
      overlap_sections = load_overlap_sections_from_txt(
      args.in_overlap_txt, args.in_bundle_name)
      significant_sections = load_significant_sections_from_txt(
      args.in_significance_txt, args.in_bundle_name)
-     overlap_and_significant = overlap_sections & significant_sections
+
+     # Load overlap profiles if provided
+     if (args.in_mtr_profiles_overlap is not None) and (args.in_fixel_mtr_profiles_overlap is not None):
+          # Load MTR
+          mtr_profiles_overlap = np.zeros((len(args.in_mtr_profiles_overlap),
+                                           nb_subjects, args.nb_sections))
+          for i, overlap_profiles in enumerate(args.in_mtr_profiles_overlap):
+               mtr_profiles_overlap[i] = np.array([np.loadtxt(f) for f in overlap_profiles])
+          # Load fixel-wise MTR
+          fixel_mtr_profiles_overlap = np.zeros((len(args.in_fixel_mtr_profiles_overlap),
+                                                 nb_subjects, args.nb_sections))
+          for i, overlap_profiles in enumerate(args.in_fixel_mtr_profiles_overlap):
+               fixel_mtr_profiles_overlap[i] = np.array([np.loadtxt(f) for f in overlap_profiles])
+          # Process overlap profiles
+          mtr_profiles_overlap = np.where(mtr_profiles_overlap > 0,
+                                          mtr_profiles_overlap, np.nan)
+          fixel_mtr_profiles_overlap = np.where(fixel_mtr_profiles_overlap > 0,
+                                                fixel_mtr_profiles_overlap,
+                                                np.nan)
+          ttest_overlap = stats.ttest_rel(mtr_profiles_overlap,
+                                          fixel_mtr_profiles_overlap,
+                                          axis=1, nan_policy='omit')
+          pvalues_overlap = stats.false_discovery_control(ttest_overlap.pvalue,
+                                                          axis=1, method='bh')
+          nb_subjects_overlap = np.sum(~np.isnan(fixel_mtr_profiles_overlap),
+                                       axis=1)
+          min_nb_subjects_overlap_mask = nb_subjects_overlap >= args.min_nb_subjects
+          mtr_profiles_overlap = np.nanmean(mtr_profiles_overlap, axis=1)
+          fixel_mtr_profiles_overlap = np.nanmean(fixel_mtr_profiles_overlap,
+                                                  axis=1)
+          mtr_profiles_overlap = np.where(np.isnan(mtr_profiles_overlap), 0,
+                                          mtr_profiles_overlap)
+          fixel_mtr_profiles_overlap = np.where(np.isnan(fixel_mtr_profiles_overlap),
+                                                0, fixel_mtr_profiles_overlap)
 
      data_for_boxplot = []
      positions = []
@@ -335,7 +363,12 @@ def main():
      cbar.outline.set_edgecolor('darkgrey')
      # cbar.tick_params(axis='y', labelcolor="darkgrey")
 
-     # Axis labels and legend
+     # Plot overlap markers if provided
+     # if (args.in_mtr_profiles_overlap is not None) and (args.in_fixel_mtr_profiles_overlap is not None):
+          # TODO : plot overlap profiles
+
+
+     # Axis labels
      ax1.set_xlabel('Bundle section')
      ax1.set_ylabel('Mean MTR')
      ax1.set_title('Track-profile of MTR and fixel-wise MTR for the {} bundle'.format(args.in_bundle_name))
