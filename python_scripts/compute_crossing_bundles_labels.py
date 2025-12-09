@@ -48,10 +48,6 @@ def _build_arg_parser():
                         'fixel map to discard voxels with low AFD. Default is '
                         '0.3.')
 
-    p.add_argument('--min_nvox', type=int, default=100,
-                   help='Minimum number of voxels per bundle section to '
-                        'consider it valid. Default is 100.')
-
     p.add_argument('--nb_sections', type=int, default=20,
                    help='Number of sections in the bundle labels. '
                         'Default is 20.')

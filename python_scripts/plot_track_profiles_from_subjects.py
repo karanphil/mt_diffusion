@@ -187,7 +187,7 @@ def main():
      fixel_mtr_profiles_scan = np.array([np.loadtxt(f) for f in args.in_fixel_mtr_profiles_scan])
      mtr_profiles_rescan = np.array([np.loadtxt(f) for f in args.in_mtr_profiles_rescan])
      fixel_mtr_profiles_rescan = np.array([np.loadtxt(f) for f in args.in_fixel_mtr_profiles_rescan])
-     if args.in_nb_voxels_profiles_all:
+     if args.in_nb_voxels_profiles_all is not None:
           nb_voxels_profiles_all = np.array([np.loadtxt(f) for f in args.in_nb_voxels_profiles_all])
      labels = np.arange(1, args.nb_sections + 1, 1)
 
@@ -213,12 +213,13 @@ def main():
                                   fixel_mtr_profile)
      nufo_profile = np.where(np.isnan(nufo_profile), 0, nufo_profile)
      afd_profile = np.where(np.isnan(afd_profile), 0, afd_profile)
-     if args.in_nb_voxels_profiles_all:
+     if args.in_nb_voxels_profiles_all is not None:
           nb_voxels_profiles = np.where(nb_voxels_profiles_all > 0,
                                         nb_voxels_profiles_all, np.nan)
           nb_voxels_profile = np.nanmean(nb_voxels_profiles, axis=0)
           nb_voxels_profile = np.where(np.isnan(nb_voxels_profile), 0,
                                        nb_voxels_profile)
+          print(nb_voxels_profile)
 
      # Compute the absolute difference between scan and rescan profiles
      nb_subjects_scan = mtr_profiles_scan.shape[0]
@@ -278,12 +279,13 @@ def main():
                                                  nb_subjects, args.nb_sections))
           for i, overlap_profiles in enumerate(args.in_nb_voxels_profiles_overlap):
                nb_voxels_profiles_overlap[i] = np.array([np.loadtxt(f) for f in overlap_profiles])
-          nb_voxels_profiles_overlap = np.where(nb_voxels_profiles_overlap > 0,
-                                                nb_voxels_profiles_overlap,
-                                                np.nan)
+          print(nb_voxels_profiles_overlap)
+          # nb_voxels_profiles_overlap = np.where(nb_voxels_profiles_overlap > 0,
+          #                                       nb_voxels_profiles_overlap,
+          #                                       np.nan)
           nb_voxels_profiles_overlap = np.nanmean(nb_voxels_profiles_overlap, axis=1)
-          nb_voxels_profiles_overlap = np.where(np.isnan(nb_voxels_profiles_overlap), 0,
-                                                nb_voxels_profiles_overlap)
+          # nb_voxels_profiles_overlap = np.where(np.isnan(nb_voxels_profiles_overlap), 0,
+          #                                       nb_voxels_profiles_overlap)
 
      data_for_boxplot = []
      positions = []
@@ -304,8 +306,9 @@ def main():
      norm = mpl.colors.Normalize(vmin=0.3, vmax=0.7)
 
      fig = plt.figure(figsize=(8, 7))
-     gs = GridSpec(2, 2, width_ratios=[20, 1], height_ratios=[3, 1],
-                   wspace=0.15, hspace=0.25)
+     gs = GridSpec(3, 2, width_ratios=[20, 1],
+              height_ratios=[3, 1, 1.2],
+              wspace=0.15, hspace=0.30)
      
      ax1 = fig.add_subplot(gs[0, 0])
      ymin = 0.25
@@ -465,6 +468,50 @@ def main():
      # ax3.set_xticks(np.arange(1, args.nb_sections + 1, 1))
      # ax3.legend(loc='upper right')
      # ax3.grid(alpha=0.3)
+
+     # ==========================================================
+     # THIRD SUBPLOT: NUMBER OF VOXELS PER SECTION
+     # ==========================================================
+     ax4 = fig.add_subplot(gs[2, 0])
+
+     # Width and offsets for bars
+     bar_width = 0.35
+
+     has_all_voxels = args.in_nb_voxels_profiles_all is not None
+     has_overlap_voxels = args.in_nb_voxels_profiles_overlap is not None
+
+     if has_all_voxels:
+          ax4.bar(labels - bar_width/2,
+                    nb_voxels_profile,
+                    width=bar_width,
+                    color="lightgrey",
+                    edgecolor="black",
+                    label="Nb voxels")
+
+     if has_overlap_voxels:
+          # If multiple overlap sets exist, plot all with slight offsets
+          n_overlap = nb_voxels_profiles_overlap.shape[0]
+          shift = np.linspace(-bar_width/4, bar_width/4, n_overlap)
+
+          for i in range(n_overlap):
+               ax4.bar(labels + shift[i] + bar_width/2,
+                         nb_voxels_profiles_overlap[i],
+                         width=bar_width/n_overlap,
+                         color="darkgrey",
+                         edgecolor="black",
+                         alpha=0.8,
+                         label="Overlap voxels" if i == 0 else None)
+
+     ax4.set_ylabel("Nb voxels")
+     ax4.set_xlabel("Bundle section")
+     ax4.set_xlim(0, args.nb_sections + 1)
+     ax4.set_xticks(labels)
+
+     ax4.set_title("Number of voxels per section")
+
+     ax4.grid(alpha=0.3, axis="y")
+     ax4.legend(loc="upper right")
+
 
      plt.tight_layout()
      # plt.show()

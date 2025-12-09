@@ -53,6 +53,10 @@ def _build_arg_parser():
     #                help='Threshold to highlight percentage overlap in the '
     #                     'matrix. Default is 50%.')
 
+    p.add_argument('--min_nvox', type=int, default=100,
+                   help='Minimum number of voxels per bundle section to '
+                        'consider it valid. Default is 100.')
+
     p.add_argument('--save_full_txt', default=None,
                    help='Save the final averaged matrix as a .txt file. '
                         'This should be the path to the output .txt file.')
@@ -78,7 +82,7 @@ def _build_arg_parser():
 
 
 # Compute overlap matrix for ONE subject
-def compute_subject_overlap(crossing_info, bundle_names, nb_sections):
+def compute_subject_overlap(crossing_info, bundle_names, nb_sections, min_nvox):
 
     nb_bundles = len(bundle_names)
     full_size = nb_bundles * nb_sections
@@ -116,12 +120,20 @@ def compute_subject_overlap(crossing_info, bundle_names, nb_sections):
                     Ni = voxels[bundle_i][si]
                     # Nj = voxels[bundle_j][sj]
 
-                    overlap = shared / Ni * 100 if Ni > 0 else 0.0
+                    overlap = shared / Ni * 100 if Ni >= min_nvox else np.nan
                     # dice = 2.0 * shared / (Ni + Nj) if (Ni + Nj) > 0 else 0.0
 
                     ii = row_offset + (si - 1)
                     jj = col_offset + (sj - 1)
                     M[ii, jj] = overlap
+
+            # --- Debug print for specific bundle pair and section ---
+            if bundle_i == "MCP" and bundle_j == "CST_L":
+                section = 9
+                row = bi * nb_sections + section - 1
+                col_start = bj * nb_sections
+                col_end = col_start + nb_sections
+                print(np.sum(M[row, col_start:col_end]))
 
     return M
 
@@ -155,6 +167,7 @@ def main():
     bundle_names_ref = None
 
     # Load all subjects & compute overlap
+    i = 0
     for json_file in args.in_jsons:
         with open(json_file, 'r') as f:
             crossing_info = json.load(f)
@@ -176,11 +189,15 @@ def main():
             if bundle_names != bundle_names_ref:
                 raise ValueError("Bundle order mismatch across subjects!")
 
-        M = compute_subject_overlap(crossing_info, bundle_names, nb_sections)
+        print("Subject {}".format(i))
+        i+=1
+        M = compute_subject_overlap(crossing_info, bundle_names, nb_sections,
+                                    args.min_nvox)
         overlap_matrices.append(M)
 
     # Group mean overlap
-    M = np.mean(overlap_matrices, axis=0)
+    M = np.nanmean(overlap_matrices, axis=0)
+    M = np.nan_to_num(M, nan=0.0)
 
     # Compute section-to-bundle crossing summary
     nb_bundles = len(bundle_names_ref)
