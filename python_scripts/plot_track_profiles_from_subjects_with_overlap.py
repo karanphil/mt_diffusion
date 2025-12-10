@@ -91,6 +91,20 @@ def _build_arg_parser():
 
      p.add_argument('--in_significance_txt', type=str,
                     help='TXT file with significant sections per bundle.')
+     
+     p.add_argument('--in_mtr_profiles_overlap', nargs='+', action='append',
+                    help='Input bundle-specific MTR track-profile txt files '
+                         'from the overlap analysis.')
+
+     p.add_argument('--in_fixel_mtr_profiles_overlap', nargs='+',
+                    action='append',
+                    help='Input bundle-specific fixel-wise MTR track-profile '
+                         'txt files from the overlap analysis.')
+     
+     p.add_argument('--in_nb_voxels_profiles_overlap', nargs='+',
+                    action='append',
+                    help='Input NuFO track-profile txt files from the overlap '
+                         'analysis.')
 
      add_verbose_arg(p)
      add_overwrite_arg(p)
@@ -226,6 +240,51 @@ def main():
      significant_sections = load_significant_sections_from_txt(
      args.in_significance_txt, args.in_bundle_name)
 
+     # Load overlap profiles if provided
+     if (args.in_mtr_profiles_overlap is not None) and (args.in_fixel_mtr_profiles_overlap is not None):
+          # Load MTR
+          mtr_profiles_overlap = np.zeros((len(args.in_mtr_profiles_overlap),
+                                           nb_subjects, args.nb_sections))
+          for i, overlap_profiles in enumerate(args.in_mtr_profiles_overlap):
+               mtr_profiles_overlap[i] = np.array([np.loadtxt(f) for f in overlap_profiles])
+          # Load fixel-wise MTR
+          fixel_mtr_profiles_overlap = np.zeros((len(args.in_fixel_mtr_profiles_overlap),
+                                                 nb_subjects, args.nb_sections))
+          for i, overlap_profiles in enumerate(args.in_fixel_mtr_profiles_overlap):
+               fixel_mtr_profiles_overlap[i] = np.array([np.loadtxt(f) for f in overlap_profiles])
+          # Process overlap profiles
+          mtr_profiles_overlap = np.where(mtr_profiles_overlap > 0,
+                                          mtr_profiles_overlap, np.nan)
+          fixel_mtr_profiles_overlap = np.where(fixel_mtr_profiles_overlap > 0,
+                                                fixel_mtr_profiles_overlap,
+                                                np.nan)
+          # ttest_overlap = stats.ttest_rel(mtr_profiles_overlap,
+          #                                 fixel_mtr_profiles_overlap,
+          #                                 axis=1, nan_policy='omit')
+          # pvalues_overlap = stats.false_discovery_control(ttest_overlap.pvalue,
+          #                                                 axis=1, method='bh')
+          nb_subjects_overlap = np.sum(~np.isnan(fixel_mtr_profiles_overlap),
+                                       axis=1)
+          min_nb_subjects_overlap_mask = nb_subjects_overlap >= args.min_nb_subjects
+          mtr_profiles_overlap = np.nanmean(mtr_profiles_overlap, axis=1)
+          fixel_mtr_profiles_overlap = np.nanmean(fixel_mtr_profiles_overlap,
+                                                  axis=1)
+          mtr_profiles_overlap = np.where(np.isnan(mtr_profiles_overlap), 0,
+                                          mtr_profiles_overlap)
+          fixel_mtr_profiles_overlap = np.where(np.isnan(fixel_mtr_profiles_overlap),
+                                                0, fixel_mtr_profiles_overlap)
+     if args.in_nb_voxels_profiles_overlap is not None:
+          nb_voxels_profiles_overlap = np.zeros((len(args.in_nb_voxels_profiles_overlap),
+                                                 nb_subjects, args.nb_sections))
+          for i, overlap_profiles in enumerate(args.in_nb_voxels_profiles_overlap):
+               nb_voxels_profiles_overlap[i] = np.array([np.loadtxt(f) for f in overlap_profiles])
+          # nb_voxels_profiles_overlap = np.where(nb_voxels_profiles_overlap > 0,
+          #                                       nb_voxels_profiles_overlap,
+          #                                       np.nan)
+          nb_voxels_profiles_overlap = np.nanmean(nb_voxels_profiles_overlap, axis=1)
+          # nb_voxels_profiles_overlap = np.where(np.isnan(nb_voxels_profiles_overlap), 0,
+          #                                       nb_voxels_profiles_overlap)
+
      data_for_boxplot = []
      positions = []
      section_centers = []
@@ -245,9 +304,9 @@ def main():
      norm = mpl.colors.Normalize(vmin=0.3, vmax=0.7)
 
      fig = plt.figure(figsize=(8, 7))
-     gs = GridSpec(3, 2, width_ratios=[20, 0.5],
-              height_ratios=[3, 1, 1],
-              wspace=0.15, hspace=0.10)
+     gs = GridSpec(3, 2, width_ratios=[20, 1],
+              height_ratios=[3, 1, 1.2],
+              wspace=0.15, hspace=0.30)
      
      ax1 = fig.add_subplot(gs[0, 0])
      ymin = 0.25
@@ -333,8 +392,21 @@ def main():
      cbar.outline.set_edgecolor('darkgrey')
      # cbar.tick_params(axis='y', labelcolor="darkgrey")
 
+     # Plot overlap markers if provided
+     if (args.in_mtr_profiles_overlap is not None) and (args.in_fixel_mtr_profiles_overlap is not None):
+          markers_overlap = ['x', '*', '+', 'D', 's']
+          for i in range(mtr_profiles_overlap.shape[0]):
+               ax1.scatter(labels[min_nb_subjects_overlap_mask[i]],
+                           mtr_profiles_overlap[i][min_nb_subjects_overlap_mask[i]],
+                           marker=markers_overlap[i],
+                           color=colors[0], zorder=5)
+               ax1.scatter(labels[min_nb_subjects_overlap_mask[i]],
+                           fixel_mtr_profiles_overlap[i][min_nb_subjects_overlap_mask[i]],
+                           marker=markers_overlap[i],
+                           color=colors[1], zorder=5)
+
      # Axis labels
-     # ax1.set_xlabel('Bundle section')
+     ax1.set_xlabel('Bundle section')
      ax1.set_ylabel('Mean MTR')
      ax1.set_title('Track-profile of MTR and fixel-wise MTR for the {} bundle'.format(args.in_bundle_name))
 
@@ -361,7 +433,7 @@ def main():
           legend_handles.append(overlap_handle)
 
      ax1.legend(handles=legend_handles,
-                labels=[h.get_label() if not isinstance(h, tuple) else "Overlaping bundle" for h in legend_handles],
+                labels=[h.get_label() if not isinstance(h, tuple) else ">20% overlap" for h in legend_handles],
                 handler_map={tuple: HandlerTuple(ndivide=None)},
                 loc='best')
 
@@ -370,7 +442,6 @@ def main():
      ax1.set_xticks(np.arange(1, args.nb_sections + 1, 1))
      ax2.set_ylim(1, 5)
      ax2.set_yticks(np.arange(1, 6, 1))
-     ax1.set_xticklabels([])
 
      # Absolute difference subplot
      ax3 = fig.add_subplot(gs[1, 0])
@@ -385,11 +456,10 @@ def main():
           box.set_alpha(0.5)
 
      ax3.set_xticks(section_centers)
-     # ax3.set_xticklabels(section_centers)
-     ax3.set_xticklabels([])
+     ax3.set_xticklabels(section_centers)
 
-     ax3.set_ylabel('|%diff| \nscan-rescan')
-     # ax3.set_xlabel('Bundle section')
+     ax3.set_ylabel('|%diff| scan-rescan')
+     ax3.set_xlabel('Bundle section')
      ax3.set_ylim(0, 20)
      ax3.set_yticks([0, 5, 10, 15, 20])
      ax3.set_xlim(0, args.nb_sections + 1)
@@ -397,19 +467,49 @@ def main():
      # ax3.legend(loc='upper right')
      # ax3.grid(alpha=0.3)
 
-     # Third subplot: number of voxels
+     # ==========================================================
+     # THIRD SUBPLOT: NUMBER OF VOXELS PER SECTION
+     # ==========================================================
      ax4 = fig.add_subplot(gs[2, 0])
 
+     # Width and offsets for bars
      bar_width = 0.35
-     if args.in_nb_voxels_profiles_all is not None:
-          ax4.bar(labels, nb_voxels_profile, width=bar_width,
-                  color="lightgrey", edgecolor="black")
 
-     ax4.set_ylabel("# of voxels")
+     has_all_voxels = args.in_nb_voxels_profiles_all is not None
+     has_overlap_voxels = args.in_nb_voxels_profiles_overlap is not None
+
+     if has_all_voxels:
+          ax4.bar(labels - bar_width/2,
+                    nb_voxels_profile,
+                    width=bar_width,
+                    color="lightgrey",
+                    edgecolor="black",
+                    label="Nb voxels")
+
+     if has_overlap_voxels:
+          # If multiple overlap sets exist, plot all with slight offsets
+          n_overlap = nb_voxels_profiles_overlap.shape[0]
+          shift = np.linspace(-bar_width/4, bar_width/4, n_overlap)
+
+          for i in range(n_overlap):
+               ax4.bar(labels + shift[i] + bar_width/2,
+                         nb_voxels_profiles_overlap[i],
+                         width=bar_width/n_overlap,
+                         color="darkgrey",
+                         edgecolor="black",
+                         alpha=0.8,
+                         label="Overlap voxels" if i == 0 else None)
+
+     ax4.set_ylabel("Nb voxels")
      ax4.set_xlabel("Bundle section")
      ax4.set_xlim(0, args.nb_sections + 1)
      ax4.set_xticks(labels)
-     ax4.set_ylim(0, 1000)
+
+     ax4.set_title("Number of voxels per section")
+
+     ax4.grid(alpha=0.3, axis="y")
+     ax4.legend(loc="upper right")
+
 
      plt.tight_layout()
      # plt.show()

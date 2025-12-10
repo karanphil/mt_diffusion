@@ -50,8 +50,15 @@ def _build_arg_parser():
                    help='Input crossing bundle map to create a mask of the '
                         'crossing bundle. This will produce track-profiles '
                         'using only the voxels comprised in this mask and the '
-                        'usual masks. If not provided, the whole bundle '
-                        'labels are used.')
+                        'usual masks. If not provided, only the observed '
+                        'bundle is used.')
+    
+    p.add_argument('--in_crossing_bundle_afd',
+                   help='Input crossing bundle afd fixel to create a mask of '
+                        'the crossing bundle. This will produce '
+                        'track-profiles using only the voxels comprised in '
+                        'this mask and the usual masks. If not provided, only '
+                        'the observed bundle is used.')
     
     p.add_argument('--in_crossing_bundle_name',
                    help='Name of the crossing bundle.')
@@ -114,10 +121,12 @@ def main():
     else:
         mask = np.ones(mtr.shape, dtype=bool)
 
-    if args.in_crossing_bundle_map:
+    if args.in_crossing_bundle_map and args.in_crossing_bundle_afd:
         map_img = nib.load(args.in_crossing_bundle_map)
         map = map_img.get_fdata().astype(np.float32)
-        crossing_mask = map >= args.map_threshold
+        afd_img = nib.load(args.in_crossing_bundle_afd)
+        afd = afd_img.get_fdata().astype(np.float32)
+        crossing_mask = (map >= args.map_threshold) & (afd >= args.afd_threshold)
     else:
         crossing_mask = np.ones(mtr.shape, dtype=bool)
 

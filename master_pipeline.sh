@@ -95,17 +95,16 @@ cd ${main_dir};
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_bundles_crossing_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
 
 # Step 19
-# TODO : Put this step after the stats step or add the ttest directly in the plotting script.
-register_data_dir="${main_dir}/register_flow";
-cd ${main_dir};
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_overlap_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir} True;
-
-# Step 20
 register_data_dir="${main_dir}/register_flow";
 cd ${main_dir};
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
 # The singularity's version of scipy does not have the nan_policy option for the shapiro test. Please run this without singularity if the python script has the shapiro test (it should be commented right now). If the scilpy dependencies are problematic, remove those functions from the script or install scilpy.
 # bash ${code_dir}/processing_track_profiles_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+
+# Step 20 (optional)
+register_data_dir="${main_dir}/register_flow";
+cd ${main_dir};
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_overlap_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir} True;
 
 # Step 21
 register_data_dir="${main_dir}/register_flow";

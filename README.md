@@ -143,11 +143,6 @@ Now, a matrix of percentage overlap comparing the overlap of each section of eac
 singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_bundles_crossing_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
 ```
 
-The next step might require a bit of hard-coding. Indeed, this next script uses the information from the previous step to compute the track-profiles of bundles while considering only the overlaps with other bundles, given by the crossing_bundles_labels_important.txt file produced earlier. The combinations of bundles are hard-coded into the following script, so they might have to be changed manually.
-```
-singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_overlap_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir} True;
-```
-
 Furthermore, the significance of the differences between MTR and fixel-MTR in track-profiles can be evaluated:
 
 ```
@@ -158,6 +153,11 @@ If the Shapiro test for normality is uncommented from the python script, it will
 
 ```
 bash ${code_dir}/processing_track_profiles_stats.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir};
+```
+
+The next step might require a bit of hard-coding. Indeed, this next script uses the information from the previous step to compute the track-profiles of bundles while considering only the overlaps with other bundles, given by the crossing_bundles_labels_important.txt file produced earlier. The combinations of bundles are hard-coded into the following script, so they might have to be changed manually. IMPORTANT: This part was removed from the final analysis, as track-profiles computed from overlaping bundles did not contain enough voxels to provide valuable information.
+```
+singularity exec -B $main_dir $singularity_path bash ${code_dir}/processing_track_profiles_overlap_subwise_pipeline.sh ${main_dir}/${working_dir} ${code_dir} ${register_data_dir} True;
 ```
 
 If you want to add the important crossing regions and significant sections to the track-profiles plots, rerun this command:

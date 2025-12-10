@@ -30,33 +30,31 @@ if [ $include_extra_info == "True" ]; then
     significance_cmd="--in_significance_txt ${register_data_dir}/output/processing_registration/significant_track_profiles_crossings.txt";
 fi
 
-# bundles="AF_L AF_R CC_2b CC_3 CC_4 CC_5 CC_6 CC_7 CG_L CG_R CST_L CST_R ILF_L ILF_R MCP OR_L OR_R SLF_2_L SLF_2_R SLF_3_L SLF_3_R";
-bundles="MCP";
+bundles="AF_L AF_R CC_2b CC_3 CC_4 CC_5 CC_6 CC_7 CG_L CG_R CST_L CST_R ILF_L ILF_R MCP OR_L OR_R SLF_2_L SLF_2_R SLF_3_L SLF_3_R";
 
 declare -a cross_bundles;
-cross_bundles[0]="CST_L CST_R"; # MCP
-# # Define the crossing bundles for each bundle, gathered from the crossing_bundles_labels_important.txt file.
-# cross_bundles[0]="CC_2a CC_3 ILF_L"; # AF_L
-# cross_bundles[1]="CC_2a CC_3 ILF_R"; # AF_R
-# cross_bundles[2]="CG_L CG_R"; # CC_2b
-# cross_bundles[3]="CST_L CST_R"; # CC_3
-# cross_bundles[4]="CST_L CST_R"; # CC_4
-# cross_bundles[5]="CST_L CST_R"; # CC_5
-# cross_bundles[6]="CST_L CST_R"; # CC_6
-# cross_bundles[7]="OR_L OR_R"; # CC_7, removing the ILF_R since the OR_R is already included and overlaps more
-# cross_bundles[8]="CC_6 CC_7 CC_2a CC_2b"; # CG_L
-# cross_bundles[9]="CC_6 CC_7 CC_2a CC_2b CC_3"; # CG_R
-# cross_bundles[10]="CC_4 CC_5 CC_6 MCP"; # CST_L, added the MCP since we want to know its effect on thr CST
-# cross_bundles[11]="CC_4 CC_5 CC_6 MCP"; # CST_R, added the MCP since we want to know its effect on thr CST
-# cross_bundles[12]="CC_7"; # ILF_L
-# cross_bundles[13]="CC_7"; # ILF_R
-# cross_bundles[14]="CST_L CST_R"; # MCP
-# cross_bundles[15]="CC_7 CST_L"; # OR_L
-# cross_bundles[16]="CC_7 CST_R"; # OR_R
-# cross_bundles[17]="CC_2a CC_2b CC_3"; # SLF_2_L
-# cross_bundles[18]="CC_2a CC_2b CC_3"; # SLF_2_R, removing the ILF_R since it only crosses section 1
-# cross_bundles[19]="CC_2a CC_3"; # SLF_3_L
-# cross_bundles[20]="CC_2a CC_3"; # SLF_3_R
+# Define the crossing bundles for each bundle, gathered from the crossing_bundles_labels_important.txt file.
+cross_bundles[0]="CC_2a CC_3 ILF_L"; # AF_L
+cross_bundles[1]="CC_2a CC_3 ILF_R"; # AF_R
+cross_bundles[2]="CG_L CG_R"; # CC_2b
+cross_bundles[3]="CST_L CST_R"; # CC_3
+cross_bundles[4]="CST_L CST_R"; # CC_4
+cross_bundles[5]="CST_L CST_R"; # CC_5
+cross_bundles[6]="CST_L CST_R"; # CC_6
+cross_bundles[7]="OR_L OR_R"; # CC_7, removing the ILF_R since the OR_R is already included and overlaps more
+cross_bundles[8]="CC_6 CC_7 CC_2a CC_2b"; # CG_L
+cross_bundles[9]="CC_6 CC_7 CC_2a CC_2b CC_3"; # CG_R
+cross_bundles[10]="CC_4 CC_5 CC_6 MCP"; # CST_L, added the MCP since we want to know its effect on thr CST
+cross_bundles[11]="CC_4 CC_5 CC_6 MCP"; # CST_R, added the MCP since we want to know its effect on thr CST
+cross_bundles[12]="CC_7"; # ILF_L
+cross_bundles[13]="CC_7"; # ILF_R
+cross_bundles[14]="CST_L CST_R"; # MCP
+cross_bundles[15]="CC_7 CST_L"; # OR_L
+cross_bundles[16]="CC_7 CST_R"; # OR_R
+cross_bundles[17]="CC_2a CC_2b CC_3"; # SLF_2_L
+cross_bundles[18]="CC_2a CC_2b CC_3"; # SLF_2_R, removing the ILF_R since it only crosses section 1
+cross_bundles[19]="CC_2a CC_3"; # SLF_3_L
+cross_bundles[20]="CC_2a CC_3"; # SLF_3_R
 
 for sub in $subs; 
     do echo $sub;
@@ -78,8 +76,9 @@ for sub in $subs;
                 labels="${register_data_dir}/output/processing_registration/${sub}/labels/labels_${b}.nii.gz";
                 bundle_mask="${register_data_dir}/output/processing_registration/${sub}/bundles_masks/${b}_mask.nii.gz";
                 crossing_bundle_mask="${register_data_dir}/output/processing_registration/${sub}/bundles_masks/${c}_mask.nii.gz";
+                crossing_bundle_afd="${register_data_dir}/output/results_registration/${sub}/Metrics_into_template_space/afd_fixel_${c}_to_template.nii.gz";
 
-                python ${code_dir}/python_scripts/compute_track_profiles.py $mtr $fixel_mtr $labels ${b} $afd_fixel $nufo . --in_bundle_map $bundle_mask --map_threshold $map_thr --afd_threshold $afd_thr --min_nvox $min_nvox --nb_sections $nb_sections --in_crossing_bundle_map $crossing_bundle_mask --in_crossing_bundle_name ${c} -f;
+                python ${code_dir}/python_scripts/compute_track_profiles.py $mtr $fixel_mtr $labels ${b} $afd_fixel $nufo . --in_bundle_map $bundle_mask --map_threshold $map_thr --afd_threshold $afd_thr --min_nvox $min_nvox --nb_sections $nb_sections --in_crossing_bundle_map $crossing_bundle_mask --in_crossing_bundle_afd $crossing_bundle_afd --in_crossing_bundle_name ${c} -f;
 
             fi
 
@@ -129,6 +128,6 @@ for b in $bundles;
     in_mtr_profiles_rescan=$(for sub in $subs_rescan; do echo "${register_data_dir}/output/processing_registration/${sub}/track_profiles/mtr_profile_${b}.txt"; done );
     in_fixel_mtr_profiles_rescan=$(for sub in $subs_rescan; do echo "${register_data_dir}/output/processing_registration/${sub}/track_profiles/fixel_mtr_profile_${b}.txt"; done );
 
-    python ${code_dir}/python_scripts/plot_track_profiles_from_subjects.py ${b} . --in_mtr_profiles_all $in_mtr_profiles --in_fixel_mtr_profiles_all $in_fixel_mtr_profiles --in_afd_fixel_profiles_all $in_afd_profiles --in_nufo_profiles_all $in_nufo_profiles --in_mtr_profiles_scan $in_mtr_profiles_scan --in_fixel_mtr_profiles_scan $in_fixel_mtr_profiles_scan --in_mtr_profiles_rescan $in_mtr_profiles_rescan --in_fixel_mtr_profiles_rescan $in_fixel_mtr_profiles_rescan --nb_sections $nb_sections --min_nb_subjects $min_nb_subjects $overlap_cmd $significance_cmd $mtr_overlap_cmd $fixel_mtr_overlap_cmd $nb_voxels_overlap_cmd --in_nb_voxels_profiles_all $in_nb_voxels_profiles -f;
+    python ${code_dir}/python_scripts/plot_track_profiles_from_subjects_with_overlap.py ${b} . --in_mtr_profiles_all $in_mtr_profiles --in_fixel_mtr_profiles_all $in_fixel_mtr_profiles --in_afd_fixel_profiles_all $in_afd_profiles --in_nufo_profiles_all $in_nufo_profiles --in_mtr_profiles_scan $in_mtr_profiles_scan --in_fixel_mtr_profiles_scan $in_fixel_mtr_profiles_scan --in_mtr_profiles_rescan $in_mtr_profiles_rescan --in_fixel_mtr_profiles_rescan $in_fixel_mtr_profiles_rescan --nb_sections $nb_sections --min_nb_subjects $min_nb_subjects $overlap_cmd $significance_cmd $mtr_overlap_cmd $fixel_mtr_overlap_cmd $nb_voxels_overlap_cmd --in_nb_voxels_profiles_all $in_nb_voxels_profiles -f;
 
 done;
