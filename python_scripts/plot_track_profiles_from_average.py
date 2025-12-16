@@ -82,7 +82,7 @@ def main():
     ax1.plot(labels[mtr_profile != 0], mtr_profile[mtr_profile != 0],
              label='MTR', marker='o', color=colors[0])
     ax1.plot(labels[fixel_mtr_profile != 0],
-             fixel_mtr_profile[fixel_mtr_profile != 0], label='Fixel-wise MTR',
+             fixel_mtr_profile[fixel_mtr_profile != 0], label='Fixel-MTR',
              marker='o', color=colors[1])
 
     # Add secondary axis for NuFO
@@ -115,7 +115,7 @@ def main():
     # Axis labels and legend
     ax1.set_xlabel('Bundle section')
     ax1.set_ylabel('Mean MTR')
-    ax1.set_title('Track-profile of MTR and fixel-wise MTR for the {} bundle'.format(args.in_bundle_name))
+    ax1.set_title('Track-profile of MTR and fixel-MTR for the {} bundle'.format(args.in_bundle_name))
 
     # Combine legends from both axes
     lines_1, labels_1 = ax1.get_legend_handles_labels()

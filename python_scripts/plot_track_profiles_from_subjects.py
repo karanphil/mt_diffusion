@@ -266,7 +266,7 @@ def main():
      ax1.plot(labels[min_nb_subjects_mask], mtr_profile[min_nb_subjects_mask],
               label='MTR', color=colors[0])
      ax1.plot(labels[min_nb_subjects_mask],
-              fixel_mtr_profile[min_nb_subjects_mask], label='Fixel-wise MTR',
+              fixel_mtr_profile[min_nb_subjects_mask], label='Fixel-MTR',
               color=colors[1])
      for sec in range(1, args.nb_sections + 1):
           if not min_nb_subjects_mask[sec - 1]:
@@ -336,7 +336,7 @@ def main():
      # Axis labels
      # ax1.set_xlabel('Bundle section')
      ax1.set_ylabel('Mean MTR')
-     ax1.set_title('Track-profile of MTR and fixel-wise MTR for the {} bundle'.format(args.in_bundle_name))
+     ax1.set_title('Track-profile of MTR and fixel-MTR for the {} bundle'.format(args.in_bundle_name))
 
      # Set legend
      legend_handles = []
@@ -344,7 +344,7 @@ def main():
      legend_handles.append(Line2D([0], [0], color=colors[0], marker='o',
                                   linestyle='-', label='MTR'))
      legend_handles.append(Line2D([0], [0], color=colors[1], marker='o',
-                                  linestyle='-', label='Fixel-wise MTR'))
+                                  linestyle='-', label='Fixel-MTR'))
 
      # ---- Complexity (NuFO + AFD color) ----
      legend_handles.append(Line2D([0], [0], color='darkgrey', linestyle='--',
