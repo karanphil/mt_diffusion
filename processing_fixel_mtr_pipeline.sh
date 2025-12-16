@@ -98,7 +98,7 @@ for sub in $subs;
     cd ${target_dir}/${sub};
     mkdir -p clean_crossing_mask;
     cd ${target_dir}/${sub}/clean_crossing_mask;
-    if [ ! -f "afd_fixel_AF_L.nii.gz" ]; then
+    if [ ! -f "clean_crossing_mask.nii.gz" ]; then
         echo "Compute clean crossing mask";
         python ${code_dir}/python_scripts/compute_clean_crossing_mask.py $nufo ${target_dir}/${sub}/fixel_analysis/nb_bundles_per_voxel_voxel-norm.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_maps_voxel-norm.nii.gz clean_crossing_mask.nii.gz --thr 0.7;
     fi
