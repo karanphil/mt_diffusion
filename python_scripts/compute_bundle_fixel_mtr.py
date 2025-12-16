@@ -28,6 +28,12 @@ def _build_arg_parser():
                         'current bundle. This should be the result of '
                         'scil_bundle_fixel_analysis, named '
                         'as fixel_density_mask_voxel-norm_BUNDLE_NAME.nii.gz')
+    
+    p.add_argument('in_fixel_density_map',
+                   help='Fixel density map normalized by voxel for the '
+                        'current bundle. This should be the result of '
+                        'scil_bundle_fixel_analysis, named '
+                        'as fixel_density_map_voxel-norm_BUNDLE_NAME.nii.gz')
 
     p.add_argument('out_bundle_mtr',
                    help='Output bundle-wise fixel-MTR file.')
@@ -46,28 +52,31 @@ def main():
         logging.basicConfig(level=logging.INFO)
 
     assert_inputs_exist(parser, [args.in_fixel_mtr,
-                                 args.in_fixel_density_mask])
+                                 args.in_fixel_density_mask,
+                                 args.in_fixel_density_map])
     assert_outputs_exist(parser, args, [args.out_bundle_mtr])
 
     peak_values_img = nib.load(args.in_fixel_mtr)
     peak_values = peak_values_img.get_fdata().astype(np.float32)
 
-    fixel_density_img = nib.load(args.in_fixel_density_mask)
-    fixel_density = fixel_density_img.get_fdata().astype(np.uint8)
+    fd_mask_img = nib.load(args.in_fixel_density_mask)
+    fd_mask = fd_mask_img.get_fdata().astype(np.uint8)
 
-    # Get the index of the first 1 along the last axis
-    first_1_index = np.argmax(fixel_density, axis=3)
+    fd_map_img = nib.load(args.in_fixel_density_map)
+    fd_map = fd_map_img.get_fdata().astype(np.float32)
 
-    # Create a mask where no 1s are found (i.e., all values were 0)
-    no_1s_mask = ~np.any(fixel_density == 1, axis=3)
+    # Use mask to select bundle fixels
+    weights = fd_map * (fd_mask > 0)
 
-    # Prepare indices for advanced indexing
-    X, Y, Z, _ = peak_values.shape
-    i, j, k = np.indices((X, Y, Z))
-    mtr = peak_values[i, j, k, first_1_index]
+    # Normalize weights per voxel
+    weight_sum = np.sum(weights, axis=3, keepdims=True)
 
-    # Optionally set mtr to 0 where no 1s were found
-    mtr[no_1s_mask] = 0
+    weights_norm = np.zeros_like(weights, dtype=np.float32)
+    nonzero = weight_sum > 0
+    weights_norm[nonzero] = weights[nonzero] / weight_sum[nonzero]
+
+    # Voxel-wise weighted mean MTR
+    mtr = np.sum(peak_values * weights_norm, axis=3)
 
     nib.save(nib.Nifti1Image(mtr, peak_values_img.affine), args.out_bundle_mtr)
 

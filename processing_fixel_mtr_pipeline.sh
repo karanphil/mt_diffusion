@@ -49,7 +49,7 @@ for sub in $subs;
         echo "Compute bundle fixel-MTR";
         for b in $bundles;
             do bundle_name=${b%".trk"};
-            python ${code_dir}/python_scripts/compute_bundle_fixel_mtr.py $mtr_peak_values ${target_dir}/${sub}/fixel_analysis/fixel_density_mask_voxel-norm_${bundle_name}.nii.gz fixel_mtr_${bundle_name}.nii.gz -f;
+            python ${code_dir}/python_scripts/compute_bundle_fixel_mtr.py $mtr_peak_values ${target_dir}/${sub}/fixel_analysis/fixel_density_mask_voxel-norm_${bundle_name}.nii.gz ${target_dir}/${sub}/fixel_analysis/fixel_density_map_voxel-norm_${bundle_name}.nii.gz fixel_mtr_${bundle_name}.nii.gz -f;
 
         done;
     fi
