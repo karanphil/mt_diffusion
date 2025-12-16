@@ -331,6 +331,7 @@ def main():
      cbar.set_label('Mean AFD', color="darkgrey")
      cbar.ax.tick_params(color='darkgrey', labelcolor='darkgrey')
      cbar.outline.set_edgecolor('darkgrey')
+     cbar.ax.invert_yaxis()
      # cbar.tick_params(axis='y', labelcolor="darkgrey")
 
      # Axis labels
