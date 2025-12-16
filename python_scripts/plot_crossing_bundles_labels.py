@@ -61,6 +61,11 @@ def _build_arg_parser():
                    help='Save the final averaged matrix as a .txt file. '
                         'This should be the path to the output .txt file.')
     
+    p.add_argument('--save_crossing_txt', default=None,
+                   help='Save all section-to-bundle crossings no matter the '
+                        'percentage. This should be the path to the output '
+                        '.txt file.')
+    
     p.add_argument('--save_important_txt', default=None,
                    help='Save a .txt file listing section-to-bundle '
                         'crossings greater than 10%, excluding same-family '
@@ -215,6 +220,22 @@ def main():
                             continue
                         val = C[row, bj]
                         if val >= C_threshold:
+                            f.write(f"{source_label:<35} --> {bundle_j:<20} : {val:.2f}%\n")
+    # Save all crossings to TXT
+    if args.save_crossing_txt is not None:
+        with open(args.save_crossing_txt, "w") as f:
+            f.write("All section-to-bundle crossings (group-averaged)\n\n")
+            f.write("Excluded: same-family bundles + parallel bundles\n\n")
+            for bi, bundle_i in enumerate(bundle_names_ref):
+                for si in range(nb_sections):
+                    row = bi * nb_sections + si
+                    source_label = f"{bundle_i} - section {si+1}"
+                    for bj, bundle_j in enumerate(bundle_names_ref):
+                        # ---- Exclusions ----
+                        if is_excluded(bundle_i, bundle_j):
+                            continue
+                        val = C[row, bj]
+                        if val > 0:
                             f.write(f"{source_label:<35} --> {bundle_j:<20} : {val:.2f}%\n")
 
     # Choose colormap
