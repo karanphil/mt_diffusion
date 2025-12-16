@@ -235,7 +235,7 @@ def main():
                         if is_excluded(bundle_i, bundle_j):
                             continue
                         val = C[row, bj]
-                        if val > 0:
+                        if val >= 1:
                             f.write(f"{source_label:<35} --> {bundle_j:<20} : {val:.2f}%\n")
 
     # Choose colormap
