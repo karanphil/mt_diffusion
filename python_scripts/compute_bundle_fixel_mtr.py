@@ -73,7 +73,7 @@ def main():
     weights_norm = np.zeros_like(weights, dtype=np.float32)
     nonzero = weight_sum > 0
 
-    print(peak_values.shape, weights.shape, weight_sum.shape, weights_norm.shape)
+    print(peak_values.shape, weights.shape, weight_sum.shape, weights_norm.shape, nonzero.shape)
 
     weights_norm[nonzero] = weights[nonzero] / weight_sum[nonzero]
 
