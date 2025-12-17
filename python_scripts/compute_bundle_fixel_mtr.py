@@ -69,7 +69,6 @@ def main():
 
     weight_sum = np.sum(weights, axis=3, keepdims=True)
 
-    # Safe per-voxel normalization
     weights_norm = np.divide(weights, weight_sum,
                              out=np.zeros_like(weights, dtype=np.float32),
                              where=weight_sum > 0)
