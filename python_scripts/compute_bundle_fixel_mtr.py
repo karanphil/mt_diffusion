@@ -65,23 +65,16 @@ def main():
     fd_map_img = nib.load(args.in_fixel_density_map)
     fd_map = fd_map_img.get_fdata().astype(np.float32)
 
-    # Weights restricted to bundle fixels
     weights = fd_map * (fd_mask > 0)
 
-    # Identify voxels with at least one fixel
-    weight_sum = np.sum(weights, axis=3)
+    weight_sum = np.sum(weights, axis=3, keepdims=True)
 
-    # Compute weighted average over fixels
-    mtr_all = np.average(
-        peak_values,
-        axis=3,
-        weights=weights
-    )
+    # Safe per-voxel normalization
+    weights_norm = np.zeros_like(weights, dtype=np.float32)
+    nonzero = weight_sum > 0
+    weights_norm[nonzero] = weights[nonzero] / weight_sum[nonzero]
 
-    # Zero-out voxels without fixels
-    mtr = np.zeros_like(weight_sum, dtype=np.float32)
-    valid = weight_sum > 0
-    mtr[valid] = mtr_all[valid]
+    mtr = np.sum(peak_values * weights_norm, axis=3)
 
     nib.save(nib.Nifti1Image(mtr, peak_values_img.affine), args.out_bundle_mtr)
 
