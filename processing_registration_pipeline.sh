@@ -20,34 +20,34 @@ subs=$(ls -d hc*);
 
 # ----------------------------Registration PROCESSING-------------------------
 echo "Register-flow PROCESSING";
-mkdir -p ${register_data_dir};
-ln -s $template_path ${register_data_dir}/template_t1.nii.gz;
+# mkdir -p ${register_data_dir};
+# ln -s $template_path ${register_data_dir}/template_t1.nii.gz;
 template_path="${register_data_dir}/template_t1.nii.gz";
 for sub in $subs; 
     do echo $sub;
 
-    mkdir -p ${register_data_dir}/input/${sub}/metrics;
-    mkdir -p ${register_data_dir}/input/${sub}/tractograms;
+    # mkdir -p ${register_data_dir}/input/${sub}/metrics;
+    # mkdir -p ${register_data_dir}/input/${sub}/tractograms;
 
     cd ${register_data_dir}/input/${sub};
-    ln -sf ${target_dir}/${sub}/preprocessing_t1/register_natif/outputWarped.nii.gz t1.nii.gz
+    # ln -sf ${target_dir}/${sub}/preprocessing_t1/register_natif/outputWarped.nii.gz t1.nii.gz
 
     cd ${register_data_dir}/input/${sub}/metrics;
-    ln -sf ${target_dir}/${sub}/fixel_analysis/voxel_density_mask_voxel-norm_*.nii.gz .;
+    # ln -sf ${target_dir}/${sub}/fixel_analysis/voxel_density_mask_voxel-norm_*.nii.gz .;
     ln -sf ${target_dir}/${sub}/fixel_mtr/fixel_mtr*.nii.gz .;
-    ln -sf ${target_dir}/${sub}/mtr/mtr*.nii.gz .;
-    ln -sf ${target_dir}/${sub}/afd_fixel/afd_fixel_*.nii.gz .;
-    ln -sf ${target_dir}/${sub}/mtr/powder_averaged_mtr.nii.gz .;
-    ln -sf ${target_dir}/${sub}/fodf_metrics_mt_off/nufo.nii.gz .;
-    ln -sf ${target_dir}/${sub}/dti/fa.nii.gz .;
-    ln -sf ${target_dir}/${sub}/dti/md.nii.gz .;
+    # ln -sf ${target_dir}/${sub}/mtr/mtr*.nii.gz .;
+    # ln -sf ${target_dir}/${sub}/afd_fixel/afd_fixel_*.nii.gz .;
+    # ln -sf ${target_dir}/${sub}/mtr/powder_averaged_mtr.nii.gz .;
+    # ln -sf ${target_dir}/${sub}/fodf_metrics_mt_off/nufo.nii.gz .;
+    # ln -sf ${target_dir}/${sub}/dti/fa.nii.gz .;
+    # ln -sf ${target_dir}/${sub}/dti/md.nii.gz .;
 
     cd ${register_data_dir}/input/${sub}/tractograms;
-    ln -sf ${target_dir}/${sub}/bundles/*.trk .;
+    # ln -sf ${target_dir}/${sub}/bundles/*.trk .;
 
 done;
 
-mkdir -p ${register_data_dir}/output;
+# mkdir -p ${register_data_dir}/output;
 cd ${register_data_dir}/output;
 
 nextflow run scilus/register_flow -r $register_flow_version --input ../input --template $template_path -with-singularity $singularity_path --trk_remove_invalid -resume;
