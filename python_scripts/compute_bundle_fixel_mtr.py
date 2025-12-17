@@ -72,6 +72,9 @@ def main():
     # Safe per-voxel normalization
     weights_norm = np.zeros_like(weights, dtype=np.float32)
     nonzero = weight_sum > 0
+
+    print(peak_values.shape, weights.shape, weight_sum.shape, weights_norm.shape)
+
     weights_norm[nonzero] = weights[nonzero] / weight_sum[nonzero]
 
     mtr = np.sum(peak_values * weights_norm, axis=3)
