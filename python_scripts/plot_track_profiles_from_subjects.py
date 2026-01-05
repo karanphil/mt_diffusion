@@ -79,12 +79,16 @@ def _build_arg_parser():
      p.add_argument('--nb_sections', type=int, default=20,
                     help='Number of sections in the bundle labels. '
                          'Default is 20.')
-    
+
      p.add_argument('--min_nb_subjects', type=int, default=5,
                     help='Minimum number of subjects required to compute the '
                          'mean profile value at each bundle section. '
                          'Default is 5.')
-     
+
+     p.add_argument('--use_fixed_legend_loc', action='store_true',
+                    help='Use legend location fixed depending on the bundle '
+                         'instead of the best location.')
+
      # Add-ons
      p.add_argument('--in_overlap_txt', type=str,
                     help='TXT file with bundle crossings > threshold.')
@@ -280,36 +284,57 @@ def main():
           ax1.scatter(x, y_fixel, marker=marker_style, color=colors[1],
                       zorder=5)
 
-     # Double-sided arrows for significance
-     linewidth = 1.0
-     cap_half_width = 0.05   # half-width of horizontal cap in X units
+     # # Double-sided arrows for significance
+     # linewidth = 1.0
+     # cap_half_width = 0.05   # half-width of horizontal cap in X units
+     # for sec in sorted(significant_sections):
+     #      if not min_nb_subjects_mask[sec - 1]:
+     #           continue
+     #      x = sec
+     #      y1 = mtr_profile[sec - 1]
+     #      y2 = fixel_mtr_profile[sec - 1]
+     #      # ---- Order endpoints
+     #      y_low, y_high = sorted([y1, y2])
+     #      # ---- Clip to visible Y range
+     #      y_low_clip = max(y_low, ymin)
+     #      y_high_clip = min(y_high, ymax)
+     #      # Fully invisible -> skip
+     #      if y_low_clip >= y_high_clip:
+     #           continue
+     #      # ---- Central vertical line (always clipped)
+     #      ax1.plot([x, x], [y_low_clip, y_high_clip], color='black',
+     #               linewidth=linewidth, zorder=6, clip_on=True)
+     #      # ---- LOWER FLAT CAP (only if true endpoint is inside)
+     #      if y_low >= ymin:
+     #           ax1.plot([x - cap_half_width, x + cap_half_width],
+     #                    [y_low, y_low], color='black', linewidth=linewidth,
+     #                    zorder=7, clip_on=True)
+     #      # ---- UPPER FLAT CAP (only if true endpoint is inside)
+     #      if y_high <= ymax:
+     #           ax1.plot([x - cap_half_width, x + cap_half_width],
+     #                    [y_high, y_high], color='black', linewidth=linewidth,
+     #                    zorder=7, clip_on=True)
+
+     # ---- Stars for significance ----
+     star_offset = 0.03 * (ymax - ymin)   # vertical offset above error bars
+     star_text = "*"
+
      for sec in sorted(significant_sections):
           if not min_nb_subjects_mask[sec - 1]:
                continue
+
           x = sec
-          y1 = mtr_profile[sec - 1]
-          y2 = fixel_mtr_profile[sec - 1]
-          # ---- Order endpoints
-          y_low, y_high = sorted([y1, y2])
-          # ---- Clip to visible Y range
-          y_low_clip = max(y_low, ymin)
-          y_high_clip = min(y_high, ymax)
-          # Fully invisible -> skip
-          if y_low_clip >= y_high_clip:
-               continue
-          # ---- Central vertical line (always clipped)
-          ax1.plot([x, x], [y_low_clip, y_high_clip], color='black',
-                   linewidth=linewidth, zorder=6, clip_on=True)
-          # ---- LOWER FLAT CAP (only if true endpoint is inside)
-          if y_low >= ymin:
-               ax1.plot([x - cap_half_width, x + cap_half_width],
-                        [y_low, y_low], color='black', linewidth=linewidth,
-                        zorder=7, clip_on=True)
-          # ---- UPPER FLAT CAP (only if true endpoint is inside)
-          if y_high <= ymax:
-               ax1.plot([x - cap_half_width, x + cap_half_width],
-                        [y_high, y_high], color='black', linewidth=linewidth,
-                        zorder=7, clip_on=True)
+
+          # Highest visible error bar at this section
+          y_star = max(mtr_profile[sec - 1] + mtr_profile_std[sec - 1],
+                       fixel_mtr_profile[sec - 1] + fixel_mtr_profile_std[sec - 1]) + star_offset
+
+          # Keep stars inside axes
+          if y_star > ymax:
+               y_star = ymax - 0.01 * (ymax - ymin)
+
+          ax1.text(x, y_star, star_text, ha='center', va='bottom', fontsize=14,
+                   color='black', zorder=10, clip_on=True)
 
      # Add secondary axis for NuFO
      ax2 = ax1.twinx()
@@ -337,7 +362,8 @@ def main():
      # Axis labels
      # ax1.set_xlabel('Bundle section')
      ax1.set_ylabel('Mean MTR')
-     ax1.set_title('Track-profile of MTR and fixel-MTR for the {} bundle'.format(args.in_bundle_name))
+     # ax1.set_title('Track-profile of MTR and fixel-MTR for the {} bundle'.format(args.in_bundle_name))
+     ax1.set_title('{}'.format(args.in_bundle_name))
 
      # Set legend
      legend_handles = []
@@ -361,10 +387,25 @@ def main():
                                    linestyle='None'))
           legend_handles.append(overlap_handle)
 
+     # Determine legend location
+     if args.use_fixed_legend_loc:
+          # Fixed locations depending on the bundle
+          if args.in_bundle_name in ['CC_4', 'CC_7', 'CST_L']:
+               legend_loc = 1
+          elif args.in_bundle_name in ['AF_L', 'AF_R', 'CC_1', 'CC_2a', 'CC_2b', 'CC_3', 'CC_5', 'CC_6', 'CST_R', 'MCP', 'OR_L', 'OR_R']:
+               legend_loc = 2
+          elif args.in_bundle_name in ['CG_L', 'CG_R']:
+               legend_loc = 8
+          else:
+               legend_loc = 2
+     else:
+          # Best location
+          legend_loc = 'best'
+
      ax1.legend(handles=legend_handles,
                 labels=[h.get_label() if not isinstance(h, tuple) else "Overlaping bundle" for h in legend_handles],
                 handler_map={tuple: HandlerTuple(ndivide=None)},
-                loc='best')
+                loc=legend_loc)
 
      ax1.set_ylim(ymin, ymax)
      ax1.set_xlim(0, args.nb_sections + 1)
