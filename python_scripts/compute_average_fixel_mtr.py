@@ -67,15 +67,17 @@ def main():
         peak_values[..., i] =  np.where(peak_norm > 0,
                                         peak_values[..., i] / peak_norm, 0)
 
-    peak_values[peak_norm == 0] = 0
+    if args.out_peak_fractions:
+        nib.save(nib.Nifti1Image(peak_values, peak_values_img.affine),
+                 args.out_peak_fractions)
+
+    peak_values[mtr_peak_values == 0] = 0
+    peak_norm = np.sum(peak_values, axis=-1)
+    peak_values[peak_norm == 0] = np.nan
     mtr = np.average(mtr_peak_values, weights=peak_values, axis=-1)
 
     nib.save(nib.Nifti1Image(mtr, peak_values_img.affine),
              args.out_average_fixel_mtr)
-
-    if args.out_peak_fractions:
-        nib.save(nib.Nifti1Image(peak_values, peak_values_img.affine),
-                 args.out_peak_fractions)
 
 
 if __name__ == "__main__":
