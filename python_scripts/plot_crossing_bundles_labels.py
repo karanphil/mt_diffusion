@@ -12,6 +12,7 @@ import json
 import numpy as np
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+import matplotlib
 
 from scilpy.io.utils import (add_overwrite_arg, add_verbose_arg,
                              assert_inputs_exist, assert_outputs_exist)
@@ -245,6 +246,8 @@ def main():
     else:
         cmap = plt.get_cmap('bone')
 
+    matplotlib.rcParams.update({'font.size': 16})
+
     # Plot section-to-bundle matrix
     fig1, ax1 = plt.subplots(figsize=(12, 6))
     im1 = ax1.imshow(C.T, origin='lower', aspect='auto', cmap=cmap, vmin=0,
@@ -269,7 +272,7 @@ def main():
         ax1.axhline(k - 0.5, linewidth=0.6, color='0.3')
 
     ax1.set_xlabel("Source bundle (split by sections)")
-    ax1.set_ylabel("Target bundle (averaged over sections)")
+    ax1.set_ylabel("Target bundle (summed over sections)")
     # ax1.set_title("Bundle-by-bundle cumulative section overlap")
 
     cbar1 = fig1.colorbar(im1, ax=ax1, fraction=0.05, pad=0.02)
