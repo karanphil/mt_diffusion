@@ -242,7 +242,7 @@ def main():
     # Choose colormap
     if args.use_crameri:
         from cmcrameri import cm
-        cmap = cm.navia
+        cmap = cm.navia_r
     else:
         cmap = plt.get_cmap('bone')
 
