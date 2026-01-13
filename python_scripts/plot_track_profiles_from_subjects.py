@@ -89,6 +89,11 @@ def _build_arg_parser():
                     help='Use legend location fixed depending on the bundle '
                          'instead of the best location.')
 
+     p.add_argument('--full_bundle_name', type=str, nargs='+',
+                    help='Full name of the bundle to be displayed in the '
+                         'title. If not provided, the bundle name from '
+                         'in_bundle_name will be used.')
+
      # Add-ons
      p.add_argument('--in_overlap_txt', type=str,
                     help='TXT file with bundle crossings > threshold.')
@@ -363,7 +368,10 @@ def main():
      # ax1.set_xlabel('Bundle section')
      ax1.set_ylabel('Mean MTR')
      # ax1.set_title('Track-profile of MTR and fixel-MTR for the {} bundle'.format(args.in_bundle_name))
-     ax1.set_title('{}'.format(args.in_bundle_name))
+     if args.full_bundle_name:
+          ax1.set_title('{}'.format(" ".join(args.full_bundle_name)))
+     else:
+          ax1.set_title('{}'.format(args.in_bundle_name))
 
      # Set legend
      legend_handles = []

@@ -23,6 +23,30 @@ afd_thr=0.3; # This can be changed if needed
 min_nvox=100; # This can be changed if needed
 min_nb_subjects=5; # This can be changed if needed
 
+bundles_acronymes="AF_L AF_R CC_1 CC_2a CC_2b CC_3 CC_4 CC_5 CC_6 CC_7 CG_L CG_R CST_L CST_R MCP OR_L OR_R";
+# Declare associative array
+declare -A bundle_full_names;
+# Fill mapping (order must match)
+bundle_full_names=(
+    [AF_L]="Left Arcuate Fasciculus"
+    [AF_R]="Right Arcuate Fasciculus"
+    [CC_1]="Corpus Callosum (part 1)"
+    [CC_2a]="Corpus Callosum (part 2a)"
+    [CC_2b]="Corpus Callosum (part 2b)"
+    [CC_3]="Corpus Callosum (part 3)"
+    [CC_4]="Corpus Callosum (part 4)"
+    [CC_5]="Corpus Callosum (part 5)"
+    [CC_6]="Corpus Callosum (part 6)"
+    [CC_7]="Corpus Callosum (part 7)"
+    [CG_L]="Left Cingulum"
+    [CG_R]="Right Cingulum"
+    [CST_L]="Left Corticospinal Tract"
+    [CST_R]="Right Corticospinal Tract"
+    [MCP]="Middle Cerebellar Peduncle"
+    [OR_L]="Left Optic Radiation"
+    [OR_R]="Right Optic Radiation"
+);
+
 overlap_cmd="";
 significance_cmd="";
 if [ $include_extra_info == "True" ]; then
@@ -89,6 +113,11 @@ for bundle in $bundles;
     # in_nufo_profiles_rescan=$(for sub in $subs_rescan; do echo "${register_data_dir}/output/processing_registration/${sub}/track_profiles/nufo_profile_${b}.txt"; done );
     # in_afd_profiles_rescan=$(for sub in $subs_rescan; do echo "${register_data_dir}/output/processing_registration/${sub}/track_profiles/afd_profile_${b}.txt"; done );
 
-    python ${code_dir}/python_scripts/plot_track_profiles_from_subjects.py ${b} . --in_mtr_profiles_all $in_mtr_profiles --in_fixel_mtr_profiles_all $in_fixel_mtr_profiles --in_afd_fixel_profiles_all $in_afd_profiles --in_nufo_profiles_all $in_nufo_profiles --in_mtr_profiles_scan $in_mtr_profiles_scan --in_fixel_mtr_profiles_scan $in_fixel_mtr_profiles_scan --in_mtr_profiles_rescan $in_mtr_profiles_rescan --in_fixel_mtr_profiles_rescan $in_fixel_mtr_profiles_rescan --nb_sections $nb_sections --min_nb_subjects $min_nb_subjects $overlap_cmd $significance_cmd --in_nb_voxels_profiles_all $in_nb_voxels_profiles --use_fixed_legend_loc -f;
-    
+    full_name_cmd="";
+    if [[ -n "${bundle_full_names[$b]}" ]]; then
+        full_name_cmd="--full_bundle_name ${bundle_full_names[$b]}";
+    fi
+
+    python ${code_dir}/python_scripts/plot_track_profiles_from_subjects.py ${b} . --in_mtr_profiles_all $in_mtr_profiles --in_fixel_mtr_profiles_all $in_fixel_mtr_profiles --in_afd_fixel_profiles_all $in_afd_profiles --in_nufo_profiles_all $in_nufo_profiles --in_mtr_profiles_scan $in_mtr_profiles_scan --in_fixel_mtr_profiles_scan $in_fixel_mtr_profiles_scan --in_mtr_profiles_rescan $in_mtr_profiles_rescan --in_fixel_mtr_profiles_rescan $in_fixel_mtr_profiles_rescan --nb_sections $nb_sections --min_nb_subjects $min_nb_subjects $overlap_cmd $significance_cmd --in_nb_voxels_profiles_all $in_nb_voxels_profiles --use_fixed_legend_loc $full_name_cmd -f;
+
 done;
