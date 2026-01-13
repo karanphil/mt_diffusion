@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# À rouler dans /home/local/USHERBROOKE/karp2601/Samsung/data/mt-diff-mcgill
+# use : singularity exec -B /media/karp2601/T7/data/mt-diff-mcgill/ ~/Research/containers/scilus_2.0.2_from_docker.sif bash code/preprocessing_t1.sh
+# singularity exec -B /mnt/e/data/mt-diff-mcgill/ /mnt/e/data/containers/scilus_2.0.2_from_docker.sif bash code/preprocessing_t1.sh
+
+# home="/home/local/USHERBROOKE/karp2601/data/stockage";
+# home="/media/karp2601/T7/data";
+home="/mnt/e/data";
+
+processed_data_dir="processed_data/preprocessing_t1";
+cd $processed_data_dir;
+
+b0=$home/mt-diff-mcgill/processed_data/preprocessing_dwi/b0_mt_off_brain.nii.gz;
+fa=$home/mt-diff-mcgill/processed_data/dti/fa.nii.gz;
+t1=$home/mt-diff-mcgill/processed_data/preprocessing_t1/t1_bet_nlm.nii.gz;
+
+###############################################################
+# T1 processing (can be done in || to diffusion processing)
+###############################################################
+# bet T1
+echo "Bet";
+## bet ../../processed/T1_nucorr_FS.nii.gz t1_bet.nii.gz -R -m -f 0.16;
+antsBrainExtraction.sh -d 3 -a $home/mt-diff-mcgill/original_data/processed/T1_nucorr_FS.nii.gz -u 0 -e t1_template.nii.gz -m t1_brain_probability_map.nii.gz;
+scil_volume_math.py convert BrainExtractionMask.nii.gz t1_bet_mask.nii.gz --data_type uint8 -f;
+scil_volume_math.py multiplication $home/mt-diff-mcgill/original_data/processed/T1_nucorr_FS.nii.gz t1_bet_mask.nii.gz t1_bet.nii.gz --data_type float32 -f;
+# denoise T1
+echo "Denoise";
+# scil_denoising_nlmeans.py t1_bet.nii.gz t1_bet_nlm.nii.gz --mask_denoise t1_bet_mask.nii.gz --processes 6 --number_coils 1 --basic_sigma -f;
+# With the singularity, use this old version of the script:
+scil_denoising_nlmeans.py t1_bet.nii.gz t1_bet_nlm.nii.gz 1 --mask t1_bet_mask.nii.gz --processes 6 -f;
+# Segment T1
+echo "Segmentation";
+fast -t 1 -n 3 -H 0.1 -I 4 -l 20.0 -g -o t1_bet_nlm.nii.gz t1_bet_nlm.nii.gz ;
+
+# rename output of T1 segmentation
+mv t1_bet_nlm_seg_2.nii.gz wm_mask.nii.gz;
+mv t1_bet_nlm_seg_1.nii.gz gm_mask.nii.gz;
+mv t1_bet_nlm_seg_0.nii.gz csf_mask.nii.gz;
+mv t1_bet_nlm_pve_2.nii.gz wm_map.nii.gz;
+mv t1_bet_nlm_pve_1.nii.gz gm_map.nii.gz;
+mv t1_bet_nlm_pve_0.nii.gz csf_map.nii.gz;
+rm -rf t1_bet_nlm_*;
+
+mkdir register_natif; cd register_natif;
+
+antsRegistration --dimensionality 3 --float 0\
+		 --output [output,outputWarped.nii.gz,outputInverseWarped.nii.gz]\
+		 --interpolation Linear --use-histogram-matching 0\
+		 --winsorize-image-intensities [0.005,0.995]\
+		 --initial-moving-transform [$b0,$t1,1]\
+		 --transform Rigid['0.2']\
+		 --metric MI[$b0,$t1,1,32,Regular,0.25]\
+		 --convergence [500x250x125x50,1e-6,10] --shrink-factors 8x4x2x1\
+		 --smoothing-sigmas 3x2x1x0\
+		 --transform Affine['0.1']\
+		 --metric MI[$b0,$t1,1,32,Regular,0.25]\
+		 --convergence [500x250x125x100,1e-6,10] --shrink-factors 8x4x2x1\
+		 --smoothing-sigmas 3x2x1x0\
+		 --transform SyN[0.01,3,0]\
+		 --metric MI[$b0,$t1,1,32]\
+		 --metric CC[$fa,$t1,1,4]\
+		 --convergence [50x25x10,1e-6,10] --shrink-factors 4x2x1\
+		 --smoothing-sigmas 3x2x1\
+		 --verbose > log_ants.txt
+cd ../;
+
+antsApplyTransforms -d 3 -i wm_mask.nii.gz -r $fa -o register_natif/wm_mask.nii.gz -n NearestNeighbor -t register_natif/output0GenericAffine.mat register_natif/output1Warp.nii.gz;
+antsApplyTransforms -d 3 -i gm_mask.nii.gz -r $fa -o register_natif/gm_mask.nii.gz -n NearestNeighbor -t register_natif/output0GenericAffine.mat register_natif/output1Warp.nii.gz;
+antsApplyTransforms -d 3 -i csf_mask.nii.gz -r $fa -o register_natif/csf_mask.nii.gz -n NearestNeighbor -t register_natif/output0GenericAffine.mat register_natif/output1Warp.nii.gz;
+antsApplyTransforms -d 3 -i wm_map.nii.gz -r $fa -o register_natif/wm_map.nii.gz -n NearestNeighbor -t register_natif/output0GenericAffine.mat register_natif/output1Warp.nii.gz;
+antsApplyTransforms -d 3 -i gm_map.nii.gz -r $fa -o register_natif/gm_map.nii.gz -n NearestNeighbor -t register_natif/output0GenericAffine.mat register_natif/output1Warp.nii.gz;
+antsApplyTransforms -d 3 -i csf_map.nii.gz -r $fa -o register_natif/csf_map.nii.gz -n NearestNeighbor -t register_natif/output0GenericAffine.mat register_natif/output1Warp.nii.gz;
+
+cd register_natif;
+scil_volume_math.py multiplication wm_mask.nii.gz $home/mt-diff-mcgill/processed_data/preprocessing_dwi/b0_mt_off_brain_mask.nii.gz wm_mask.nii.gz --data_type uint16 -f;
+scil_volume_math.py multiplication gm_mask.nii.gz $home/mt-diff-mcgill/processed_data/preprocessing_dwi/b0_mt_off_brain_mask.nii.gz gm_mask.nii.gz --data_type uint16 -f;
+scil_volume_math.py multiplication csf_mask.nii.gz $home/mt-diff-mcgill/processed_data/preprocessing_dwi/b0_mt_off_brain_mask.nii.gz csf_mask.nii.gz --data_type uint16 -f;
+scil_volume_math.py convert wm_mask.nii.gz wm_mask.nii.gz --data_type uint8 -f;
+scil_volume_math.py convert gm_mask.nii.gz gm_mask.nii.gz --data_type uint8 -f;
+scil_volume_math.py convert csf_mask.nii.gz csf_mask.nii.gz --data_type uint8 -f;
+
+cd ../;
+
+# scil_volume_math.py multiplication wm_mask.nii.gz $home/mt-diff-mcgill/processed_data/preprocessing_dwi/wm_mask.nii.gz $home/mt-diff-mcgill/processed_data/preprocessing_dwi/wm_mask.nii.gz --data_type uint8 -f;
+
+rm -r tmp*;
