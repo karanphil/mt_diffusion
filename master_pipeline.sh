@@ -8,18 +8,17 @@ rbx_flow_version="1.3.0";
 register_flow_version="0.2.0";
 
 # # Step 1
-# main_dir="mt-diff-mcgill"; # Put any name you like
-# mkdir $main_dir;
-# cd $main_dir;
+main_dir="mt-diff-mcgill"; # Put any name you like
+mkdir $main_dir;
+cd $main_dir;
 main_dir=$(pwd -P); # To get full paths for the future
 
 # Step 2
 code_name="code"; # Put any name you like
-# mkdir $code_name;
-# cd $code_name;
-# git clone git@github.com:karanphil/mt_diffusion.git;
-# cd mt-diffusion;
-# git checkout mcgill_project; # It is important to use the mcgill_project branch.
+mkdir $code_name;
+cd $code_name;
+git clone git@github.com:karanphil/mt_diffusion.git;
+cd mt-diffusion;
 code_dir="${main_dir}/${code_name}/mt_diffusion"; # Important to set this right
 
 # Step 3

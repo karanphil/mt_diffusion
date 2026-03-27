@@ -26,7 +26,6 @@ mkdir $code_name;
 cd $code_name;
 git clone git@github.com:karanphil/mt_diffusion.git;
 cd mt-diffusion;
-git checkout mcgill_project; # It is important to use the mcgill_project branch.
 code_dir="${main_dir}/${code_name}/mt_diffusion"; # Important to set this right
 ```
 
