@@ -38,7 +38,7 @@ working_dir="full_processing"; # Put any name you like
 mkdir $working_dir;
 ```
 
-Then, it is time to copy the data the $working_dir directory, using the rename_files.sh script:
+Then, it is time to copy the data in the $working_dir directory, using the rename_files.sh script:
 
 ```
 original_data_dir="mt-diff-10peeps"; # IMPORTANT: Replace this with the actual path to the data
